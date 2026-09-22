@@ -37,7 +37,7 @@ export default function SurfaceFrame({ variant = 'platform', bankName, children,
           {config.label(bankName)}
         </div>
       )}
-      <div className="flex-1 overflow-y-auto">{children}</div>
+      <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain">{children}</div>
     </div>
   )
 }

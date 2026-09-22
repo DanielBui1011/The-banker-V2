@@ -168,8 +168,8 @@ function LenderSignPage({ quote, confirmed, setConfirmed, onConfirm }) {
         <div className="mt-1 text-3xl font-bold text-slate-900">{quote.lender}</div>
       </header>
 
-      <main className="flex flex-1 items-center justify-center px-8 py-10">
-        <div className="w-full max-w-3xl rounded-2xl border border-slate-200 p-8 shadow-sm">
+      <main className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-8 pt-8 pb-24">
+        <div className="mx-auto w-full max-w-3xl rounded-2xl border border-slate-200 p-8 shadow-sm">
           <h1 className="mb-1 text-3xl font-bold text-slate-900">Thỏa thuận chuyển giao quyền đòi nợ</h1>
           <p className="mb-6 text-lg text-slate-500">Vui lòng đọc kỹ nội dung trước khi ký.</p>
 

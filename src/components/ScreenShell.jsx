@@ -20,8 +20,8 @@ export default function ScreenShell({ screenNumber, title, children, maxWidth = 
         <ActProgress currentAct={currentAct} tone="dark" />
       </div>
 
-      <main className="flex flex-1 items-center justify-center overflow-y-auto px-8 py-10">
-        <div className={`${maxWidth} w-full`}>
+      <main className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-8 pt-8 pb-24">
+        <div className={`mx-auto ${maxWidth} w-full`}>
           <h1 className="text-3xl font-bold mb-4">{title}</h1>
           {children}
         </div>

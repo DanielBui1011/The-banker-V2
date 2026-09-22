@@ -86,7 +86,7 @@ export default function Screen8({ onNext }) {
         )}
       </header>
 
-      <main className="flex-1 px-8 py-8">
+      <main className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-8 pt-8 pb-24">
         {a2Revoked ? (
           <div className="rounded-xl border border-amber-300 bg-amber-50 p-6 text-lg font-semibold text-amber-800">
             Nhà bán đã rút quyền A2 — không thể xem dữ liệu.

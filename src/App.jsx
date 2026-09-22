@@ -102,7 +102,7 @@ function AppScreens() {
       <CurrentScreen onNext={goNext} onPrev={goPrev} onGoToScreen={goToScreen} />
       <ScenarioPanel onReset={handleReset} />
       {isPeeking && (
-        <div className="fixed inset-0 z-50 overflow-y-auto">
+        <div className="fixed inset-0 z-50">
           <Screen7 onBack={closePeek} onGoToScreen={goToScreen} />
         </div>
       )}

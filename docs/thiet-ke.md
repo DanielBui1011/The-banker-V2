@@ -55,6 +55,49 @@ Các màn dùng `min-h-screen`/`100vh` trước đây (trang ngân hàng ở Mà
 viewport thật — nếu không, ở cửa sổ khác 1920×1080 các trang này sẽ không lấp đầy
 đúng khung sân khấu.
 
+## 1.1 Cấu trúc khung (Vòng 7A-FIX)
+
+Mọi màn, mọi bề mặt (platform/bank/bankOps/tech) dùng đúng MỘT cấu trúc:
+
+```
+Stage (1920×1080, overflow-hidden, flex flex-col)
+├─ Chrome cố định (shrink-0): TopBar nếu là bề mặt platform, hoặc header của
+│   frame bank/bankOps; sau đó là ActProgress
+├─ <main> (flex-1 min-h-0 overflow-y-auto overscroll-contain)  ← vùng cuộn
+│   DUY NHẤT của màn
+│   └─ Nội dung: căn TRÊN (không flex items-center dọc), lề trên 32px
+│       (pt-8), lề dưới ≥ 96px (pb-24) để không bị chip ScenarioPanel che
+└─ Footer "Giao diện mô phỏng — dữ liệu giả định" (shrink-0)
+```
+
+Quy tắc bắt buộc:
+
+- Tuyệt đối không căn giữa dọc bên trong vùng cuộn (không `items-center` trên
+  trục cuộn). Nếu một màn ngắn cần cân đối thị giác, dùng
+  `justify-content: safe center` (Tailwind: `justify-[safe_center]`), không
+  bao giờ dùng `items-center`/`justify-center` thường trên trục có thể tràn —
+  khi nội dung cao hơn khung, cách căn giữa thường sẽ cắt đều phần đầu và
+  phần cuối, khiến cuộn lên hết vẫn không thấy được đầu nội dung.
+- `<main>` phải có cả `flex-1` LẪN `min-h-0`: thiếu `min-h-0`, chiều cao tối
+  thiểu mặc định (`auto`) của flex item khiến nó phình theo nội dung thay vì
+  co lại và cuộn — dẫn tới tràn khỏi Stage mà không có thanh cuộn.
+- Không dùng `position: fixed` cho phần chrome bên trong Stage, vì
+  `transform: scale` trên Stage biến `fixed` thành hoạt động như `absolute`
+  (đây là điều Stage cố tình khai thác cho các lớp phủ toàn màn hình như
+  ScenarioPanel, không phải để dựng chrome). Chrome (TopBar/ActProgress/header
+  ngân hàng) phải là phần tử nằm trong luồng flex phía trên `<main>`.
+- Bỏ các vùng cuộn lồng nhau không cần thiết: chỉ `<main>` được
+  `overflow-y-auto`. Một khung dùng `position: fixed inset-0` bọc ngoài
+  (như overlay Màn 6/9) phải dùng `overflow-hidden` ở lớp ngoài và để
+  `<main>` bên trong làm chủ việc cuộn.
+- Khi chuyển màn (Stage đổi component màn), `<main>` mới luôn được mount lại
+  từ đầu nên `scrollTop` tự về 0 — không cần xử lý thêm, miễn là mỗi màn vẫn
+  là một component React riêng như hiện tại (không tái dùng cùng một `<main>`
+  giữa các màn khác nhau).
+- `SurfaceFrame` (bên trong platform/bank/bankOps/tech) và `ScreenShell`
+  (platform) đều theo đúng cấu trúc này; mọi màn mới thêm sau 7B/7C phải tái
+  dùng hai component này thay vì tự dựng lại `<main>`.
+
 ## 2. Token
 
 - **Font**: Be Vietnam Pro qua `@fontsource/be-vietnam-pro` (400/500/600/700), tự
