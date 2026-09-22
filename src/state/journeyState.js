@@ -46,6 +46,16 @@ export function useJourneyState(phase3) {
     [screenOrder]
   )
 
+  // Đặt lại kịch bản (phím R) đưa hành trình về hẳn Màn 1 — không chỉ đặt lại
+  // permissionState/settlementState. Nếu chỉ đặt lại hai state đó mà vẫn đứng
+  // nguyên ở màn hiện tại (vd. Màn 6), người trình bày có thể tiếp tục bấm
+  // "Sự kiện tiếp theo"/"Trả nợ một chạm" mà không đi lại Màn 5 để cấp lại
+  // A2/A4 và khóa lại RU-03/RU-04 — sinh trạng thái lơ lửng giữa các state dùng chung.
+  const reset = useCallback(() => {
+    setPosition(0)
+    setMaxPosition(0)
+  }, [])
+
   // "Đã qua Màn N": vị trí xa nhất đã vượt qua chỗ của Màn N trong screenOrder.
   const hasPassedScreen = useCallback(
     (screenNumber) => clampedMaxPosition > screenOrder.indexOf(screenNumber),
@@ -60,5 +70,6 @@ export function useJourneyState(phase3) {
     goPrev,
     goToScreen,
     hasPassedScreen,
+    reset,
   }
 }

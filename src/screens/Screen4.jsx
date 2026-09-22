@@ -18,7 +18,6 @@ import {
   FOOTER_NOTE,
 } from '../data/mockData.js'
 import { computeVerificationScore, computeLeakAdjustedScore, isScoreAvailable } from '../logic/verification.js'
-import { usePermissions } from '../state/permissionState.jsx'
 import { useSettlement } from '../state/settlementState.jsx'
 import { useScenario } from '../state/scenarioState.jsx'
 import { formatNumberVN, formatPercentVN } from '../utils/format.js'
@@ -36,9 +35,11 @@ const METRIC_ROWS = [
 ]
 
 // Sau khi Techcombank giải ngân, RU-03/RU-04 không còn dùng status tĩnh của mockData —
-// settlementState quyết định: đã khóa / đã tất toán / đứt gãy (kịch bản rò rỉ).
-function settlementStatusFor(unit, advanceGranted, settlement) {
-  if (!advanceGranted) return null
+// settlementState quyết định: đã khóa / đã tất toán / đứt gãy (kịch bản rò rỉ). Gate bằng
+// locksInitialized (nguồn sự thật của chính settlementState) chứ không phải a2a4Granted,
+// vì hai cờ này ở hai provider khác nhau và có thể lệch pha nếu chỉ reset một bên.
+function settlementStatusFor(unit, settlement) {
+  if (!settlement.locksInitialized) return null
   if (unit.code === 'RU-03') return settlement.ru03Status
   if (unit.code === 'RU-04') return settlement.ru04Status
   return null
@@ -47,7 +48,7 @@ function settlementStatusFor(unit, advanceGranted, settlement) {
 // Trạng thái chuẩn hóa dùng để chọn nhãn StatusBadge từ src/ui/status.js và bước
 // hiện tại trên Stepper vòng đời Dựng → Đã xác thực → Đã khóa → Tất toán. Nhánh
 // "Tất toán thiếu"/"Đứt gãy" chỉ hiện khi settlementStatus thực sự bằng giá trị đó.
-function lifecycleFor(unit, advanceGranted, settlementStatus) {
+function lifecycleFor(unit, settlementStatus) {
   if (settlementStatus === 'broken') return { badge: 'broken', step: 3, broken: true }
   if (settlementStatus === 'settled') return { badge: 'settled', step: 4 }
   if (settlementStatus === 'locked') return { badge: 'locked', step: 3 }
@@ -60,7 +61,6 @@ function lifecycleFor(unit, advanceGranted, settlementStatus) {
 
 export default function Screen4({ onNext }) {
   const [openChannel, setOpenChannel] = useState(null)
-  const { a2a4Granted } = usePermissions()
   const settlement = useSettlement()
   const { megaSale } = useScenario()
 
@@ -87,8 +87,8 @@ export default function Screen4({ onNext }) {
 
                 <div className="grid grid-cols-3 gap-4">
                   {RECEIVABLE_UNITS.map((unit) => {
-                    const settlementStatus = settlementStatusFor(unit, a2a4Granted, settlement)
-                    const lifecycle = lifecycleFor(unit, a2a4Granted, settlementStatus)
+                    const settlementStatus = settlementStatusFor(unit, settlement)
+                    const lifecycle = lifecycleFor(unit, settlementStatus)
                     const isRU0304 = unit.code === 'RU-03' || unit.code === 'RU-04'
                     const actualReceived = isRU0304
                       ? settlement.getActualReceived(unit.code)
