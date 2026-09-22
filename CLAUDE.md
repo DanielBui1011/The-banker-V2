@@ -56,3 +56,5 @@ Không thêm thư viện khác nếu chưa hỏi.
 - Chỉ sửa trong phạm vi được yêu cầu, không tự ý sửa màn khác.
 - Sau mọi thay đổi ở src/logic/, chạy npm test.
 - Khi không chắc về nội dung, hỏi lại thay vì tự đoán.
+- Trước khi bắt đầu, cập nhật nhánh theo main mới nhất. Trước khi tạo pull request,
+  chạy npm run build; không tạo pull request nếu build lỗi.
