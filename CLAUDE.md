@@ -72,3 +72,6 @@ Không thêm thư viện khác nếu chưa hỏi.
 - Ponytail: không thêm dependency trừ khi DESIGN.md yêu cầu; chỉ tách component dùng chung khi ≥3 màn dùng; không sửa src/logic khi vòng chỉ làm giao diện.
 - Xung đột: quy-tac.md > đọc rõ trên máy chiếu 1920×1080 > ít code.
 - Tiết kiệm ngữ cảnh: chỉ đọc file màn đang sửa và các component nó import.
+- Vòng 7: DESIGN.md (rút từ code hiện có) là nguồn thẩm quyền thị giác cho các
+  vòng 8-11 tiếp theo; docs/plans/ui-roadmap.md là kế hoạch chính thức cho các
+  vòng đó. Xem thêm docs/ui-audit.md cho danh sách vấn đề đã tìm thấy.
