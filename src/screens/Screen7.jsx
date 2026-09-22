@@ -9,35 +9,63 @@ const STATUS_STYLE = {
   'not-granted': 'text-slate-500',
 }
 
+const REVOKE_CONFIRM_MESSAGE = {
+  A1: 'Rút quyền A1 sẽ dừng đối soát tự động. Bạn chắc chắn?',
+  A2: 'Rút quyền A2 sẽ dừng đánh giá tín dụng. Bạn chắc chắn?',
+}
+
 function formatDateVN(value) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return value
   const [y, m, d] = value.split('-')
   return `${d}/${m}/${y}`
 }
 
-export default function Screen7({ onBack, peekReturnScreen }) {
-  const { permissions, accessLog, revokeA1, revokeA2 } = usePermissions()
+function formatLogTimestamp(value) {
+  const [datePart, timePart] = value.split(' ')
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(datePart)) return value
+  const [y, m, d] = datePart.split('-')
+  return `${d}/${m}/${y} ${timePart}`
+}
+
+export default function Screen7({ onBack, onPrev, onGoToScreen }) {
+  const { permissions, accessLog, revokeA1, revokeA2, regrantA2, requestReauth } = usePermissions()
   const [exportMessage, setExportMessage] = useState('')
+  const [confirmCode, setConfirmCode] = useState(null) // 'A1' | 'A2' | null
+
+  const goBack = onBack ?? onPrev
 
   function handleExport() {
     setExportMessage('Đã xuất hồ sơ doanh thu đã xác thực (mô phỏng) — không có tệp thật được tạo.')
   }
 
-  function revokeAction(permission) {
-    if (permission.code === 'A1') return revokeA1
-    if (permission.code === 'A2') return revokeA2
+  function handleRegrantA1() {
+    requestReauth()
+    onGoToScreen?.(2)
+    onBack?.()
+  }
+
+  // Hành động khả dụng cho mỗi quyền: rút (cần xác nhận) hoặc cấp lại (sau khi đã thu hồi).
+  function actionFor(permission) {
+    if (permission.code === 'A1') {
+      if (permission.status === 'active') return { kind: 'revoke', run: revokeA1 }
+      if (permission.status === 'revoked') return { kind: 'regrant', run: handleRegrantA1 }
+    }
+    if (permission.code === 'A2') {
+      if (permission.status === 'active') return { kind: 'revoke', run: revokeA2 }
+      if (permission.status === 'revoked') return { kind: 'regrant', run: regrantA2 }
+    }
     return null
   }
 
   return (
-    <ScreenShell screenNumber={7} title="Trung tâm quyền riêng tư" maxWidth="max-w-4xl">
+    <ScreenShell screenNumber={7} title="Trung tâm quyền riêng tư">
       <div className="space-y-6">
-        {onBack && (
+        {goBack && (
           <button
-            onClick={onBack}
+            onClick={goBack}
             className="rounded-lg border border-slate-700 bg-slate-900 px-4 py-2 text-base font-medium text-slate-300 hover:bg-slate-800"
           >
-            ← Quay về Màn {peekReturnScreen}
+            ← Quay lại
           </button>
         )}
 
@@ -48,8 +76,7 @@ export default function Screen7({ onBack, peekReturnScreen }) {
           ) : (
             <div className="space-y-3">
               {permissions.map((permission) => {
-                const revoke = revokeAction(permission)
-                const canRevoke = revoke && permission.status === 'active'
+                const action = actionFor(permission)
                 const lockedReason =
                   permission.code === 'A4' && permission.status === 'in-effect' ? permission.revokeNote : null
 
@@ -60,26 +87,43 @@ export default function Screen7({ onBack, peekReturnScreen }) {
                         <div className="text-lg font-semibold text-white">
                           {permission.code} — {permission.purpose}
                         </div>
-                        <div className="mt-1 text-base text-slate-400">
-                          {permission.from} → {permission.to}
-                        </div>
-                        <div className="mt-1 text-base text-slate-500">
-                          Cấp ngày {formatDateVN(permission.grantedDate)} · Hạn {formatDateVN(permission.expiryDate)}
-                        </div>
+                        {permission.status === 'not-granted' ? (
+                          <div className="mt-1 text-base text-slate-500">{permission.pendingNote}</div>
+                        ) : (
+                          <>
+                            <div className="mt-1 text-base text-slate-400">
+                              {permission.from} → {permission.to}
+                            </div>
+                            <div className="mt-1 text-base text-slate-500">
+                              Cấp ngày {formatDateVN(permission.grantedDate)} · Hạn {formatDateVN(permission.expiryDate)}
+                            </div>
+                          </>
+                        )}
                       </div>
                       <div className="text-right">
                         <div className={`text-lg font-semibold ${STATUS_STYLE[permission.status]}`}>
                           {permission.statusLabel}
                         </div>
-                        {canRevoke && (
+
+                        {action?.kind === 'revoke' && (
                           <button
-                            onClick={revoke}
+                            onClick={() => setConfirmCode(permission.code)}
                             className="mt-2 rounded-lg border border-slate-700 bg-slate-800 px-3 py-1.5 text-base font-medium text-slate-200 hover:bg-slate-700"
                           >
                             Rút lại
                           </button>
                         )}
-                        {!canRevoke && permission.status !== 'not-granted' && (
+
+                        {action?.kind === 'regrant' && (
+                          <button
+                            onClick={action.run}
+                            className="mt-2 rounded-lg border border-teal-700 bg-teal-950/40 px-3 py-1.5 text-base font-medium text-teal-300 hover:bg-teal-900/40"
+                          >
+                            Cấp lại
+                          </button>
+                        )}
+
+                        {!action && permission.status === 'in-effect' && (
                           <div className="mt-2">
                             <button
                               disabled
@@ -88,9 +132,6 @@ export default function Screen7({ onBack, peekReturnScreen }) {
                               Rút lại
                             </button>
                             {lockedReason && <div className="mt-1 text-base text-amber-300">{lockedReason}</div>}
-                            {permission.status === 'revoked' && (
-                              <div className="mt-1 text-base text-slate-500">Đã thu hồi</div>
-                            )}
                           </div>
                         )}
                       </div>
@@ -119,7 +160,7 @@ export default function Screen7({ onBack, peekReturnScreen }) {
               <tbody>
                 {accessLog.map((entry, i) => (
                   <tr key={i} className="border-b border-slate-800/60">
-                    <td className="py-2 pr-3 text-slate-400">{entry.timestamp}</td>
+                    <td className="py-2 pr-3 whitespace-nowrap text-slate-400">{formatLogTimestamp(entry.timestamp)}</td>
                     <td className="py-2 pr-3 text-slate-300">{entry.actor}</td>
                     <td className="py-2 pr-3 text-slate-400">{entry.purpose}</td>
                     <td className="py-2 text-slate-400">{entry.data}</td>
@@ -128,18 +169,46 @@ export default function Screen7({ onBack, peekReturnScreen }) {
               </tbody>
             </table>
           )}
-        </div>
 
-        <div className="space-y-2">
-          <button
-            onClick={handleExport}
-            className="w-full rounded-xl bg-blue-600 py-3 text-lg font-semibold text-white transition hover:bg-blue-500"
-          >
-            Xuất hồ sơ doanh thu đã xác thực của tôi
-          </button>
-          {exportMessage && <p className="text-base text-emerald-400">{exportMessage}</p>}
+          <div className="mt-4 flex justify-end">
+            <div className="text-right">
+              <button
+                onClick={handleExport}
+                className="rounded-xl border border-slate-600 px-5 py-2.5 text-lg font-semibold text-slate-200 transition hover:bg-slate-800"
+              >
+                Xuất hồ sơ doanh thu đã xác thực của tôi
+              </button>
+              {exportMessage && <p className="mt-2 text-base text-emerald-400">{exportMessage}</p>}
+            </div>
+          </div>
         </div>
       </div>
+
+      {confirmCode && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 px-6">
+          <div className="w-full max-w-md rounded-xl border border-slate-700 bg-slate-900 p-6 shadow-xl">
+            <p className="text-lg text-slate-100">{REVOKE_CONFIRM_MESSAGE[confirmCode]}</p>
+            <div className="mt-6 flex gap-3">
+              <button
+                onClick={() => setConfirmCode(null)}
+                className="flex-1 rounded-lg border border-slate-600 py-2.5 text-base font-semibold text-slate-300 hover:bg-slate-800"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={() => {
+                  if (confirmCode === 'A1') revokeA1()
+                  if (confirmCode === 'A2') revokeA2()
+                  setConfirmCode(null)
+                }}
+                className="flex-1 rounded-lg bg-red-700 py-2.5 text-base font-semibold text-white hover:bg-red-600"
+              >
+                Xác nhận rút quyền
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </ScreenShell>
   )
 }

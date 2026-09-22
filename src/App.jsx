@@ -38,7 +38,7 @@ export default function App() {
 
 function AppScreens({ journey }) {
   const { currentScreen, goNext, goPrev, goToScreen } = journey
-  const { isPeeking, peekReturnScreen, closePeek, reset } = usePermissions()
+  const { isPeeking, closePeek, reset } = usePermissions()
 
   useEffect(() => {
     function handleKeyDown(event) {
@@ -60,7 +60,7 @@ function AppScreens({ journey }) {
       <CurrentScreen onNext={goNext} onPrev={goPrev} onGoToScreen={goToScreen} />
       {isPeeking && (
         <div className="fixed inset-0 z-50 overflow-y-auto">
-          <Screen7 onBack={closePeek} peekReturnScreen={peekReturnScreen} />
+          <Screen7 onBack={closePeek} onGoToScreen={goToScreen} />
         </div>
       )}
     </>

@@ -4,7 +4,9 @@ import { usePermissions } from '../state/permissionState.jsx'
 
 const ACT_LABELS = ['Hồi 1 — Vấn đề', 'Hồi 2 — Cấp quyền', 'Hồi 3 — Nhận giá trị', 'Hồi 4 — Tất toán và hệ sinh thái']
 
-export default function ScreenShell({ screenNumber, title, children, maxWidth = 'max-w-3xl' }) {
+// Vùng nội dung chính rộng ~80% màn hình ở độ phân giải trình chiếu 1920×1080
+// (CLAUDE.md mục #7 / quy-tac.md mục 8): 1920 × 0,8 = 1536px.
+export default function ScreenShell({ screenNumber, title, children, maxWidth = 'max-w-[1536px]' }) {
   const currentAct = actForScreen(screenNumber)
   const { openPeek } = usePermissions()
 
