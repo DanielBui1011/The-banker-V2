@@ -44,9 +44,17 @@ offline single-file (`npm run build:offline`).
 ## 3. Màu
 
 ### 3.1 Màu thương hiệu Nền tảng
-`navy` (tailwind.config.js `theme.extend.colors.navy`): `DEFAULT #0B2545`, `50
-#E7ECF2`, `600 #123A6B`, `700 #0B2545`. Dùng cho nút hành động chính, viền nhấn
-trên khung Nền tảng.
+`navy` (tailwind.config.js `theme.extend.colors.navy`): `DEFAULT var(--color-navy)`
+(mặc định `#0B2545` ở `:root`, `src/index.css`), `50 #E7ECF2`, `600 #123A6B`,
+`700 #0B2545`. Dùng cho nút hành động chính, viền nhấn trên khung Nền tảng.
+
+**Màu hành động theo khung (Vòng 8)**: trong khung `bank`/`bankOps`, biến
+`--color-navy` bị `SurfaceFrame` ghi đè thành `#0F172A` (slate-900) qua thuộc
+tính `data-surface-frame` trên khung ngoài cùng — mọi `bg-navy`/`border-navy`/
+`text-navy` hiện có (nút chính, `Stepper`, `ActProgress`, `ConfirmDialog`) tự
+động đổi sang màu trung tính khi đang ở trang/cổng Techcombank, vì trang đó
+không phải của Nền tảng. Xử lý tập trung ở `tailwind.config.js` +
+`src/index.css` + `SurfaceFrame.jsx` — không sửa màu trong từng màn.
 
 ### 3.2 Màu ngữ nghĩa (từ `src/ui/status.js`, khớp CLAUDE.md)
 
@@ -71,7 +79,6 @@ nhãn chữ, không bao giờ chỉ màu.
 - `Callout` — 3 biến thể `info/warn/danger`; `EstimateDisclaimer` là biến thể cố định bọc `ESTIMATE_DISCLAIMER`.
 - `SurfaceFrame` — 4 biến thể `platform/bank/bankOps/tech`, là cơ chế DUY NHẤT phân biệt 3 khung vai trò (xem mục 6).
 - `Stepper`, `Timeline`, `DataTable`, `Drawer`, `ConfirmDialog`, `SegmentedControl`, `ToggleSwitch`, `LayerTag`, `TopBar`, `ActProgress`, `Stat`, `KeyHint`.
-- `src/components/StatusBadge.jsx` (tone + children, nền tối) — bản cũ song song, còn dùng ở Màn 4/6/9; ghi chú trong code nói sẽ hợp nhất ở vòng sau.
 - `src/components/LockCertificate.jsx`, `src/components/ScenarioPanel.jsx` — component riêng cho một màn/chức năng, không thuộc `ui/`.
 
 ## 5. Khung vai trò (`SurfaceFrame`)
@@ -80,7 +87,7 @@ nhãn chữ, không bao giờ chỉ màu.
 |---|---|---|
 | `platform` | Ứng dụng Nền tảng (nhà bán) | không có dải, nền `bg-slate-50` |
 | `bank` | Trang Techcombank (A1/A2/A4, ký thỏa thuận) | dải tối `bg-slate-800`, icon khóa + "Bạn đang ở trang của {bankName}" |
-| `bankOps` | Cổng nghiệp vụ nội bộ ngân hàng (Màn 8) | dải sáng `bg-slate-100` viền dưới, "Cổng nghiệp vụ {bankName} — mô phỏng" |
+| `bankOps` | Cổng nghiệp vụ nội bộ ngân hàng (Màn 8) | thanh điều hướng dọc bên trái `bg-slate-700` (không phải strip ngang) — icon `Landmark`, nhãn "Nội bộ — mô phỏng", 3 mục điều hướng giả kiểu phần mềm nghiệp vụ ("Tra cứu nhà bán" đang chọn, "Danh mục khóa", "Cảnh báo") chỉ để trang trí, không bấm được |
 | `tech` | Hậu trường kỹ thuật (terminal OAuth Màn 2, JWS Màn 5) | nền đen `bg-slate-950`, font mono |
 
 ## 6. Số tiền
@@ -94,8 +101,10 @@ bằng `text-right`/`align: 'right'` + `tabular-nums`.
 
 `src/config/brand.js`: `DISPLAY_NAME` (thanh trên cùng, không mang tính pháp lý)
 vs. `LEGAL_NAME` + `TPP_CODE` (mọi vị trí pháp lý — bên yêu cầu cấp quyền trên
-trang ngân hàng, bảng quyền, nhật ký truy cập). **`LEGAL_NAME` hiện là chuỗi
-placeholder `'<ĐIỀN TÊN PHÁP NHÂN>'` chưa điền — xem docs/ui-audit.md.**
+trang ngân hàng, bảng quyền, nhật ký truy cập). `LEGAL_NAME` = `'Công ty [Tên
+giải pháp]'` (Vòng 8) — dạng khung vuông có chủ đích, không phải placeholder
+chưa điền (không chứa `<`, không trùng `DISPLAY_NAME`, có test ở
+`src/config/brand.test.js`).
 
 ---
 
@@ -119,8 +128,10 @@ chiếu 1920×1080 > ít code (CLAUDE.md mục "Quy ước plugin").
    "đứt gãy" trong hệ thống — `SurfaceFrame variant="bank"` hiện dùng
    `slate-800`, đúng quy tắc, phải giữ nguyên);
    (c) bảng điều khiển nội bộ ngân hàng (Màn 8, `variant="bankOps"`) — giao
-   diện khác hẳn hai khung kia (hiện dùng dải sáng viền dưới, không icon khóa).
-   Chỉ thay đổi 3 khung này qua `SurfaceFrame`, không tạo khung rời trong từng màn.
+   diện khác hẳn hai khung kia (Vòng 8: thanh điều hướng dọc bên trái
+   `bg-slate-700` + icon `Landmark`, không phải strip ngang như `bank`, không
+   dùng đỏ/navy/`slate-800`). Chỉ thay đổi 3 khung này qua `SurfaceFrame`,
+   không tạo khung rời trong từng màn.
 
 3. **Thang chữ cho máy chiếu 1920×1080**: thân chữ khuyến nghị 20px
    (`text-body`), tối thiểu 16px (`text-label`, theo CLAUDE.md). Tiêu đề màn
@@ -156,9 +167,18 @@ chiếu 1920×1080 > ít code (CLAUDE.md mục "Quy ước plugin").
 
 6. **Tên hiển thị ở vị trí pháp lý** (bên yêu cầu cấp quyền A1/A2, bên ký thỏa
    thuận A4) dùng "Công ty [tên giải pháp]" — KHÔNG dùng tên thương hiệu Nền
-   tảng ở đó, kể cả trên thanh tiêu đề khi đang ở khung Techcombank. Cơ chế đã
-   có: `LEGAL_NAME` trong `src/config/brand.js`, dùng ở Screen2/Screen5
-   (`Bên yêu cầu`). `LEGAL_NAME` hiện là placeholder `'<ĐIỀN TÊN PHÁP NHÂN>'` —
-   PHẢI điền thành "Công ty [tên giải pháp]" thật trước khi trình chiếu (Vòng 8,
-   xem docs/ui-audit.md hàng Cao). Không dùng `DISPLAY_NAME` ("Đừng Đóng Vai
-   Anh") ở các vị trí pháp lý.
+   tảng ở đó, kể cả trên thanh tiêu đề khi đang ở khung Techcombank. Cơ chế:
+   `LEGAL_NAME` trong `src/config/brand.js`, dùng ở Screen2/Screen5
+   (`Bên yêu cầu`) — đã điền `'Công ty [Tên giải pháp]'` (Vòng 8), không còn
+   placeholder `<...>`. Không dùng `DISPLAY_NAME` ("Đừng Đóng Vai Anh") ở các
+   vị trí pháp lý; `TopBar` (mang `DISPLAY_NAME`) không render bên trong
+   `SurfaceFrame` variant `bank`/`bankOps` ở bất kỳ màn nào (rà `src/screens/`).
+
+7. **Màu hành động theo khung**: trong khung `bank`/`bankOps`, nút hành động
+   chính và mọi chi tiết khác đọc token `navy` (`Stepper`, `ActProgress`,
+   `ConfirmDialog`, các nút viết tay trong màn) KHÔNG được hiện màu thương
+   hiệu Nền tảng, vì đó là trang/cổng của Techcombank. Cơ chế (Vòng 8):
+   `--color-navy` là biến CSS (`src/index.css`), `SurfaceFrame` gắn
+   `data-surface-frame` trên khung ngoài cùng và selector
+   `[data-surface-frame='bank'], [data-surface-frame='bankOps']` ghi đè biến
+   này thành `#0F172A` (slate-900). Sửa màu ở đây, không sửa từng màn.

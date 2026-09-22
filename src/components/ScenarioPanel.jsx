@@ -18,7 +18,7 @@ export default function ScenarioPanel({ onReset }) {
   return (
     <>
       {activeLabel && (
-        <div className="fixed top-20 right-6 z-[70] rounded-full border border-orange-600 bg-orange-950/90 px-4 py-1.5 text-sm font-semibold text-orange-200 shadow-lg">
+        <div className="fixed top-20 right-6 z-[70] rounded-full border border-slate-600 bg-slate-900/90 px-4 py-1.5 text-label font-semibold text-slate-100 shadow-lg">
           {activeLabel}
         </div>
       )}
@@ -26,7 +26,7 @@ export default function ScenarioPanel({ onReset }) {
       <button
         onClick={togglePanel}
         aria-label="Bảng điều khiển kịch bản"
-        className="fixed bottom-6 right-6 z-[80] flex h-12 w-12 items-center justify-center rounded-full border border-slate-700 bg-slate-900 text-xl text-slate-300 shadow-lg transition hover:bg-slate-800"
+        className="fixed bottom-6 right-6 z-[80] flex h-12 w-12 items-center justify-center rounded-full border border-slate-700 bg-slate-900 text-emphasis text-slate-300 shadow-lg transition hover:bg-slate-800"
       >
         ⚙
       </button>
@@ -34,8 +34,8 @@ export default function ScenarioPanel({ onReset }) {
       {panelOpen && (
         <div className="fixed bottom-24 right-6 z-[80] w-80 rounded-xl border border-slate-700 bg-slate-900 p-5 shadow-xl">
           <div className="mb-4 flex items-center justify-between">
-            <div className="text-lg font-semibold text-slate-100">Bảng điều khiển kịch bản</div>
-            <button onClick={closePanel} className="text-base text-slate-400 hover:text-slate-200">
+            <div className="text-emphasis font-semibold text-slate-100">Bảng điều khiển kịch bản</div>
+            <button onClick={closePanel} className="text-body text-slate-400 hover:text-slate-200">
               ✕
             </button>
           </div>
@@ -46,7 +46,7 @@ export default function ScenarioPanel({ onReset }) {
             <ScenarioToggle label="Giai đoạn 3" hint="Phím 3" active={phase3} onToggle={togglePhase3} />
           </div>
 
-          <div className="mt-4 rounded-lg border border-slate-700 bg-slate-800/50 px-4 py-3 text-base text-slate-400">
+          <div className="mt-4 rounded-lg border border-slate-700 bg-slate-800/50 px-4 py-3 text-body text-slate-400">
             <div className="font-semibold text-slate-300 mb-1">Phím tắt khác</div>
             <div className="flex justify-between"><span>Tiến dòng thời gian (Màn 6)</span><span className="font-mono text-slate-200">Space</span></div>
             <div className="flex justify-between mt-1"><span>Gửi lại lệnh khóa (Màn 5/8)</span><span className="font-mono text-slate-200">D</span></div>
@@ -55,7 +55,7 @@ export default function ScenarioPanel({ onReset }) {
 
           <button
             onClick={onReset}
-            className="mt-3 w-full rounded-lg border border-slate-600 py-2 text-base font-semibold text-slate-200 transition hover:bg-slate-800"
+            className="mt-3 w-full rounded-lg border border-slate-600 py-2 text-body font-semibold text-slate-200 transition hover:bg-slate-800"
           >
             Đặt lại (phím R)
           </button>
@@ -69,11 +69,11 @@ function ScenarioToggle({ label, hint, active, onToggle, locked = false }) {
   return (
     <div className="flex items-center justify-between rounded-lg border border-slate-800 bg-slate-950/40 px-3 py-2.5">
       <div>
-        <div className={`text-base font-medium ${locked ? 'text-slate-500' : 'text-slate-200'}`}>{label}</div>
-        <div className="text-sm text-slate-500">{hint}</div>
+        <div className={`text-body font-medium ${locked ? 'text-slate-500' : 'text-slate-200'}`}>{label}</div>
+        <div className="text-label text-slate-500">{hint}</div>
       </div>
       {locked ? (
-        <span className="text-lg text-slate-600" aria-label="Đã khóa">
+        <span className="text-emphasis text-slate-600" aria-label="Đã khóa">
           🔒
         </span>
       ) : (

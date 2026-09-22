@@ -14,6 +14,18 @@
   body {
     font-family: 'Be Vietnam Pro', system-ui, sans-serif;
   }
+
+  :root {
+    --color-navy: #0b2545;
+  }
+
+  /* Vòng 8 mục 4: trang/cổng Techcombank không mang màu thương hiệu Nền tảng
+     (navy) trên nút hành động chính — đổi tập trung ở đây thay vì sửa từng màn.
+     SurfaceFrame gắn data-surface-frame trên khung ngoài cùng của mỗi biến thể. */
+  [data-surface-frame='bank'],
+  [data-surface-frame='bankOps'] {
+    --color-navy: #0f172a; /* slate-900 — đã dùng làm nút chính ở BankConsent/TechcombankPageFrame */
+  }
 }
 
 /* docs/thiet-ke.md mục 2: chuyển động ≤ 200ms, tôn trọng prefers-reduced-motion. */
