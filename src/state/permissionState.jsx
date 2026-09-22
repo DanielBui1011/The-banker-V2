@@ -40,17 +40,22 @@ function displayActor(actor) {
 
 const PermissionContext = createContext(null)
 
-export function PermissionProvider({ children, hasPassedScreen5, hasPassedScreen6 }) {
+export function PermissionProvider({ children, hasPassedScreen6 }) {
   const [a1Status, setA1Status] = useState('not-granted') // not-granted | active | revoked
   const [a2Revoked, setA2Revoked] = useState(false)
+  const [a2a4Granted, setA2a4Granted] = useState(false) // cấp cùng lúc, ở Màn 5 bước 5d
   const [extraLogLines, setExtraLogLines] = useState([])
   const [peekReturnScreen, setPeekReturnScreen] = useState(null)
   const [reauthRequested, setReauthRequested] = useState(false)
 
   const a1Granted = a1Status !== 'not-granted'
-  const a2a4Granted = a1Granted && hasPassedScreen5
 
   const grantA1 = useCallback(() => setA1Status('active'), [])
+
+  // Gọi từ Màn 5 bước 5d, ngay khi Techcombank "phê duyệt và giải ngân" —
+  // không chờ người trình bày bấm "Tiếp" rời khỏi màn, để bảng "Quyền của tôi"
+  // xem nhanh (peek) từ chính Màn 5 cũng phản ánh đúng trạng thái mới.
+  const grantA2A4 = useCallback(() => setA2a4Granted(true), [])
 
   const revokeA1 = useCallback(() => {
     setA1Status('revoked')
@@ -86,6 +91,7 @@ export function PermissionProvider({ children, hasPassedScreen5, hasPassedScreen
   const reset = useCallback(() => {
     setA1Status('not-granted')
     setA2Revoked(false)
+    setA2a4Granted(false)
     setExtraLogLines([])
     setReauthRequested(false)
   }, [])
@@ -122,13 +128,13 @@ export function PermissionProvider({ children, hasPassedScreen5, hasPassedScreen
     const visibleBase = ACCESS_LOG.filter((entry) => {
       const day = dateOnly(entry.timestamp)
       if (day < A2_A4_GRANTED_DATE) return true
-      if (day === A2_A4_GRANTED_DATE) return hasPassedScreen5
+      if (day === A2_A4_GRANTED_DATE) return a2a4Granted
       return hasPassedScreen6
     })
     return [...visibleBase, ...extraLogLines]
       .map((entry) => ({ ...entry, actor: displayActor(entry.actor) }))
       .sort((a, b) => (a.timestamp < b.timestamp ? 1 : a.timestamp > b.timestamp ? -1 : 0))
-  }, [a1Granted, hasPassedScreen5, hasPassedScreen6, extraLogLines])
+  }, [a1Granted, a2a4Granted, hasPassedScreen6, extraLogLines])
 
   const value = useMemo(
     () => ({
@@ -138,6 +144,8 @@ export function PermissionProvider({ children, hasPassedScreen5, hasPassedScreen
       revokeA1,
       revokeA2,
       regrantA2,
+      a2a4Granted,
+      grantA2A4,
       reauthRequested,
       requestReauth,
       consumeReauthRequest,
@@ -154,6 +162,8 @@ export function PermissionProvider({ children, hasPassedScreen5, hasPassedScreen
       revokeA1,
       revokeA2,
       regrantA2,
+      a2a4Granted,
+      grantA2A4,
       reauthRequested,
       requestReauth,
       consumeReauthRequest,
