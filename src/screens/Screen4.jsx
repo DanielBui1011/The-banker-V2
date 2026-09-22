@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import ScreenShell from '../components/ScreenShell.jsx'
 import StatusBadge from '../components/StatusBadge.jsx'
-import { RECEIVABLE_UNITS, VERIFICATION_METRICS, MIN_LOTS_FOR_SCORE } from '../data/mockData.js'
-import { computeVerificationScore, isScoreAvailable } from '../logic/verification.js'
+import { RECEIVABLE_UNITS, VERIFICATION_METRICS, MIN_LOTS_FOR_SCORE, LEAK_BATCH_RATE } from '../data/mockData.js'
+import { computeVerificationScore, computeLeakAdjustedScore, isScoreAvailable } from '../logic/verification.js'
 import { usePermissions } from '../state/permissionState.jsx'
+import { useSettlement } from '../state/settlementState.jsx'
 import { formatNumberVN, formatPercentVN } from '../utils/format.js'
 
 // 'verified-then-locked' bắt đầu là "Đã xác thực" (gray); sau khi qua Màn 5 bước 5d
@@ -26,12 +27,26 @@ const METRIC_ROWS = [
   { key: 'p90DelayDays', label: 'Độ trễ P90', format: (v) => `${v} ngày` },
 ]
 
-function statusLabelFor(unit, advanceGranted) {
+// Sau khi Techcombank giải ngân, RU-03/RU-04 không còn dùng status tĩnh của mockData —
+// Màn 6 (settlementState) quyết định: đã khóa / đã tất toán / đứt gãy (kịch bản rò rỉ).
+const SETTLEMENT_TONE = { locked: 'tier2', settled: 'tier1', broken: 'broken' }
+const SETTLEMENT_LABEL = { locked: 'Đã khóa', settled: 'Đã tất toán', broken: 'Đứt gãy' }
+
+function settlementStatusFor(unit, advanceGranted, settlement) {
+  if (!advanceGranted) return null
+  if (unit.code === 'RU-03') return settlement.ru03Status
+  if (unit.code === 'RU-04') return settlement.ru04Status
+  return null
+}
+
+function statusLabelFor(unit, advanceGranted, settlementStatus) {
+  if (settlementStatus) return SETTLEMENT_LABEL[settlementStatus]
   const entry = STATUS_LABEL[unit.status]
   return typeof entry === 'function' ? entry(unit, advanceGranted) : entry
 }
 
-function statusToneFor(unit, advanceGranted) {
+function statusToneFor(unit, advanceGranted, settlementStatus) {
+  if (settlementStatus) return SETTLEMENT_TONE[settlementStatus]
   if (unit.status === 'verified-then-locked' && advanceGranted) return unit.lockedColor
   return unit.statusColor
 }
@@ -39,6 +54,7 @@ function statusToneFor(unit, advanceGranted) {
 export default function Screen4({ onNext }) {
   const [openChannel, setOpenChannel] = useState(null)
   const { a2a4Granted } = usePermissions()
+  const settlement = useSettlement()
 
   const verifiedUnits = RECEIVABLE_UNITS.filter((u) => u.status === 'verified-then-locked')
   const pendingTotal = verifiedUnits.reduce((sum, u) => sum + u.projectedNetValue, 0)
@@ -53,24 +69,32 @@ export default function Screen4({ onNext }) {
 
         {/* 6 thẻ đơn vị khoản phải thu — docs/du-lieu.md mục 6 */}
         <div className="grid grid-cols-3 gap-4">
-          {RECEIVABLE_UNITS.map((unit) => (
-            <div key={unit.code} className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
-              <div className="flex items-center justify-between">
-                <div className="text-lg font-semibold text-white">{unit.code}</div>
-                <StatusBadge tone={statusToneFor(unit, a2a4Granted)}>
-                  {statusLabelFor(unit, a2a4Granted)}
-                </StatusBadge>
-              </div>
-              <div className="mt-1 text-base text-slate-400">{unit.channel}</div>
-              <div className="mt-2 text-2xl font-bold text-slate-100">{formatNumberVN(unit.projectedNetValue)} triệu</div>
-              <div className="mt-1 text-base text-slate-500">Cửa sổ thanh toán: {unit.settlementWindow}</div>
-              {unit.status === 'settled' && unit.actualReceived != null && (
-                <div className="mt-1 text-base text-teal-400">
-                  Thực nhận: {formatNumberVN(unit.actualReceived)} triệu
+          {RECEIVABLE_UNITS.map((unit) => {
+            const settlementStatus = settlementStatusFor(unit, a2a4Granted, settlement)
+            const isRU0304 = unit.code === 'RU-03' || unit.code === 'RU-04'
+            const actualReceived = isRU0304
+              ? settlement.getActualReceived(unit.code)
+              : unit.status === 'settled'
+                ? unit.actualReceived
+                : null
+
+            return (
+              <div key={unit.code} className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+                <div className="flex items-center justify-between">
+                  <div className="text-lg font-semibold text-white">{unit.code}</div>
+                  <StatusBadge tone={statusToneFor(unit, a2a4Granted, settlementStatus)}>
+                    {statusLabelFor(unit, a2a4Granted, settlementStatus)}
+                  </StatusBadge>
                 </div>
-              )}
-            </div>
-          ))}
+                <div className="mt-1 text-base text-slate-400">{unit.channel}</div>
+                <div className="mt-2 text-2xl font-bold text-slate-100">{formatNumberVN(unit.projectedNetValue)} triệu</div>
+                <div className="mt-1 text-base text-slate-500">Cửa sổ thanh toán: {unit.settlementWindow}</div>
+                {actualReceived != null && (
+                  <div className="mt-1 text-base text-teal-400">Thực nhận: {formatNumberVN(actualReceived)} triệu</div>
+                )}
+              </div>
+            )
+          })}
         </div>
 
         {/* Dòng tổng — tính từ các đơn vị Đã xác thực, không viết cứng */}
@@ -90,7 +114,13 @@ export default function Screen4({ onNext }) {
           <div className="grid grid-cols-3 gap-4">
             {VERIFICATION_CHANNELS.map((channel) => {
               const metrics = VERIFICATION_METRICS[channel]
-              const score = computeVerificationScore(metrics)
+              const baseScore = computeVerificationScore(metrics)
+              // Sau khi RU-03 (Shopee) chuyển Đứt gãy trong Màn 6/9, điểm xác thực Shopee
+              // chiết khấu theo tỷ lệ rò rỉ 1/8 lô (docs/du-lieu.md mục 4.3, T10).
+              const score =
+                channel === 'Shopee' && settlement.ru03Status === 'broken'
+                  ? computeLeakAdjustedScore(baseScore, LEAK_BATCH_RATE)
+                  : baseScore
               const available = isScoreAvailable(score)
               return (
                 <button
@@ -130,8 +160,16 @@ export default function Screen4({ onNext }) {
       {openChannel && (
         <ScoreBreakdownModal
           channel={openChannel}
-          metrics={VERIFICATION_METRICS[openChannel]}
-          score={computeVerificationScore(VERIFICATION_METRICS[openChannel])}
+          metrics={
+            openChannel === 'Shopee' && settlement.ru03Status === 'broken'
+              ? { ...VERIFICATION_METRICS[openChannel], leakRate: LEAK_BATCH_RATE }
+              : VERIFICATION_METRICS[openChannel]
+          }
+          score={
+            openChannel === 'Shopee' && settlement.ru03Status === 'broken'
+              ? computeLeakAdjustedScore(computeVerificationScore(VERIFICATION_METRICS[openChannel]), LEAK_BATCH_RATE)
+              : computeVerificationScore(VERIFICATION_METRICS[openChannel])
+          }
           onClose={() => setOpenChannel(null)}
         />
       )}

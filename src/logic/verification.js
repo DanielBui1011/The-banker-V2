@@ -31,3 +31,12 @@ export function computeVerificationScore(metrics) {
 export function isScoreAvailable(score) {
   return typeof score === 'number'
 }
+
+// Chiết khấu điểm khi có rò rỉ (Màn 9, docs/du-lieu.md mục 4.3 T10): áp hệ số
+// (1 − tỷ lệ rò rỉ × 3) lên điểm đã có, làm tròn thường — khác computeVerificationScore
+// (làm tròn xuống từ 5 chỉ số gốc) vì đây là chiết khấu áp thêm lên điểm đã công bố,
+// không phải tính lại toàn bộ công thức từ đầu.
+export function computeLeakAdjustedScore(baseScore, leakRate) {
+  if (!isScoreAvailable(baseScore)) return baseScore
+  return Math.round(baseScore * (1 - leakRate * 3))
+}

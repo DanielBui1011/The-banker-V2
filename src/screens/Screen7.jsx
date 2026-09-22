@@ -5,6 +5,7 @@ import { usePermissions } from '../state/permissionState.jsx'
 const STATUS_STYLE = {
   active: 'text-teal-400',
   'in-effect': 'text-teal-400',
+  terminated: 'text-teal-400',
   revoked: 'text-slate-500',
   'not-granted': 'text-slate-500',
 }
