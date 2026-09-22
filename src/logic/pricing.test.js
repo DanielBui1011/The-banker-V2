@@ -4,8 +4,10 @@ import {
   computeAvailableValue,
   computeAdvanceInterest,
   computeEscrowStuck,
+  computeAvailableValueStaircase,
+  computeQuoteComparison,
 } from './pricing.js'
-import { RECEIVABLE_UNITS, MEGA_SALE_UNITS, PRICING_PARAMS, ESCROW_STUCK } from '../data/mockData.js'
+import { RECEIVABLE_UNITS, MEGA_SALE_UNITS, PRICING_PARAMS, ESCROW_STUCK, LENDER_QUOTES } from '../data/mockData.js'
 
 function unitByCode(code) {
   const u = RECEIVABLE_UNITS.find((r) => r.code === code)
@@ -75,6 +77,41 @@ describe('computeAdvanceInterest', () => {
   // T9 — Tiền lãi khoản 85 triệu, 12%/năm, tất toán sau 5 ngày ≈ 0,14
   it('T9: 85 × 12%/năm × 5 ngày ≈ 0,14', () => {
     expect(computeAdvanceInterest(85, 0.12, 5)).toBeCloseTo(0.14, 2)
+  })
+})
+
+describe('computeAvailableValueStaircase', () => {
+  // Màn 5 bước 5b: kỳ thường phải ra 85 sau khi cộng dồn các bậc.
+  it('kỳ thường: kết quả 85,0, không bị chặn bởi trần', () => {
+    const units = [unitByCode('RU-03'), unitByCode('RU-04')]
+    const out = computeAvailableValueStaircase({ units, params: PRICING_PARAMS.normal })
+    expect(out.result).toBeCloseTo(85.0, 1)
+    expect(out.cappedByDebtCap).toBe(false)
+    const sumOfSteps = out.steps.reduce((s, step) => s + step.value, 0)
+    expect(sumOfSteps).toBeCloseTo(out.formulaValueTotal, 1)
+  })
+
+  // Mega Sale (phím M): 219 trước khi áp trần, bị chặn còn 150 (trần dư nợ).
+  it('Mega Sale: 219,0 trước trần, 150,0 sau khi áp trần', () => {
+    const units = MEGA_SALE_UNITS.map((u) => ({
+      code: u.code,
+      projectedNetValue: u.projectedNetValue,
+      verificationScore: u.verificationScore,
+    }))
+    const out = computeAvailableValueStaircase({ units, params: PRICING_PARAMS.megaSale })
+    expect(out.formulaValueTotal).toBeCloseTo(219.0, 1)
+    expect(out.cappedByDebtCap).toBe(true)
+    expect(out.result).toBeCloseTo(150.0, 1)
+    expect(out.debtCap).toBeCloseTo(150.0, 1)
+  })
+})
+
+describe('computeQuoteComparison', () => {
+  it('so sánh cùng khoản vay, cùng số ngày cho mọi chào giá', () => {
+    const out = computeQuoteComparison(LENDER_QUOTES, 85, 5)
+    const techcombank = out.find((q) => q.lender === 'Techcombank')
+    expect(techcombank.estimatedCost).toBeCloseTo(0.14, 2)
+    out.forEach((q) => expect(q.estimatedCost).toBeCloseTo(computeAdvanceInterest(85, q.annualRate, 5), 6))
   })
 })
 
