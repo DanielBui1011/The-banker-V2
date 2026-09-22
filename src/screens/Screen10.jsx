@@ -6,6 +6,7 @@ import Card from '../components/ui/Card.jsx'
 import Money from '../components/ui/Money.jsx'
 import LayerTag from '../components/ui/LayerTag.jsx'
 import DataTable from '../components/ui/DataTable.jsx'
+import { EstimateDisclaimer } from '../components/ui/Callout.jsx'
 import { actForScreen } from '../config/flow.js'
 import { usePermissions } from '../state/permissionState.jsx'
 import { useScenario } from '../state/scenarioState.jsx'
@@ -145,6 +146,8 @@ function QuotesStep({ quotes, onSelect }) {
   return (
     <div className="space-y-6">
       <p className="text-body text-slate-600">{QUOTE_DISCLAIMER}</p>
+
+      <EstimateDisclaimer className="mb-4" />
 
       <DataTable
         columns={[

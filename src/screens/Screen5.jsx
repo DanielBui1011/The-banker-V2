@@ -1,15 +1,17 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import TopBar from '../components/ui/TopBar.jsx'
 import ActProgress from '../components/ui/ActProgress.jsx'
 import SurfaceFrame from '../components/ui/SurfaceFrame.jsx'
 import Stepper from '../components/ui/Stepper.jsx'
 import Card from '../components/ui/Card.jsx'
 import Money from '../components/ui/Money.jsx'
-import { EstimateDisclaimer } from '../components/ui/Callout.jsx'
+import Callout, { EstimateDisclaimer } from '../components/ui/Callout.jsx'
 import LockCertificate from '../components/LockCertificate.jsx'
 import { actForScreen } from '../config/flow.js'
 import { usePermissions } from '../state/permissionState.jsx'
 import { useScenario } from '../state/scenarioState.jsx'
+import { useSettlement } from '../state/settlementState.jsx'
+import { isTypingTarget } from '../utils/keyboard.js'
 import {
   FOOTER_NOTE,
   A2_CONSENT,
@@ -35,11 +37,13 @@ const STEPS = ['Cấp A2', 'Xem ước tính', 'Ký A4 tại Techcombank', 'Gử
 export default function Screen5({ onNext, onPrev }) {
   const { grantA2A4, openPeek } = usePermissions()
   const { megaSale } = useScenario()
+  const settlement = useSettlement()
 
   const [step, setStep] = useState('a') // a | b | c | d
   const [a2Confirmed, setA2Confirmed] = useState(false)
   const [a4Confirmed, setA4Confirmed] = useState(false)
   const [submitPhase, setSubmitPhase] = useState('idle') // idle | reviewing | approved
+  const [duplicateCallout, setDuplicateCallout] = useState(null)
 
   const units = megaSale ? MEGA_SALE_UNITS : NORMAL_UNITS
   const params = megaSale ? PRICING_PARAMS.megaSale : PRICING_PARAMS.normal
@@ -62,10 +66,28 @@ export default function Screen5({ onNext, onPrev }) {
     if (submitPhase !== 'reviewing') return
     const timer = setTimeout(() => {
       grantA2A4()
+      settlement.performLocks()
       setSubmitPhase('approved')
     }, 1200)
     return () => clearTimeout(timer)
-  }, [submitPhase, grantA2A4])
+  }, [submitPhase, grantA2A4, settlement])
+
+  // Phím D (Màn 5 sau khi đã khóa): mô phỏng Techcombank gửi lại lệnh khóa
+  useEffect(() => {
+    function handleKeyDown(e) {
+      if (isTypingTarget(e.target)) return
+      if (e.key.toLowerCase() !== 'd') return
+      if (step !== 'd' || submitPhase !== 'approved') return
+      const result = settlement.retryLock('RU-03')
+      if (result?.status === 'DA_GHI_NHAN') {
+        const lockedAt = LOCK_CERTIFICATE.lockedAt.slice(11, 16) // hh:mm
+        setDuplicateCallout({ lockedAt, priority: 1, total: settlement.totalLocked })
+        setTimeout(() => setDuplicateCallout(null), 6000)
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [step, submitPhase, settlement])
 
   function approveA2() {
     setStep('b')
@@ -152,6 +174,7 @@ export default function Screen5({ onNext, onPrev }) {
           onSubmit={() => setSubmitPhase('reviewing')}
           onNext={onNext}
           lockAmounts={lockAmounts}
+          duplicateCallout={duplicateCallout}
         />
       )}
     </Screen5Chrome>
@@ -367,7 +390,7 @@ function CostRow({ label, value }) {
 }
 
 // Bước 5d — Gửi đề nghị: hiệu ứng ngắn "đang thẩm định" rồi chứng thư khóa.
-function SubmitStep({ staircase, submitPhase, onSubmit, onNext, lockAmounts }) {
+function SubmitStep({ staircase, submitPhase, onSubmit, onNext, lockAmounts, duplicateCallout }) {
   return (
     <div className="space-y-6">
       <Card padding="p-8">
@@ -401,6 +424,12 @@ function SubmitStep({ staircase, submitPhase, onSubmit, onNext, lockAmounts }) {
           </Card>
 
           <LockCertificate amounts={lockAmounts} />
+
+          {duplicateCallout && (
+            <Callout variant="info">
+              Lệnh khóa này đã được ghi nhận lúc {duplicateCallout.lockedAt} — không tạo khóa mới. Thứ tự ưu tiên #{duplicateCallout.priority} giữ nguyên. Tổng đã khóa: {formatNumberVN(duplicateCallout.total)} triệu.
+            </Callout>
+          )}
 
           <button
             onClick={onNext}

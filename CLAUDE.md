@@ -24,10 +24,13 @@ Không thêm thư viện khác nếu chưa hỏi.
 - src/data/mockData.js — toàn bộ số liệu, chuyển từ docs/du-lieu.md
 - src/logic/pricing.js — công thức giá trị khả dụng
 - src/logic/verification.js — công thức điểm xác thực
+- src/logic/registry.js — hàm thuần lockUnit() event-sourced; lũy đẳng theo requestId
 - src/state/ — trạng thái hành trình và trạng thái kịch bản
+- src/state/settlementState.jsx — tất toán + sổ đăng ký khóa (performLocks, retryLock)
 - src/screens/ — mỗi màn một file
 - src/components/ — thành phần dùng chung
 - src/components/ScenarioPanel.jsx — bảng điều khiển kịch bản
+- tests/quy-tac.test.js — kiểm tra vi phạm quy tắc nội dung (quét src/screens và src/components)
 
 ## Quy tắc bắt buộc
 1. Không viết cứng số liệu trong component. Mọi con số lấy từ mockData.js
@@ -53,8 +56,9 @@ Không thêm thư viện khác nếu chưa hỏi.
 
 ## Lệnh
 - npm run dev — chạy thử
-- npm test — kiểm thử công thức
-- npm run build — đóng gói
+- npm test — kiểm thử công thức + quy tắc (src/logic/*.test.js + tests/quy-tac.test.js)
+- npm run build — đóng gói (Vercel)
+- npm run build:offline — xuất dist-offline/index.html (font nhúng inline, mở bằng file://)
 
 ## Cách làm việc
 - Chỉ sửa trong phạm vi được yêu cầu, không tự ý sửa màn khác.

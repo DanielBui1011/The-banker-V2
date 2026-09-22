@@ -133,6 +133,10 @@ Khối nội dung (du-lieu.md, mục 11):
 - Khối "Tổng phơi nhiễm hợp nhất".
 - Ví dụ minh họa: nếu đã có bên khác khóa 100 triệu thì chỉ còn 50 triệu khả dụng.
 
+Phím D (khi đã qua Màn 5 — locks đã khởi tạo): mô phỏng Techcombank gửi lại lệnh khóa
+do mất kết nối. Callout info: "Lệnh khóa này đã được ghi nhận lúc hh:mm — không tạo
+khóa mới. Thứ tự ưu tiên #1 giữ nguyên. Tổng đã khóa: 85 triệu."
+
 ## Màn 9 — Kịch bản rò rỉ (NÊN CÓ, là biến thể của Màn 6)
 Khi phím L bật: dòng thời gian màn 6 đổi thành:
 19/09 Shopee không thanh toán về tài khoản Techcombank → 21/09 hết cửa sổ thanh toán →
