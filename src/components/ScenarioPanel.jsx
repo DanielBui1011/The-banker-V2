@@ -46,9 +46,16 @@ export default function ScenarioPanel({ onReset }) {
             <ScenarioToggle label="Giai đoạn 3" hint="Phím 3" active={phase3} onToggle={togglePhase3} />
           </div>
 
+          <div className="mt-4 rounded-lg border border-slate-700 bg-slate-800/50 px-4 py-3 text-base text-slate-400">
+            <div className="font-semibold text-slate-300 mb-1">Phím tắt khác</div>
+            <div className="flex justify-between"><span>Tiến dòng thời gian (Màn 6)</span><span className="font-mono text-slate-200">Space</span></div>
+            <div className="flex justify-between mt-1"><span>Gửi lại lệnh khóa (Màn 5/8)</span><span className="font-mono text-slate-200">D</span></div>
+            <div className="flex justify-between mt-1"><span>Xem bảng phím đầy đủ</span><span className="font-mono text-slate-200">?</span></div>
+          </div>
+
           <button
             onClick={onReset}
-            className="mt-5 w-full rounded-lg border border-slate-600 py-2 text-base font-semibold text-slate-200 transition hover:bg-slate-800"
+            className="mt-3 w-full rounded-lg border border-slate-600 py-2 text-base font-semibold text-slate-200 transition hover:bg-slate-800"
           >
             Đặt lại (phím R)
           </button>

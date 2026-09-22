@@ -5,8 +5,10 @@ import {
   PRICING_PARAMS,
   SETTLEMENT_TIMELINE_NORMAL,
   SETTLEMENT_TIMELINE_LEAK,
+  LOCK_CERTIFICATE,
 } from '../data/mockData.js'
 import { computeAvailableValue } from '../logic/pricing.js'
+import { lockUnit } from '../logic/registry.js'
 
 // Trạng thái tất toán dùng chung — Màn 6 (dòng thời gian, dư nợ, nút "Trả nợ trên
 // Techcombank") và Màn 9 (biến thể rò rỉ) đọc/ghi cùng một nguồn; Màn 4 và Màn 7 đọc
@@ -21,9 +23,16 @@ const INITIAL_DEBT = LOCK_PRICING.result
 
 const SettlementContext = createContext(null)
 
+// requestId cho mỗi đơn vị = mã chứng thư + mã đơn vị (duy nhất, ổn định)
+const REQ_ID = {
+  'RU-03': `${LOCK_CERTIFICATE.certificateId}-RU03`,
+  'RU-04': `${LOCK_CERTIFICATE.certificateId}-RU04`,
+}
+
 export function SettlementProvider({ children }) {
   const { leak } = useScenario()
   const [stepIndex, setStepIndex] = useState(0)
+  const [lockRegistry, setLockRegistry] = useState([])
   const [repaid, setRepaid] = useState({}) // { 'RU-03': true, 'RU-04': true }
   const [repayModalUnit, setRepayModalUnit] = useState(null)
   const [leakExplainOpen, setLeakExplainOpen] = useState(false)
@@ -37,7 +46,47 @@ export function SettlementProvider({ children }) {
     setLeakExplainOpen(false)
     setLeakRemediated(false)
     setEverBroken(false)
+    setLockRegistry([])
   }, [])
+
+  // Khởi tạo registry khi Techcombank phê duyệt và giải ngân (bước 5d Màn 5).
+  // Ghi hai sự kiện khóa: RU-03 (46,75) và RU-04 (38,25).
+  const performLocks = useCallback(() => {
+    let reg = []
+    for (const code of ['RU-03', 'RU-04']) {
+      const avail = LOCK_PRICING.unitBreakdown.find((u) => u.code === code).formulaValue
+      const r = lockUnit(reg, {
+        lenderId: LOCK_CERTIFICATE.secured,
+        unitId: code,
+        requestId: REQ_ID[code],
+        amount: avail,
+        availableValue: avail,
+      })
+      reg = r.registry
+    }
+    setLockRegistry(reg)
+  }, [])
+
+  // Mô phỏng Techcombank gửi lại lệnh khóa (phím D) — trả DA_GHI_NHAN cho đơn vị đầu tiên.
+  const retryLock = useCallback(
+    (unitId = 'RU-03') => {
+      if (lockRegistry.length === 0) return null
+      const event = lockRegistry.find((e) => e.unitId === unitId)
+      if (!event) return null
+      const { result } = lockUnit(lockRegistry, {
+        lenderId: event.lenderId,
+        unitId: event.unitId,
+        requestId: event.requestId,
+        amount: event.amount,
+        availableValue: event.amount,
+      })
+      return result
+    },
+    [lockRegistry]
+  )
+
+  const locksInitialized = lockRegistry.length > 0
+  const totalLocked = lockRegistry.reduce((sum, e) => sum + e.amount, 0)
 
   // Đổi kịch bản (bật/tắt rò rỉ) thì tiến trình dòng thời gian đặt lại từ đầu — hai
   // kịch bản có số mốc khác nhau, giữ nguyên stepIndex cũ sẽ trỏ sai mốc.
@@ -137,6 +186,11 @@ export function SettlementProvider({ children }) {
       debtFullyRepaid,
       visibleLogDates,
       getActualReceived,
+      lockRegistry,
+      locksInitialized,
+      totalLocked,
+      performLocks,
+      retryLock,
       reset: resetProgress,
     }),
     [
@@ -163,6 +217,11 @@ export function SettlementProvider({ children }) {
       debtFullyRepaid,
       visibleLogDates,
       getActualReceived,
+      lockRegistry,
+      locksInitialized,
+      totalLocked,
+      performLocks,
+      retryLock,
       resetProgress,
     ]
   )

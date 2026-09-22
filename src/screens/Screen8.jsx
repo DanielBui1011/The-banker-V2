@@ -8,6 +8,8 @@ import ToggleSwitch from '../components/ui/ToggleSwitch.jsx'
 import Callout from '../components/ui/Callout.jsx'
 import { usePermissions } from '../state/permissionState.jsx'
 import { useScenario } from '../state/scenarioState.jsx'
+import { useSettlement } from '../state/settlementState.jsx'
+import { isTypingTarget } from '../utils/keyboard.js'
 import {
   FOOTER_NOTE,
   GRANTED_PERMISSIONS,
@@ -16,6 +18,7 @@ import {
   PRICING_PARAMS,
   VERIFICATION_METRICS,
   LEAK_BATCH_RATE,
+  LOCK_CERTIFICATE,
 } from '../data/mockData.js'
 import { computeAvailableValue } from '../logic/pricing.js'
 import { computeVerificationScore, computeLeakAdjustedScore } from '../logic/verification.js'
@@ -36,14 +39,33 @@ const TIMEPOINTS = [
 export default function Screen8({ onNext }) {
   const { permissions } = usePermissions()
   const { leak, phase3, resetSignal } = useScenario()
+  const settlement = useSettlement()
   const [timepoint, setTimepoint] = useState('15-09')
   const [crossExposureOn, setCrossExposureOn] = useState(false)
+  const [duplicateCallout, setDuplicateCallout] = useState(null)
 
   // Phím R đặt lại cả bộ chọn thời điểm và công tắc minh họa, kể cả khi vẫn đang ở Màn 8.
   useEffect(() => {
     setTimepoint('15-09')
     setCrossExposureOn(false)
   }, [resetSignal])
+
+  // Phím D (Màn 8): mô phỏng Techcombank gửi lại lệnh khóa — chỉ hoạt động khi đã khóa
+  useEffect(() => {
+    function handleKeyDown(e) {
+      if (isTypingTarget(e.target)) return
+      if (e.key.toLowerCase() !== 'd') return
+      if (!settlement.locksInitialized) return
+      const result = settlement.retryLock('RU-03')
+      if (result?.status === 'DA_GHI_NHAN') {
+        const lockedAt = LOCK_CERTIFICATE.lockedAt.slice(11, 16)
+        setDuplicateCallout({ lockedAt, priority: 1, total: settlement.totalLocked })
+        setTimeout(() => setDuplicateCallout(null), 6000)
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [settlement])
 
   const a2Revoked = permissions.find((p) => p.code === 'A2')?.status === 'revoked'
   const afterSettlement = timepoint === '20-09'
@@ -88,6 +110,13 @@ export default function Screen8({ onNext }) {
         </div>
 
         <main className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-12 pb-24 pt-6">
+          {duplicateCallout && (
+            <div className="mb-6 max-w-5xl mx-auto">
+              <Callout variant="info">
+                Lệnh khóa này đã được ghi nhận lúc {duplicateCallout.lockedAt} — không tạo khóa mới. Thứ tự ưu tiên #{duplicateCallout.priority} giữ nguyên. Tổng đã khóa: {formatNumberVN(duplicateCallout.total)} triệu.
+              </Callout>
+            </div>
+          )}
           {a2Revoked ? (
             <Card className="mx-auto max-w-5xl">
               <div className="text-emphasis font-semibold text-slate-900">Không có dữ liệu để hiển thị</div>
