@@ -35,5 +35,5 @@ export default function App() {
   }, [goNext, goPrev])
 
   const CurrentScreen = SCREEN_COMPONENTS[currentScreen]
-  return <CurrentScreen />
+  return <CurrentScreen onNext={goNext} onPrev={goPrev} />
 }

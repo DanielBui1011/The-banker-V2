@@ -3,8 +3,9 @@ import {
   computeVerificationDiscount,
   computeAvailableValue,
   computeAdvanceInterest,
+  computeEscrowStuck,
 } from './pricing.js'
-import { RECEIVABLE_UNITS, MEGA_SALE_UNITS, PRICING_PARAMS } from '../data/mockData.js'
+import { RECEIVABLE_UNITS, MEGA_SALE_UNITS, PRICING_PARAMS, ESCROW_STUCK } from '../data/mockData.js'
 
 function unitByCode(code) {
   const u = RECEIVABLE_UNITS.find((r) => r.code === code)
@@ -74,5 +75,18 @@ describe('computeAdvanceInterest', () => {
   // T9 — Tiền lãi khoản 85 triệu, 12%/năm, tất toán sau 5 ngày ≈ 0,14
   it('T9: 85 × 12%/năm × 5 ngày ≈ 0,14', () => {
     expect(computeAdvanceInterest(85, 0.12, 5)).toBeCloseTo(0.14, 2)
+  })
+})
+
+describe('computeEscrowStuck', () => {
+  // Mục 3 — Tiền ký quỹ = doanh thu sàn / 30 × số ngày giữ tiền bình quân
+  it('kỳ thường: 300 / 30 × 10 = 100', () => {
+    const { marketplaceRevenue, averageHoldDays } = ESCROW_STUCK.normal
+    expect(computeEscrowStuck(marketplaceRevenue, averageHoldDays)).toBeCloseTo(100, 1)
+  })
+
+  it('Mega Sale: 900 / 30 × 10 = 300', () => {
+    const { marketplaceRevenue, averageHoldDays } = ESCROW_STUCK.megaSale
+    expect(computeEscrowStuck(marketplaceRevenue, averageHoldDays)).toBeCloseTo(300, 1)
   })
 })

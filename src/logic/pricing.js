@@ -65,3 +65,8 @@ export function computeAvailableValue({ units, params, lockedByOthers = 0 }) {
 export function computeAdvanceInterest(principal, annualRate, days) {
   return (principal * annualRate * days) / 365
 }
+
+// Mục 3 — Tiền đang kẹt ở sàn = doanh thu sàn / 30 × số ngày giữ tiền bình quân
+export function computeEscrowStuck(marketplaceRevenue, averageHoldDays) {
+  return (marketplaceRevenue / 30) * averageHoldDays
+}

@@ -3,7 +3,7 @@ import { actForScreen } from '../state/journeyState.js'
 
 const ACT_LABELS = ['Hồi 1 — Vấn đề', 'Hồi 2 — Cấp quyền', 'Hồi 3 — Nhận giá trị', 'Hồi 4 — Tất toán và hệ sinh thái']
 
-export default function ScreenShell({ screenNumber, title, children }) {
+export default function ScreenShell({ screenNumber, title, children, maxWidth = 'max-w-3xl' }) {
   const currentAct = actForScreen(screenNumber)
 
   return (
@@ -29,7 +29,7 @@ export default function ScreenShell({ screenNumber, title, children }) {
       </header>
 
       <main className="flex-1 flex items-center justify-center px-8 py-10">
-        <div className="max-w-3xl w-full">
+        <div className={`${maxWidth} w-full`}>
           <h1 className="text-3xl font-bold mb-4">{title}</h1>
           {children}
         </div>
