@@ -27,12 +27,10 @@ const SCREEN_COMPONENTS = {
 }
 
 export default function App() {
-  const journey = useJourneyState()
-
   return (
     <ScenarioProvider>
       <SettlementProvider>
-        <AppWithPermissions journey={journey} />
+        <AppWithPermissions />
       </SettlementProvider>
     </ScenarioProvider>
   )
@@ -40,19 +38,20 @@ export default function App() {
 
 // Quyền A4 và nhật ký truy cập (Màn 7) phản ánh tiến trình tất toán (Màn 6) —
 // PermissionProvider cần đọc settlementState nên lồng bên trong SettlementProvider.
-function AppWithPermissions({ journey }) {
+function AppWithPermissions() {
   const settlement = useSettlement()
   return (
     <PermissionProvider debtFullyRepaid={settlement.debtFullyRepaid} visibleLogDates={settlement.visibleLogDates}>
-      <AppScreens journey={journey} />
+      <AppScreens />
     </PermissionProvider>
   )
 }
 
-function AppScreens({ journey }) {
-  const { currentScreen, goNext, goPrev, goToScreen } = journey
+function AppScreens() {
   const { isPeeking, closePeek, reset } = usePermissions()
-  const { toggleMegaSale, toggleLeak, resetScenario, openPanel } = useScenario()
+  const { phase3, toggleMegaSale, toggleLeak, togglePhase3, resetScenario } = useScenario()
+  const journey = useJourneyState(phase3)
+  const { currentScreen, goNext, goPrev, goToScreen } = journey
   const settlement = useSettlement()
 
   function handleReset() {
@@ -77,8 +76,7 @@ function AppScreens({ journey }) {
         return
       }
       if (event.key === '3') {
-        // Giai đoạn 3 chưa mở — chỉ mở bảng điều khiển để thấy nhãn "sắp có".
-        openPanel()
+        togglePhase3()
         return
       }
       if (event.key === ' ' && currentScreen === 6) {
@@ -93,7 +91,7 @@ function AppScreens({ journey }) {
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [goNext, goPrev, isPeeking, currentScreen, settlement, toggleMegaSale, toggleLeak, openPanel])
+  }, [goNext, goPrev, isPeeking, currentScreen, settlement, toggleMegaSale, toggleLeak, togglePhase3])
 
   const CurrentScreen = SCREEN_COMPONENTS[currentScreen]
   return (
