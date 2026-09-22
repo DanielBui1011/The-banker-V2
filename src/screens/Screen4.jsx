@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import TopBar from '../components/ui/TopBar.jsx'
 import ActProgress from '../components/ui/ActProgress.jsx'
 import SurfaceFrame from '../components/ui/SurfaceFrame.jsx'
@@ -16,8 +16,10 @@ import {
   MIN_LOTS_FOR_SCORE,
   LEAK_BATCH_RATE,
   FOOTER_NOTE,
+  PRICING_PARAMS,
 } from '../data/mockData.js'
 import { computeVerificationScore, computeLeakAdjustedScore, isScoreAvailable } from '../logic/verification.js'
+import { computeAvailableValue } from '../logic/pricing.js'
 import { usePermissions } from '../state/permissionState.jsx'
 import { useSettlement } from '../state/settlementState.jsx'
 import { useScenario } from '../state/scenarioState.jsx'
@@ -34,6 +36,15 @@ const METRIC_ROWS = [
   { key: 'leakRate', label: 'Tỷ lệ rò rỉ', format: formatPercentVN },
   { key: 'p90DelayDays', label: 'Độ trễ P90', format: (v) => `${v} ngày` },
 ]
+
+// Nhãn gọn cho dòng "Điểm xác thực theo kênh" (yêu cầu Vòng 10) — chỉ đổi
+// cách hiển thị, không đổi khóa VERIFICATION_METRICS.
+const CHANNEL_SHORT_LABEL = { 'Hãng vận chuyển A': 'COD' }
+
+// Sắp thẻ đơn vị theo mức độ liên quan tới câu chuyện demo (yêu cầu Vòng 10):
+// RU-03/RU-04 (sẽ khóa ở Màn 5) nổi bật nhất, rồi các đơn vị đã tất toán,
+// rồi RU-05 (chưa đủ lịch sử), cuối cùng RU-06 (đơn hoàn, hiển thị gọn).
+const UNIT_SORT_PRIORITY = { 'RU-03': 0, 'RU-04': 0, 'RU-01': 1, 'RU-02': 1, 'RU-05': 2, 'RU-06': 3 }
 
 // Sau khi Techcombank giải ngân, RU-03/RU-04 không còn dùng status tĩnh của mockData —
 // settlementState quyết định: đã khóa / đã tất toán / đứt gãy (kịch bản rò rỉ).
@@ -67,6 +78,22 @@ export default function Screen4({ onNext }) {
   const verifiedUnits = RECEIVABLE_UNITS.filter((u) => u.status === 'verified-then-locked')
   const pendingTotal = verifiedUnits.reduce((sum, u) => sum + u.projectedNetValue, 0)
 
+  const sortedUnits = useMemo(
+    () => [...RECEIVABLE_UNITS].sort((a, b) => (UNIT_SORT_PRIORITY[a.code] ?? 9) - (UNIT_SORT_PRIORITY[b.code] ?? 9)),
+    []
+  )
+
+  // Thanh vòng đời dùng chung ở đầu màn (yêu cầu Vòng 10) — hiện bước xa nhất
+  // mà bất kỳ đơn vị nào đã đạt tới, tính lại mỗi render từ settlement (không
+  // cache) để phản ánh đúng khi quay lại màn này sau Màn 5/6.
+  const globalStep = useMemo(() => {
+    const steps = RECEIVABLE_UNITS.map((u) => {
+      const s = settlementStatusFor(u, a2a4Granted, settlement)
+      return lifecycleFor(u, a2a4Granted, s).step ?? 0
+    })
+    return Math.max(1, ...steps)
+  }, [a2a4Granted, settlement])
+
   return (
     <div className="flex h-full flex-col">
       <TopBar screenNumber={4} />
@@ -85,11 +112,21 @@ export default function Screen4({ onNext }) {
                   khoản phải thu.
                 </p>
 
+                <Card>
+                  <div className="mb-3 text-label font-medium text-slate-500">Vòng đời một đơn vị khoản phải thu</div>
+                  <div className="overflow-x-auto">
+                    <Stepper steps={LIFECYCLE_STEPS} currentStep={globalStep} />
+                  </div>
+                </Card>
+
                 <div className="grid grid-cols-3 gap-4">
-                  {RECEIVABLE_UNITS.map((unit) => {
+                  {sortedUnits.map((unit) => {
+                    if (unit.code === 'RU-06') return <ReversedUnitCard key={unit.code} unit={unit} />
+
                     const settlementStatus = settlementStatusFor(unit, a2a4Granted, settlement)
                     const lifecycle = lifecycleFor(unit, a2a4Granted, settlementStatus)
                     const isRU0304 = unit.code === 'RU-03' || unit.code === 'RU-04'
+                    const willLock = isRU0304 && lifecycle.badge === 'verified'
                     const actualReceived = isRU0304
                       ? settlement.getActualReceived(unit.code)
                       : unit.status === 'settled' || unit.status === 'reversed'
@@ -97,7 +134,7 @@ export default function Screen4({ onNext }) {
                         : null
 
                     return (
-                      <Card key={unit.code}>
+                      <Card key={unit.code} className={isRU0304 ? 'border-violet-300 ring-1 ring-violet-100' : ''}>
                         <div className="flex items-center justify-between">
                           <div className="text-emphasis font-semibold text-slate-900">{unit.code}</div>
                           <StatusBadge status={lifecycle.badge} />
@@ -110,13 +147,12 @@ export default function Screen4({ onNext }) {
                             Thực nhận: {formatNumberVN(actualReceived)} triệu
                           </div>
                         )}
-
-                        {lifecycle.step != null && (
-                          <div className="mt-4 overflow-x-auto">
-                            <Stepper steps={LIFECYCLE_STEPS} currentStep={lifecycle.step} />
+                        {willLock && <div className="mt-2 text-label font-medium text-violet-700">Sẽ khóa ở Màn 5</div>}
+                        {lifecycle.badge === 'insufficient-history' && unit.lots != null && (
+                          <div className="mt-2 text-label text-slate-500">
+                            Chưa đủ lịch sử ({unit.lots}/{MIN_LOTS_FOR_SCORE} lô)
                           </div>
                         )}
-
                         {lifecycle.broken && (
                           <Callout variant="danger" className="mt-3">
                             Đứt gãy — sàn chưa thanh toán đúng hạn cho khoản này.
@@ -128,11 +164,12 @@ export default function Screen4({ onNext }) {
                 </div>
 
                 {megaSale && (
-                  <div>
+                  <Card className="border-amber-200 bg-amber-50/40">
                     <div className="mb-3 flex items-center gap-2 text-section-title font-semibold text-slate-900">
                       Đơn vị Mega Sale
                     </div>
-                    <div className="grid grid-cols-3 gap-4">
+                    <MegaSaleCalculation />
+                    <div className="mt-4 grid grid-cols-3 gap-4">
                       {MEGA_SALE_UNITS.map((unit) => (
                         <Card key={unit.code}>
                           <div className="flex items-center justify-between">
@@ -147,7 +184,7 @@ export default function Screen4({ onNext }) {
                         </Card>
                       ))}
                     </div>
-                  </div>
+                  </Card>
                 )}
 
                 <Card className="border-teal-200 bg-teal-50">
@@ -160,10 +197,10 @@ export default function Screen4({ onNext }) {
                   </div>
                 </Card>
 
-                <div>
+                <Card>
                   <div className="mb-3 text-section-title font-semibold text-slate-900">Điểm xác thực theo kênh</div>
-                  <div className="grid grid-cols-3 gap-4">
-                    {VERIFICATION_CHANNELS.map((channel) => {
+                  <div className="flex flex-wrap items-center gap-x-2 gap-y-2 text-body">
+                    {VERIFICATION_CHANNELS.map((channel, i) => {
                       const metrics = VERIFICATION_METRICS[channel]
                       const baseScore = computeVerificationScore(metrics)
                       // Sau khi RU-03 (Shopee) chuyển Đứt gãy, điểm xác thực Shopee chiết khấu
@@ -173,33 +210,24 @@ export default function Screen4({ onNext }) {
                           ? computeLeakAdjustedScore(baseScore, LEAK_BATCH_RATE)
                           : baseScore
                       const available = isScoreAvailable(score)
+                      const label = CHANNEL_SHORT_LABEL[channel] ?? channel
                       return (
-                        <button key={channel} onClick={() => setOpenChannel(channel)} className="text-left">
-                          <Card className="transition hover:border-slate-300 hover:shadow">
-                            <div className="text-emphasis font-semibold text-slate-900">{channel}</div>
-                            {available ? (
-                              <>
-                                <div className="mt-2 text-hero font-bold text-teal-700">{score}</div>
-                                <div className="mt-1 text-label text-slate-500">
-                                  Cơ sở tính điểm: {metrics.settledLots} lô đã tất toán
-                                </div>
-                                <div className="mt-1 text-label text-slate-500">Bấm để xem phân rã →</div>
-                              </>
-                            ) : (
-                              <div className="mt-2 text-emphasis font-bold text-slate-500">
-                                {score} ({metrics.settledLots}/{MIN_LOTS_FOR_SCORE} lô)
-                              </div>
-                            )}
-                          </Card>
-                        </button>
+                        <span key={channel} className="flex items-center gap-2">
+                          {i > 0 && <span className="text-slate-300">·</span>}
+                          <button
+                            onClick={() => setOpenChannel(channel)}
+                            className="font-semibold text-slate-900 underline decoration-dotted underline-offset-4 transition hover:text-navy"
+                          >
+                            {label} {available ? score : 'chưa đủ lịch sử'}
+                          </button>
+                        </span>
                       )
                     })}
                   </div>
-                </div>
-
-                <p className="text-label text-slate-500">
-                  Điểm xác thực đo mức độ dự phóng khớp với tiền thật về tài khoản.
-                </p>
+                  <p className="mt-3 text-label text-slate-500">
+                    Điểm xác thực đo mức độ dự phóng khớp với tiền thật về tài khoản.
+                  </p>
+                </Card>
 
                 <button
                   onClick={onNext}
@@ -231,6 +259,48 @@ export default function Screen4({ onNext }) {
           />
         )}
       </Drawer>
+    </div>
+  )
+}
+
+// RU-06 (đơn hoàn) hiển thị gọn — không có Stepper/cửa sổ thanh toán, chỉ
+// mã, kênh, số tiền hoàn và badge (yêu cầu Vòng 10).
+function ReversedUnitCard({ unit }) {
+  return (
+    <Card className="flex items-center justify-between">
+      <div>
+        <div className="text-body font-semibold text-slate-700">
+          {unit.code} · {unit.channel}
+        </div>
+        <div className="text-label text-slate-500">Đơn hoàn</div>
+      </div>
+      <div className="flex items-center gap-3">
+        <Money value={unit.actualReceived} size="body" className="text-slate-500" />
+        <StatusBadge status="reversed" />
+      </div>
+    </Card>
+  )
+}
+
+// Phép tính Mega Sale hiển thị như một chuỗi: tỷ lệ ứng → giá trị theo công
+// thức → giá trị bị chặn bởi trần dư nợ (yêu cầu Vòng 10: "phần thay đổi phải
+// thấy ngay"). Tính từ src/logic/pricing.js, không viết cứng số liệu.
+function MegaSaleCalculation() {
+  const pricing = useMemo(
+    () => computeAvailableValue({ units: MEGA_SALE_UNITS, params: PRICING_PARAMS.megaSale, lockedByOthers: 0 }),
+    []
+  )
+  const rate = pricing.unitBreakdown[0]?.advanceRate ?? 0
+
+  return (
+    <div className="flex flex-wrap items-center gap-3 rounded-xl border border-amber-300 bg-white px-5 py-4 text-body">
+      <span className="font-semibold text-slate-900">{formatPercentVN(rate)}</span>
+      <span className="text-slate-400">→</span>
+      <Money value={pricing.formulaValueTotal} size="emphasis" className="text-slate-900" />
+      <span className="text-slate-400">→</span>
+      <span className="font-semibold text-amber-700">
+        bị chặn bởi trần dư nợ <Money value={pricing.result} size="emphasis" className="text-amber-700" />
+      </span>
     </div>
   )
 }

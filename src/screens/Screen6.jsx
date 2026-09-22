@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react'
 import TopBar from '../components/ui/TopBar.jsx'
 import ActProgress from '../components/ui/ActProgress.jsx'
 import SurfaceFrame from '../components/ui/SurfaceFrame.jsx'
@@ -19,12 +20,31 @@ const INTEREST_DAYS = 5
 
 const RU_STATUS = { locked: 'locked', settled: 'settled', broken: 'broken' }
 
+// Đếm số lần trạng thái RU-03/RU-04 đổi để remount RuChip theo key — animation
+// CSS (ru-badge-fade, ru-card-glow ở src/index.css) tự chạy một lần khi phần tử
+// được mount lại. Không dùng setTimeout để xếp trình tự nên không cần kiểm
+// matchMedia thủ công: quy tắc prefers-reduced-motion toàn cục đã rút
+// animation-duration về gần 0 khi người dùng bật giảm chuyển động.
+function useStatusChangeGen(status) {
+  const prev = useRef(status)
+  const [gen, setGen] = useState(0)
+  useEffect(() => {
+    if (prev.current !== status) {
+      prev.current = status
+      setGen((g) => g + 1)
+    }
+  }, [status])
+  return gen
+}
+
 // Vòng 7C — Màn 6 dựng lại bằng SurfaceFrame(platform)/TopBar/ActProgress dùng
 // chung, không đổi logic tất toán (src/state/settlementState.jsx).
 export default function Screen6({ onNext }) {
   const { openPeek } = usePermissions()
   const { leak } = useScenario()
   const settlement = useSettlement()
+  const ru03Gen = useStatusChangeGen(settlement.ru03Status)
+  const ru04Gen = useStatusChangeGen(settlement.ru04Status)
 
   const interestVN = Math.round(computeAdvanceInterest(settlement.initialDebt, TECHCOMBANK_QUOTE.annualRate, INTEREST_DAYS) * 100) / 100
   const interestThousandVN = Math.round(interestVN * 1000)
@@ -42,7 +62,13 @@ export default function Screen6({ onNext }) {
             <div className="mx-auto w-full max-w-[1536px] space-y-6">
               <h1 className="text-screen-title font-bold text-slate-900">Tất toán</h1>
 
-              <DebtBlock debt={settlement.debt} ru03Status={settlement.ru03Status} ru04Status={settlement.ru04Status} />
+              <DebtBlock
+                debt={settlement.debt}
+                ru03Status={settlement.ru03Status}
+                ru04Status={settlement.ru04Status}
+                ru03Gen={ru03Gen}
+                ru04Gen={ru04Gen}
+              />
 
               <Card>
                 <MilestoneTimeline timeline={settlement.timeline} stepIndex={settlement.stepIndex} />
@@ -84,7 +110,7 @@ export default function Screen6({ onNext }) {
   )
 }
 
-function DebtBlock({ debt, ru03Status, ru04Status }) {
+function DebtBlock({ debt, ru03Status, ru04Status, ru03Gen, ru04Gen }) {
   return (
     <Card padding="p-8">
       <div className="flex flex-wrap items-center justify-between gap-6">
@@ -93,19 +119,27 @@ function DebtBlock({ debt, ru03Status, ru04Status }) {
           <Money value={debt} size="hero" className="mt-1 block text-slate-900" />
         </div>
         <div className="flex gap-6">
-          <RuChip code="RU-03" status={ru03Status} />
-          <RuChip code="RU-04" status={ru04Status} />
+          <RuChip code="RU-03" status={ru03Status} gen={ru03Gen} />
+          <RuChip code="RU-04" status={ru04Status} gen={ru04Gen} />
         </div>
       </div>
     </Card>
   )
 }
 
-function RuChip({ code, status }) {
+// gen > 0 nghĩa là trạng thái đã đổi ít nhất một lần kể từ khi Màn 6 mount —
+// key={gen} buộc React remount div này mỗi lần đổi, animation CSS tự chạy lại.
+function RuChip({ code, status, gen }) {
+  const highlighted = gen > 0
   return (
-    <div className="text-center">
+    <div
+      key={gen}
+      className={`rounded-xl border-2 px-3 py-2 text-center ${
+        highlighted ? 'animate-ru-card-glow border-slate-400' : 'border-transparent'
+      }`}
+    >
       <div className="mb-1 text-label font-semibold text-slate-900">{code}</div>
-      <StatusBadge status={RU_STATUS[status]} />
+      <StatusBadge status={RU_STATUS[status]} className={highlighted ? 'animate-ru-badge-fade' : ''} />
     </div>
   )
 }
@@ -219,7 +253,11 @@ function NormalMilestoneDetail({ settlement, interestThousandVN }) {
     return (
       <Card className="border-teal-600 bg-teal-50">
         <div className="text-body font-semibold text-teal-800">
-          Khoản vay đã tất toán — tiền lãi {formatNumberVN(interestThousandVN)} nghìn đồng ({INTEREST_DAYS} ngày)
+          Khoản vay đã tất toán — tiền lãi{' '}
+          <Money value={interestThousandVN} unit="nghìn đồng" size="body" className="text-teal-800" />
+        </div>
+        <div className="mt-1 text-label text-teal-700">
+          trên khoản {formatNumberVN(settlement.initialDebt)} triệu, {INTEREST_DAYS} ngày
         </div>
         <div className="mt-1 text-label text-teal-700">Điểm xác thực được cập nhật sau lô tất toán.</div>
       </Card>

@@ -370,6 +370,8 @@ function EstimateStep({ staircase, interestEstimate, onNext }) {
         </div>
       </Card>
 
+      <EstimateDisclaimer />
+
       <button
         onClick={onNext}
         className="w-full rounded-xl bg-navy py-4 text-emphasis font-semibold text-white transition hover:opacity-90"
