@@ -3,7 +3,7 @@ import ScreenShell from '../components/ScreenShell.jsx'
 import StatusBadge from '../components/StatusBadge.jsx'
 import { RECEIVABLE_UNITS, VERIFICATION_METRICS, MIN_LOTS_FOR_SCORE } from '../data/mockData.js'
 import { computeVerificationScore, isScoreAvailable } from '../logic/verification.js'
-import { formatMillion, formatNumberVN } from '../utils/format.js'
+import { formatNumberVN } from '../utils/format.js'
 
 const STATUS_LABEL = {
   settled: 'Đã tất toán',
@@ -50,7 +50,7 @@ export default function Screen4({ onNext }) {
                 <StatusBadge tone={unit.statusColor}>{statusLabelFor(unit)}</StatusBadge>
               </div>
               <div className="mt-1 text-base text-slate-400">{unit.channel}</div>
-              <div className="mt-2 text-2xl font-bold text-slate-100">{formatMillion(unit.projectedNetValue)}</div>
+              <div className="mt-2 text-2xl font-bold text-slate-100">{formatNumberVN(unit.projectedNetValue)} triệu</div>
               <div className="mt-1 text-base text-slate-500">Cửa sổ thanh toán: {unit.settlementWindow}</div>
             </div>
           ))}
@@ -60,7 +60,7 @@ export default function Screen4({ onNext }) {
         <div className="rounded-xl border border-teal-800/60 bg-teal-950/20 p-5">
           <div className="text-base text-teal-300">Đang chờ sàn thanh toán</div>
           <div className="mt-1 text-3xl font-bold text-teal-200">
-            {formatMillion(pendingTotal)}{' '}
+            {formatNumberVN(pendingTotal)} triệu{' '}
             <span className="text-lg font-normal text-teal-300">
               ({verifiedUnits.length} đơn vị đã xác thực)
             </span>
