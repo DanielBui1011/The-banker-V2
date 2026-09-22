@@ -1,4 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
+import SurfaceFrame from '../components/ui/SurfaceFrame.jsx'
+import Card from '../components/ui/Card.jsx'
+import Money from '../components/ui/Money.jsx'
+import LayerTag from '../components/ui/LayerTag.jsx'
+import SegmentedControl from '../components/ui/SegmentedControl.jsx'
+import ToggleSwitch from '../components/ui/ToggleSwitch.jsx'
+import Callout from '../components/ui/Callout.jsx'
 import { usePermissions } from '../state/permissionState.jsx'
 import { useScenario } from '../state/scenarioState.jsx'
 import {
@@ -12,26 +19,20 @@ import {
 } from '../data/mockData.js'
 import { computeAvailableValue } from '../logic/pricing.js'
 import { computeVerificationScore, computeLeakAdjustedScore } from '../logic/verification.js'
-import { formatNumberVN } from '../utils/format.js'
+import { formatNumberVN, formatDateVN } from '../utils/format.js'
 
 // Đơn vị dùng cho minh họa phơi nhiễm chéo — cùng bộ RU-03/RU-04 và tham số kỳ thường
 // dùng ở Màn 5/6 (docs/du-lieu.md mục 4.3, tình huống T3: min(85; 150 − 100) = 50).
 const LOCK_UNITS = RECEIVABLE_UNITS.filter((u) => u.code === 'RU-03' || u.code === 'RU-04')
 const A2_PERMISSION = GRANTED_PERMISSIONS.find((p) => p.code === 'A2')
 
-// Giao diện thứ ba (man-hinh.md Màn 8): khác cả Nền tảng (ScreenShell) lẫn trang cấp
-// quyền của Techcombank — đây là cổng nội bộ cán bộ tín dụng, không dùng ScreenShell.
 const TIMEPOINTS = [
   { id: '15-09', label: '15/09 — sau giải ngân' },
   { id: '20-09', label: '20/09 — sau tất toán' },
 ]
 
-function formatDateVN(value) {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return value
-  const [y, m, d] = value.split('-')
-  return `${d}/${m}/${y}`
-}
-
+// Vòng 7C — Màn 8 dựng trên SurfaceFrame kiểu bankOps, tiêu đề "Techcombank", bộ
+// chọn thời điểm bằng SegmentedControl, nhóm đơn vị theo tầng (LayerTag).
 export default function Screen8({ onNext }) {
   const { permissions } = usePermissions()
   const { leak, phase3, resetSignal } = useScenario()
@@ -56,6 +57,10 @@ export default function Screen8({ onNext }) {
       ),
     [afterSettlement]
   )
+  const lockedTierUnits = units.filter((u) => u.lockerCount > 0)
+  const availableTierUnits = units.filter((u) => u.lockerCount === 0 && u.availableValue != null)
+  const insufficientUnits = units.filter((u) => u.availableValue == null)
+
   const totalExposure = units.reduce((sum, u) => sum + u.lockedAmount, 0)
   const baseLenderCount = Math.max(0, ...units.map((u) => u.lockerCount))
 
@@ -75,154 +80,160 @@ export default function Screen8({ onNext }) {
   const tiktokScore = computeVerificationScore(VERIFICATION_METRICS['TikTok Shop'])
 
   return (
-    <div className="flex h-full flex-col bg-gray-100 text-gray-900">
-      <header className="bg-blue-950 px-8 py-5 text-white">
-        <div className="text-sm font-medium uppercase tracking-wide text-blue-300">Hệ thống nội bộ</div>
-        <h1 className="mt-1 text-3xl font-bold">Techcombank — Cổng thẩm định (mô phỏng)</h1>
-        {!a2Revoked && (
-          <div className="mt-3 text-lg text-blue-200">
-            Truy cập theo quyền A2 của nhà bán — hiệu lực đến {formatDateVN(A2_PERMISSION.expiryDate)}
-          </div>
-        )}
-      </header>
+    <SurfaceFrame variant="bankOps" bankName="Techcombank">
+      <div className="flex h-full flex-col">
+        <div className="px-12 pt-8">
+          <h1 className="text-screen-title font-bold text-slate-900">Techcombank</h1>
+          <p className="mt-1 text-label text-slate-500">Cổng nghiệp vụ — tra cứu nhà bán Lan Beauty</p>
+        </div>
 
-      <main className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-8 pt-8 pb-24">
-        {a2Revoked ? (
-          <div className="rounded-xl border border-amber-300 bg-amber-50 p-6 text-lg font-semibold text-amber-800">
-            Nhà bán đã rút quyền A2 — không thể xem dữ liệu.
-          </div>
-        ) : (
-          <div className="mx-auto max-w-5xl space-y-6">
-            <div className="flex flex-wrap gap-3">
-              {TIMEPOINTS.map((tp) => (
-                <button
-                  key={tp.id}
-                  onClick={() => setTimepoint(tp.id)}
-                  className={`rounded-lg border px-4 py-2 text-base font-medium transition ${
-                    timepoint === tp.id
-                      ? 'border-blue-700 bg-blue-700 text-white'
-                      : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
-                  }`}
-                >
-                  {tp.label}
-                </button>
-              ))}
-            </div>
-
-            <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
-              <table className="w-full text-base">
-                <thead>
-                  <tr className="border-b border-gray-200 bg-gray-50 text-left text-gray-500">
-                    <th className="px-4 py-3 font-medium">Đơn vị</th>
-                    <th className="px-4 py-3 font-medium">Giá trị ròng dự phóng</th>
-                    <th className="px-4 py-3 font-medium">Giá trị khả dụng</th>
-                    <th className="px-4 py-3 font-medium">Đã bị khóa</th>
-                    <th className="px-4 py-3 font-medium">Số bên đang khóa</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {units.map((u) => (
-                    <tr key={u.code} className="border-b border-gray-100 last:border-0">
-                      <td className="px-4 py-3 font-semibold text-gray-900">{u.code}</td>
-                      <td className="px-4 py-3">{formatNumberVN(u.projectedNetValue)} triệu</td>
-                      <td className="px-4 py-3">
-                        {u.availableValue == null ? u.availableValueNote : `${formatNumberVN(u.availableValue)} triệu`}
-                      </td>
-                      <td className="px-4 py-3">{formatNumberVN(u.lockedAmount)} triệu</td>
-                      <td className="px-4 py-3">{u.lockerCount}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              <div className="border-t border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-500">
-                Sổ đăng ký chỉ cho biết giá trị đã khóa và số bên khóa, không tiết lộ danh tính.
+        <main className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-12 pb-24 pt-6">
+          {a2Revoked ? (
+            <Card className="mx-auto max-w-5xl">
+              <div className="text-emphasis font-semibold text-slate-900">Không có dữ liệu để hiển thị</div>
+              <p className="mt-2 text-label text-slate-600">
+                Nhà bán đã rút quyền A2 (đánh giá tín dụng), cấp ngày {formatDateVN(A2_PERMISSION.grantedDate)}. Ghi
+                chú rút quyền: {A2_PERMISSION.revokeNote}.
+              </p>
+            </Card>
+          ) : (
+            <div className="mx-auto max-w-5xl space-y-6">
+              <div className="text-label text-slate-500">
+                Truy cập theo quyền A2 của nhà bán — hiệu lực đến {formatDateVN(A2_PERMISSION.expiryDate)}
               </div>
-            </div>
 
-            <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-              <div className="text-base text-gray-500">Tổng phơi nhiễm hợp nhất</div>
-              <div className="mt-1 text-3xl font-bold text-blue-900">
-                {formatNumberVN(totalExposure)} triệu
-                <span className="ml-2 text-lg font-normal text-gray-500">trên {baseLenderCount} bên cho vay</span>
+              <SegmentedControl options={TIMEPOINTS} value={timepoint} onChange={setTimepoint} />
+
+              <div className="space-y-4">
+                <LayerGroup layer={2} title="Đã khóa" units={lockedTierUnits} />
+                <LayerGroup layer={1} title="Sẵn có, chưa khóa" units={availableTierUnits} />
+                {insufficientUnits.length > 0 && (
+                  <InsufficientGroup units={insufficientUnits} />
+                )}
               </div>
-            </div>
 
-            <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-              <div className="text-xl font-semibold text-gray-800">Doanh thu đã xác thực theo kênh</div>
-              <div className="mt-3 grid grid-cols-2 gap-4">
-                <ScoreTile channel="Shopee" score={shopeeScore} />
-                <ScoreTile channel="TikTok Shop" score={tiktokScore} />
-              </div>
-            </div>
+              <Callout variant="info">
+                Sổ đăng ký chỉ cho biết giá trị đã khóa và số bên khóa, không tiết lộ danh tính bên khóa khác.
+              </Callout>
 
-            <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-              <div className="flex items-center justify-between gap-4">
-                <div>
-                  <div className="text-xl font-semibold text-gray-800">
-                    Minh họa: đã có bên khác khóa {formatNumberVN(BANK_VIEW.crossExposureExample.otherLockedAmount)}{' '}
-                    triệu
+              <Card>
+                <div className="text-label text-slate-500">Tổng phơi nhiễm hợp nhất</div>
+                <div className="mt-1 flex items-baseline gap-2">
+                  <Money value={totalExposure} size="section-title" className="text-slate-900" />
+                  <span className="text-label text-slate-500">trên {baseLenderCount} bên cho vay</span>
+                </div>
+              </Card>
+
+              <Card>
+                <div className="text-emphasis font-semibold text-slate-900">Doanh thu đã xác thực theo kênh</div>
+                <div className="mt-3 grid grid-cols-2 gap-4">
+                  <ScoreTile channel="Shopee" score={shopeeScore} />
+                  <ScoreTile channel="TikTok Shop" score={tiktokScore} />
+                </div>
+              </Card>
+
+              <Card>
+                <div className="flex items-center justify-between gap-4">
+                  <div>
+                    <div className="text-emphasis font-semibold text-slate-900">
+                      Minh họa: đã có bên khác khóa {formatNumberVN(BANK_VIEW.crossExposureExample.otherLockedAmount)} triệu
+                    </div>
+                    <div className="text-label text-slate-500">Ảnh hưởng tới giá trị khả dụng của RU-03 và RU-04.</div>
                   </div>
-                  <div className="text-base text-gray-500">Ảnh hưởng tới giá trị khả dụng của RU-03 và RU-04.</div>
+                  <ToggleSwitch active={crossExposureOn} onToggle={() => setCrossExposureOn((v) => !v)} label="Bên khác khóa" />
                 </div>
-                <ToggleSwitch active={crossExposureOn} onToggle={() => setCrossExposureOn((v) => !v)} />
-              </div>
 
-              <div className="mt-4 flex items-center gap-8">
-                <div>
-                  <div className="text-base text-gray-500">Giá trị khả dụng (RU-03 + RU-04)</div>
-                  <div className="text-2xl font-bold text-blue-900">{formatNumberVN(crossExposure.result)} triệu</div>
+                <div className="mt-4 flex items-center gap-8">
+                  <div>
+                    <div className="text-label text-slate-500">Giá trị khả dụng (RU-03 + RU-04)</div>
+                    <Money value={crossExposure.result} size="emphasis" className="text-slate-900" />
+                  </div>
+                  <div>
+                    <div className="text-label text-slate-500">Số bên đang khóa</div>
+                    <div className="text-emphasis font-semibold tabular-nums text-slate-900">{crossExposureLenderCount}</div>
+                  </div>
                 </div>
-                <div>
-                  <div className="text-base text-gray-500">Số bên đang khóa</div>
-                  <div className="text-2xl font-bold text-blue-900">{crossExposureLenderCount}</div>
-                </div>
-              </div>
 
-              {crossExposureOn && (
-                <div className="mt-4 rounded-lg border border-amber-300 bg-amber-50 px-4 py-2.5 text-base font-semibold text-amber-800">
-                  Phát hiện tài trợ chồng lấn — giá trị khả dụng đã được trừ
-                </div>
+                {crossExposureOn && (
+                  <Callout variant="warn" className="mt-4">
+                    Đã bị khóa bởi 1 bên khác: {formatNumberVN(BANK_VIEW.crossExposureExample.otherLockedAmount)} triệu — giá
+                    trị khả dụng đã được trừ.
+                  </Callout>
+                )}
+              </Card>
+
+              {phase3 && (
+                <button
+                  onClick={onNext}
+                  className="w-full rounded-xl bg-navy py-3 text-emphasis font-semibold text-white transition hover:opacity-90"
+                >
+                  Tiếp: Giai đoạn 3 — nhiều bên chào giá →
+                </button>
               )}
             </div>
+          )}
+        </main>
 
-            {phase3 && (
-              <button
-                onClick={onNext}
-                className="w-full rounded-xl bg-blue-800 py-3 text-lg font-semibold text-white transition hover:bg-blue-700"
-              >
-                Tiếp: Giai đoạn 3 — nhiều bên chào giá →
-              </button>
-            )}
-          </div>
-        )}
-      </main>
+        <footer className="border-t border-slate-200 px-12 py-3 text-label text-slate-500">{FOOTER_NOTE}</footer>
+      </div>
+    </SurfaceFrame>
+  )
+}
 
-      <footer className="border-t border-gray-300 bg-gray-100 px-8 py-3 text-base text-gray-500">{FOOTER_NOTE}</footer>
-    </div>
+function LayerGroup({ layer, title, units }) {
+  if (units.length === 0) return null
+  return (
+    <Card>
+      <div className="mb-3 flex items-center gap-3">
+        <LayerTag layer={layer} />
+        <span className="text-emphasis font-semibold text-slate-900">{title}</span>
+      </div>
+      <table className="w-full text-label">
+        <thead>
+          <tr className="border-b border-slate-200 text-left text-slate-500">
+            <th className="px-3 py-2 font-medium">Đơn vị</th>
+            <th className="px-3 py-2 font-medium">Giá trị ròng dự phóng</th>
+            <th className="px-3 py-2 font-medium">Giá trị khả dụng</th>
+            <th className="px-3 py-2 font-medium">Đã bị khóa</th>
+            <th className="px-3 py-2 font-medium">Số bên đang khóa</th>
+          </tr>
+        </thead>
+        <tbody>
+          {units.map((u) => (
+            <tr key={u.code} className="h-14 border-b border-slate-100 last:border-0">
+              <td className="px-3 font-semibold text-slate-900">{u.code}</td>
+              <td className="px-3 tabular-nums">{formatNumberVN(u.projectedNetValue)} triệu</td>
+              <td className="px-3 tabular-nums">{formatNumberVN(u.availableValue)} triệu</td>
+              <td className="px-3 tabular-nums">{formatNumberVN(u.lockedAmount)} triệu</td>
+              <td className="px-3 tabular-nums">{u.lockerCount}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </Card>
+  )
+}
+
+function InsufficientGroup({ units }) {
+  return (
+    <Card>
+      <div className="mb-3 text-emphasis font-semibold text-slate-900">Chưa đủ điều kiện</div>
+      {units.map((u) => (
+        <div key={u.code} className="flex items-center justify-between border-t border-slate-100 py-2.5 text-label first:border-t-0">
+          <span className="font-semibold text-slate-900">{u.code}</span>
+          <span className="tabular-nums text-slate-600">{formatNumberVN(u.projectedNetValue)} triệu dự phóng</span>
+          <span className="text-slate-500">{u.availableValueNote}</span>
+        </div>
+      ))}
+    </Card>
   )
 }
 
 function ScoreTile({ channel, score }) {
   return (
-    <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
-      <div className="text-base font-medium text-gray-600">{channel}</div>
-      <div className="mt-1 text-3xl font-bold text-blue-900">{score}</div>
+    <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+      <div className="text-label font-medium text-slate-600">{channel}</div>
+      <div className="mt-1 text-section-title font-bold tabular-nums text-slate-900">{score}</div>
     </div>
-  )
-}
-
-function ToggleSwitch({ active, onToggle }) {
-  return (
-    <button
-      onClick={onToggle}
-      aria-pressed={active}
-      className={`h-7 w-12 shrink-0 rounded-full transition ${active ? 'bg-blue-700' : 'bg-gray-300'}`}
-    >
-      <span
-        className={`block h-6 w-6 rounded-full bg-white shadow transition ${
-          active ? 'translate-x-5' : 'translate-x-0.5'
-        }`}
-      />
-    </button>
   )
 }
