@@ -5,12 +5,17 @@ import ActProgress from '../components/ui/ActProgress.jsx'
 import SurfaceFrame from '../components/ui/SurfaceFrame.jsx'
 import Card from '../components/ui/Card.jsx'
 import Stepper from '../components/ui/Stepper.jsx'
+import Callout from '../components/ui/Callout.jsx'
 import { actForScreen } from '../config/flow.js'
 import { usePermissions } from '../state/permissionState.jsx'
 import { FOOTER_NOTE, LENDER_QUOTES, A1_CONSENT, A1_TOKEN_TTL_SECONDS } from '../data/mockData.js'
 import { LEGAL_NAME, TPP_CODE } from '../config/brand.js'
 
 const OTHER_BANKS = LENDER_QUOTES.map((l) => l.lender).filter((name) => name !== 'Techcombank')
+
+// Luồng 2a→2d — nhãn Stepper hiển thị xuyên suốt cả khi đang ở trang Techcombank (2b).
+const FLOW_STEPS = ['Chọn ngân hàng', 'Xem yêu cầu quyền', 'Xác thực', 'Hoàn tất']
+const FLOW_STEP_NUMBER = { a: 1, b: 2, c: 3, d: 4 }
 
 // Che token: chỉ hiện 8 ký tự đầu + "••••" — không bao giờ hiện token đầy đủ
 // (CLAUDE.md, docs/quy-tac.md). Chuỗi mẫu chỉ để minh họa, không phải token thật.
@@ -24,15 +29,17 @@ const SAMPLE_REFRESH_TOKEN = 'rt_9f3a7c2e1b8d4056a1f0c3e9'
 // Bước 2c — hiệu ứng terminal luồng OAuth, tái sử dụng ý tưởng của bản cũ
 // (docs/reference/settlesync_prototype.html), rút gọn đúng nội dung được yêu cầu:
 // GET /authorize (PKCE, scope=AIS) → mã ủy quyền → access_token + refresh_token → quay về.
+// Vòng 9: chỉ 3 trường làm nổi (scope=AIS, thời hạn token, refresh_token) — các
+// trường còn lại mờ đi để người xem không phải đọc hết cả khối kỹ thuật.
 const TERMINAL_LINES = [
-  { tone: 'text-sky-400', text: '→ GET /authorize?response_type=code&scope=AIS (PKCE)', highlightScope: true },
-  { tone: 'text-slate-500', text: '   code_challenge: sha256(verifier)' },
-  { tone: 'text-amber-300', text: '⟳ Đang xác thực trên trang Techcombank...' },
-  { tone: 'text-emerald-400', text: '✓ Nhận mã ủy quyền (authorization code)' },
-  { tone: 'text-sky-400', text: '→ POST /token (authorization_code)' },
-  { tone: 'text-emerald-400', text: `← access_token: ${maskToken(SAMPLE_ACCESS_TOKEN)}  (hạn ${A1_TOKEN_TTL_SECONDS.toLocaleString('vi-VN')} giây)` },
-  { tone: 'text-emerald-400', text: `← refresh_token: ${maskToken(SAMPLE_REFRESH_TOKEN)}` },
-  { tone: 'text-slate-500', text: '# Quay về Nền tảng...' },
+  { kind: 'authorize' },
+  { kind: 'dim', text: '   code_challenge: sha256(verifier)' },
+  { kind: 'dim', text: '⟳ Đang xác thực trên trang Techcombank...' },
+  { kind: 'dim', text: '✓ Nhận mã ủy quyền (authorization code)' },
+  { kind: 'dim', text: '→ POST /token (authorization_code)' },
+  { kind: 'accessToken' },
+  { kind: 'refreshToken' },
+  { kind: 'dim', text: '# Quay về Nền tảng...' },
 ]
 
 const HISTORY_STEPS = ['Tài khoản', '90 ngày giao dịch', 'Khớp thử 7 ngày']
@@ -116,6 +123,7 @@ export default function Screen2({ onGoToScreen }) {
                 <h1 className={`text-screen-title font-bold ${step === 'c' ? 'text-slate-100' : 'text-slate-900'}`}>
                   Cấp quyền A1
                 </h1>
+                <Stepper steps={FLOW_STEPS} currentStep={FLOW_STEP_NUMBER[step]} tone={step === 'c' ? 'dark' : 'light'} />
                 {step === 'a' && <BankPicker onSelect={selectBank} />}
                 {step === 'c' && <TerminalFlow lines={TERMINAL_LINES.slice(0, terminalCount)} />}
                 {step === 'd' && (
@@ -133,7 +141,12 @@ export default function Screen2({ onGoToScreen }) {
   )
 }
 
+// Giai đoạn 2, sau mốc Thông tư 64 (01/3/2027): ngân hàng khác đã kết nối được qua
+// Open API — không còn hiện trạng thái mờ "Đang kết nối". Bấm vào ngân hàng khác
+// chỉ hiện chú thích tại chỗ, không đổi luồng (tiền sàn của chị Lan về Techcombank).
 function BankPicker({ onSelect }) {
+  const [notedBank, setNotedBank] = useState(null)
+
   return (
     <div className="space-y-6">
       <p className="text-body text-slate-600">
@@ -147,12 +160,23 @@ function BankPicker({ onSelect }) {
           </Card>
         </button>
         {OTHER_BANKS.map((name) => (
-          <Card key={name} className="cursor-not-allowed opacity-60">
-            <div className="text-emphasis font-semibold text-slate-500">{name}</div>
-            <div className="mt-1 text-label text-slate-400">Đang kết nối</div>
-          </Card>
+          <button
+            key={name}
+            onClick={() => setNotedBank(name)}
+            className="block w-full text-left"
+          >
+            <Card className="transition hover:bg-slate-50">
+              <div className="text-emphasis font-semibold text-slate-900">{name}</div>
+              <div className="mt-1 text-label text-slate-500">Đã kết nối được qua Open API</div>
+            </Card>
+          </button>
         ))}
       </div>
+      {notedBank && (
+        <Callout variant="info">
+          Tiền sàn của chị Lan về Techcombank — demo đi theo tài khoản này, không theo {notedBank}.
+        </Callout>
+      )}
     </div>
   )
 }
@@ -170,7 +194,10 @@ function TechcombankConsentPage({ onApprove, onReject }) {
           <div className="mx-auto w-full max-w-3xl">
             <div className="mb-1 text-section-title font-bold text-slate-900">Techcombank</div>
             <h1 className="mb-1 text-screen-title font-bold text-slate-900">Yêu cầu cấp quyền truy cập dữ liệu</h1>
-            <p className="mb-6 text-body text-slate-500">Vui lòng xem lại phạm vi trước khi quyết định.</p>
+            <p className="mb-4 text-body text-slate-500">Vui lòng xem lại phạm vi trước khi quyết định.</p>
+            <div className="mb-6">
+              <Stepper steps={FLOW_STEPS} currentStep={FLOW_STEP_NUMBER.b} />
+            </div>
 
             <Card className="space-y-5">
               {/* 1. Bên yêu cầu */}
@@ -263,24 +290,51 @@ function TerminalFlow({ lines }) {
         <div className="space-y-1 font-mono text-label">
           {lines.length === 0 && <div className="text-slate-600"># Đang khởi tạo phiên xác thực...</div>}
           {lines.map((line, i) => (
-            <div key={i} className={line.tone}>
-              {line.highlightScope ? (
-                <>
-                  {'→ GET /authorize?response_type=code&'}
-                  <span className="rounded border border-sky-400 bg-sky-950/60 px-1.5 py-0.5 font-semibold text-sky-300">
-                    scope=AIS
-                  </span>
-                  {' (PKCE)'}
-                </>
-              ) : (
-                line.text
-              )}
+            <div key={i}>
+              <TerminalLine line={line} />
             </div>
           ))}
         </div>
       </div>
     </div>
   )
+}
+
+// Một dòng terminal — chỉ scope=AIS, thời hạn token và refresh_token được làm nổi
+// (khung màu sáng); các trường còn lại dùng chung một màu mờ text-slate-600.
+function TerminalLine({ line }) {
+  if (line.kind === 'authorize') {
+    return (
+      <div className="text-slate-600">
+        {'→ GET /authorize?response_type=code&'}
+        <span className="rounded border border-sky-400 bg-sky-950/60 px-1.5 py-0.5 font-semibold text-sky-300">
+          scope=AIS
+        </span>
+        {' (PKCE)'}
+      </div>
+    )
+  }
+  if (line.kind === 'accessToken') {
+    return (
+      <div className="text-slate-600">
+        {`← access_token: ${maskToken(SAMPLE_ACCESS_TOKEN)}  hạn `}
+        <span className="rounded border border-emerald-400 bg-emerald-950/60 px-1.5 py-0.5 font-semibold text-emerald-300">
+          {`${A1_TOKEN_TTL_SECONDS.toLocaleString('vi-VN')} giây`}
+        </span>
+      </div>
+    )
+  }
+  if (line.kind === 'refreshToken') {
+    return (
+      <div>
+        <span className="text-slate-600">{'← '}</span>
+        <span className="rounded border border-emerald-400 bg-emerald-950/60 px-1.5 py-0.5 font-semibold text-emerald-300">
+          {`refresh_token: ${maskToken(SAMPLE_REFRESH_TOKEN)}`}
+        </span>
+      </div>
+    )
+  }
+  return <div className="text-slate-600">{line.text}</div>
 }
 
 function HistoryLoading({ step, onGoToScreen }) {
