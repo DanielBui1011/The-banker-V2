@@ -91,6 +91,13 @@ export const BANK_TRANSACTIONS = [
   { code: 'GD25', date: '2027-09-10', amount: 0.6, counterparty: 'Tạ Ngọc', reference: 'FB1035', channel: 'Facebook', status: 'matched', matchMethod: 'Nội dung', linkedTo: 'Đơn FB1035' },
 ]
 
+// Khối so sánh trước/sau, tái sử dụng từ bản cũ (docs/man-hinh.md Màn 3):
+// "9 giờ/tháng → dưới 1 giờ/tháng". Giờ "trước" lấy từ hồ sơ nhà bán (mục 2).
+export const RECONCILIATION_COMPARISON = {
+  beforeHoursPerMonth: SELLER_PROFILE.monthlyManualReconciliationHours,
+  afterLabel: 'Dưới 1 giờ/tháng',
+}
+
 export const RECONCILIATION_SUMMARY = {
   matchedCount: 19,
   exceptionCount: 2,
