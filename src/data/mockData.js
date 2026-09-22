@@ -223,21 +223,62 @@ export const ACCESS_LOG = [
   { timestamp: '2027-09-20 06:00', actor: SOLUTION_NAME, purpose: 'A1 — đối soát', data: 'Giao dịch 20/09' },
 ]
 
-// Mục 10 — Dòng thời gian tất toán
+// Mục 10 — Dòng thời gian tất toán. Số dư nợ KHÔNG lưu tĩnh ở đây — Màn 6 tính từ
+// src/logic/pricing.js (qua src/state/settlementState.jsx) để không lặp số liệu
+// đã có ở nơi khác (khóa RU-03/RU-04 = kết quả T1 của computeAvailableValue).
 export const SETTLEMENT_TIMELINE_NORMAL = [
-  { date: '15/09', event: 'Techcombank giải ngân 85,0; khóa RU-03 (46,75) và RU-04 (38,25)', remainingDebt: 85.0 },
-  { date: '15–18/09', event: 'Nhập hàng, bán tiếp', remainingDebt: 85.0 },
-  { date: '19/09', event: 'Shopee thanh toán RU-03: 54,6 về tài khoản Techcombank; trả 46,75', remainingDebt: 38.25 },
-  { date: '20/09', event: 'TikTok Shop thanh toán RU-04: 44,7 về tài khoản; trả 38,25', remainingDebt: 0 },
-  { date: '20/09', event: 'Khoản ứng tất toán; tiền lãi ≈ 0,14; điểm xác thực cập nhật', remainingDebt: null },
+  { id: 'disburse', date: '15/09', isoDate: '2027-09-15', kind: 'disburse' },
+  { id: 'selling', date: '15–18/09', isoDate: '2027-09-15', kind: 'selling' },
+  {
+    id: 'ru03-pay',
+    date: '19/09',
+    isoDate: '2027-09-19',
+    kind: 'marketplace-payment',
+    unit: 'RU-03',
+    marketplace: 'Shopee',
+    marketplaceAmount: 54.6,
+    repaymentAmount: 46.75,
+  },
+  {
+    id: 'ru04-pay',
+    date: '20/09',
+    isoDate: '2027-09-20',
+    kind: 'marketplace-payment',
+    unit: 'RU-04',
+    marketplace: 'TikTok Shop',
+    marketplaceAmount: 44.7,
+    repaymentAmount: 38.25,
+  },
+  { id: 'settled', date: '20/09', isoDate: '2027-09-20', kind: 'settled' },
 ]
 
+// Kịch bản rò rỉ (phím L) — chỉ phần rẽ nhánh từ 19/09; hai mốc 15/09 và 15–18/09
+// dùng chung với kịch bản bình thường (docs/man-hinh.md Màn 9).
 export const SETTLEMENT_TIMELINE_LEAK = [
-  { date: '19/09', event: 'Không có khoản thanh toán Shopee nào về tài khoản Techcombank' },
-  { date: '20/09', event: 'RU-04 vẫn tất toán bình thường (TikTok Shop không bị ảnh hưởng); dư nợ còn 46,75' },
-  { date: '21/09', event: 'Hết cửa sổ thanh toán RU-03' },
-  { date: '24/09', event: 'Hết 3 ngày ân hạn → RU-03 chuyển Đứt gãy (đỏ); cảnh báo tới Techcombank; đóng băng cấp vốn mới; yêu cầu chị Lan xác nhận tài khoản nhận tiền' },
+  {
+    id: 'leak-no-payment',
+    date: '19/09',
+    isoDate: '2027-09-19',
+    kind: 'leak-no-payment',
+    unit: 'RU-03',
+    marketplace: 'Shopee',
+  },
+  {
+    id: 'ru04-pay',
+    date: '20/09',
+    isoDate: '2027-09-20',
+    kind: 'marketplace-payment',
+    unit: 'RU-04',
+    marketplace: 'TikTok Shop',
+    marketplaceAmount: 44.7,
+    repaymentAmount: 38.25,
+  },
+  { id: 'leak-window-closed', date: '21/09', isoDate: '2027-09-21', kind: 'leak-window-closed', unit: 'RU-03' },
+  { id: 'leak-broken', date: '24/09', isoDate: '2027-09-24', kind: 'leak-broken', unit: 'RU-03' },
 ]
+
+// Kịch bản rò rỉ — tỷ lệ rò rỉ 1/8 lô, dùng để chiết khấu điểm xác thực Shopee (mục 4.3, T10).
+export const LEAK_BATCH_RATE = 1 / 8
 
 // Mục 11 — Góc nhìn ngân hàng
 export const BANK_VIEW = {

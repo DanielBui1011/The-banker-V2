@@ -84,6 +84,7 @@ giá trị khả dụng = max(0; min(giá trị theo công thức; trần dư n�
 | T7 | Điểm Shopee theo mục 7 | **92** |
 | T8 | Điểm TikTok Shop theo mục 7 | **90** |
 | T9 | Tiền lãi khoản 85 triệu, 12%/năm, tất toán sau 5 ngày | 85 × 12% × 5 / 365 ≈ **0,14** (khoảng 140 nghìn đồng) |
+| T10 | Kịch bản rò rỉ (Màn 9); điểm Shopee 92, tỷ lệ rò rỉ 1/8 lô | round(92 × (1 − 1/8×3)) = round(92 × 0,625) = **58** |
 
 ## 5. Giao dịch ngân hàng (tài khoản Techcombank, 01–10/09/2027)
 Dấu + là tiền vào, dấu − là tiền ra. "Hoàn" = chỉ báo đảo chuyển (reversalIndicator = true).

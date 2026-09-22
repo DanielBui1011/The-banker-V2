@@ -68,12 +68,13 @@ sale, khách trả hàng nhiều. Đề án không chỉ cho vốn, mà còn ng�
 phơi nhiễm chéo; nhiều bên chào giá.
 
 **Thao tác:** màn 6 chạy dòng thời gian: 15/09 nhận 85 triệu, 19–20/09 tiền sàn về,
-khoản ứng tự tất toán, đơn vị chuyển sang màu xanh.
+chị Lan trả nợ bằng một chạm trên Techcombank, đơn vị chuyển sang màu xanh.
 Nếu còn thời gian: màn 8 (góc nhìn ngân hàng) hoặc bấm 3 sang màn 10.
 
-**Câu nói:** "Tiền sàn về, khoản ứng tự tất toán. Và vì mọi khoản phải thu được ghi
-trong một sổ chung, ngân hàng thấy ngay phần nào đã bị bên khác tài trợ. Từ giai đoạn 3,
-nhiều bên cho vay cùng chào giá cho chị Lan trên cùng một đường ray."
+**Câu nói:** "Tiền sàn về, chị Lan trả nợ bằng một chạm trên Techcombank. Và vì mọi
+khoản phải thu được ghi trong một sổ chung, ngân hàng thấy ngay phần nào đã bị bên
+khác tài trợ. Từ giai đoạn 3, nhiều bên cho vay cùng chào giá cho chị Lan trên cùng
+một đường ray."
 
 ---
 

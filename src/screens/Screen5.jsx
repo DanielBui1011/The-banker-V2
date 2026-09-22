@@ -70,12 +70,6 @@ export default function Screen5({ onNext, onPrev }) {
 
   return (
     <>
-      {megaSale && (
-        <div className="fixed top-20 right-6 z-[70] rounded-full border border-orange-600 bg-orange-950/90 px-4 py-1.5 text-sm font-semibold text-orange-200 shadow-lg">
-          Kịch bản: Mega Sale
-        </div>
-      )}
-
       {step === 'a' && (
         <TechcombankStep
           heading="Yêu cầu cấp quyền đánh giá tín dụng"

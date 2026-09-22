@@ -9,6 +9,7 @@ const STATUS_LABEL = {
   active: 'Đang hoạt động',
   revoked: 'Đã thu hồi',
   'in-effect': 'Đang hiệu lực',
+  terminated: 'Đã chấm dứt — khoản vay đã tất toán',
 }
 
 const PENDING_NOTE = 'Sẽ cấp khi bạn đề nghị ứng vốn'
@@ -40,7 +41,7 @@ function displayActor(actor) {
 
 const PermissionContext = createContext(null)
 
-export function PermissionProvider({ children, hasPassedScreen6 }) {
+export function PermissionProvider({ children, debtFullyRepaid = false, visibleLogDates = [] }) {
   const [a1Status, setA1Status] = useState('not-granted') // not-granted | active | revoked
   const [a2Revoked, setA2Revoked] = useState(false)
   const [a2a4Granted, setA2a4Granted] = useState(false) // cấp cùng lúc, ở Màn 5 bước 5d
@@ -112,7 +113,7 @@ export function PermissionProvider({ children, hasPassedScreen6 }) {
       pendingNote: a2Status === 'not-granted' ? PENDING_NOTE : null,
     })
 
-    const a4Status = a2a4Granted ? 'in-effect' : 'not-granted'
+    const a4Status = debtFullyRepaid ? 'terminated' : a2a4Granted ? 'in-effect' : 'not-granted'
     rows.push({
       ...PERMISSION_BASE.A4,
       status: a4Status,
@@ -121,7 +122,7 @@ export function PermissionProvider({ children, hasPassedScreen6 }) {
     })
 
     return rows
-  }, [a1Granted, a1Status, a2Revoked, a2a4Granted])
+  }, [a1Granted, a1Status, a2Revoked, a2a4Granted, debtFullyRepaid])
 
   const accessLog = useMemo(() => {
     if (!a1Granted) return []
@@ -129,12 +130,12 @@ export function PermissionProvider({ children, hasPassedScreen6 }) {
       const day = dateOnly(entry.timestamp)
       if (day < A2_A4_GRANTED_DATE) return true
       if (day === A2_A4_GRANTED_DATE) return a2a4Granted
-      return hasPassedScreen6
+      return visibleLogDates.includes(day)
     })
     return [...visibleBase, ...extraLogLines]
       .map((entry) => ({ ...entry, actor: displayActor(entry.actor) }))
       .sort((a, b) => (a.timestamp < b.timestamp ? 1 : a.timestamp > b.timestamp ? -1 : 0))
-  }, [a1Granted, a2a4Granted, hasPassedScreen6, extraLogLines])
+  }, [a1Granted, a2a4Granted, visibleLogDates, extraLogLines])
 
   const value = useMemo(
     () => ({
