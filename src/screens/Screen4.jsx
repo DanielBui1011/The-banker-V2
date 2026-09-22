@@ -38,7 +38,8 @@ export default function Screen4({ onNext }) {
     <ScreenShell screenNumber={4} title="Khoản phải thu và điểm xác thực">
       <div className="space-y-6">
         <p className="text-lg text-slate-400">
-          Mỗi đơn hàng đã đối soát trở thành một đơn vị khoản phải thu, gắn với kênh và cửa sổ thanh toán riêng.
+          Đơn hàng đã giao nhưng sàn chưa thanh toán được gom theo kênh và cửa sổ thanh toán thành đơn vị khoản
+          phải thu.
         </p>
 
         {/* 6 thẻ đơn vị khoản phải thu — docs/du-lieu.md mục 6 */}
@@ -52,6 +53,11 @@ export default function Screen4({ onNext }) {
               <div className="mt-1 text-base text-slate-400">{unit.channel}</div>
               <div className="mt-2 text-2xl font-bold text-slate-100">{formatNumberVN(unit.projectedNetValue)} triệu</div>
               <div className="mt-1 text-base text-slate-500">Cửa sổ thanh toán: {unit.settlementWindow}</div>
+              {unit.status === 'settled' && unit.actualReceived != null && (
+                <div className="mt-1 text-base text-teal-400">
+                  Thực nhận: {formatNumberVN(unit.actualReceived)} triệu
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -83,13 +89,15 @@ export default function Screen4({ onNext }) {
                 >
                   <div className="text-lg font-semibold text-slate-100">{channel}</div>
                   {available ? (
-                    <div className="mt-2 text-4xl font-bold text-teal-300">{score}</div>
+                    <>
+                      <div className="mt-2 text-4xl font-bold text-teal-300">{score}</div>
+                      <div className="mt-2 text-base text-slate-500">Bấm để xem phân rã →</div>
+                    </>
                   ) : (
-                    <div className="mt-2 text-xl font-bold text-amber-300">
+                    <div className="mt-2 text-xl font-bold text-slate-400">
                       {score} ({metrics.settledLots}/{MIN_LOTS_FOR_SCORE} lô)
                     </div>
                   )}
-                  <div className="mt-2 text-base text-slate-500">Bấm để xem phân rã →</div>
                 </button>
               )
             })}
