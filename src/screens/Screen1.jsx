@@ -59,9 +59,6 @@ export default function Screen1({ onNext }) {
   return (
     <ScreenShell screenNumber={1} title="Trạng thái hiện tại" maxWidth="max-w-5xl">
       <div className="space-y-6">
-        <span className="inline-block rounded-full border border-amber-800 bg-amber-950/50 px-3 py-1 text-base font-medium text-amber-300">
-          Tình trạng hiện tại
-        </span>
         <p className="text-lg text-slate-400">
           {SELLER_PROFILE.ownerName} đã bán xong hàng, nhưng doanh thu thật vẫn đang nằm rải rác ở từng kênh, chưa thể dùng ngay.
         </p>

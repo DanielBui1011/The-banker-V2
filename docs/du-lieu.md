@@ -2,7 +2,10 @@
 
 ## 1. Quy ước
 - Đơn vị tiền: triệu đồng. Dấu phẩy là dấu thập phân (41,3 = 41.3 khi viết code).
-- Hiển thị: 1 chữ số thập phân; tỷ lệ phần trăm: 1 chữ số thập phân.
+- Hiển thị số: số nguyên không hiện phần thập phân (100 triệu, 9 giờ, 170 triệu);
+  số có phần lẻ hiện tối đa 1 chữ số thập phân, làm tròn (41,3 triệu; 46,75 → 46,8 triệu).
+  Dùng chung một hàm định dạng (src/utils/format.js) cho mọi màn.
+  Tỷ lệ phần trăm: luôn 1 chữ số thập phân (85,0%).
 - Ngày "hôm nay" trong demo: 15/09/2027 (Giai đoạn 2, chức năng ứng vốn đã bật).
 - Tên bên cho vay khác dùng tên giả: "Ngân hàng B", "Công ty tài chính C".
 - Tên hãng vận chuyển dùng tên giả: "Hãng vận chuyển A".
