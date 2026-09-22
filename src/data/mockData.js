@@ -1,7 +1,15 @@
 // Nguồn số liệu duy nhất — chuyển từ docs/du-lieu.md. Không viết cứng số liệu ở nơi khác.
 // Đơn vị tiền: triệu đồng. Ngày "hôm nay" trong demo: 15/09/2027.
 
-export const SOLUTION_NAME = 'ĐỪNG ĐÓNG VAI ANH'
+import { DISPLAY_NAME, LEGAL_NAME } from '../config/brand.js'
+
+// Tên hiển thị cho người dùng — dùng ở TopBar, tiêu đề. KHÔNG dùng ở vị trí pháp lý
+// (bên yêu cầu cấp quyền, bên xử lý dữ liệu, nhật ký quyền) — các vị trí đó dùng
+// LEGAL_NAME/TPP_CODE từ src/config/brand.js, xem GRANTED_PERMISSIONS và ACCESS_LOG dưới đây.
+export const SOLUTION_NAME = DISPLAY_NAME
+
+// Ngày "hôm nay" trong demo (docs/du-lieu.md mục 1) — Giai đoạn 2, chức năng ứng vốn đã bật.
+export const DEMO_DATE = '2027-09-15'
 
 // Mục 2 — Hồ sơ nhà bán
 export const SELLER_PROFILE = {
@@ -180,7 +188,7 @@ export const GRANTED_PERMISSIONS = [
     code: 'A1',
     purpose: 'Đối soát dòng tiền',
     from: 'Techcombank',
-    to: SOLUTION_NAME,
+    to: LEGAL_NAME,
     grantedDate: '2027-08-01',
     expiryDate: '2027-10-30',
     status: 'active',
@@ -191,7 +199,7 @@ export const GRANTED_PERMISSIONS = [
     code: 'A2',
     purpose: 'Đánh giá tín dụng',
     from: 'Techcombank',
-    to: SOLUTION_NAME,
+    to: LEGAL_NAME,
     grantedDate: '2027-09-15',
     expiryDate: '2027-12-14',
     status: 'active',
@@ -213,14 +221,14 @@ export const GRANTED_PERMISSIONS = [
 
 // Mục 9 — Nhật ký truy cập
 export const ACCESS_LOG = [
-  { timestamp: '2027-08-01 09:12', actor: SOLUTION_NAME, purpose: 'A1 — đối soát', data: 'Danh sách tài khoản, số dư' },
-  { timestamp: '2027-08-01 09:13', actor: SOLUTION_NAME, purpose: 'A1 — đối soát', data: 'Lịch sử giao dịch 90 ngày (lần đầu)' },
-  { timestamp: '2027-09-10 06:00', actor: SOLUTION_NAME, purpose: 'A1 — đối soát', data: 'Giao dịch 01–10/09' },
-  { timestamp: '2027-09-15 10:02', actor: SOLUTION_NAME, purpose: 'A2 — đánh giá tín dụng', data: 'Lịch sử giao dịch 180 ngày' },
+  { timestamp: '2027-08-01 09:12', actor: LEGAL_NAME, purpose: 'A1 — đối soát', data: 'Danh sách tài khoản, số dư' },
+  { timestamp: '2027-08-01 09:13', actor: LEGAL_NAME, purpose: 'A1 — đối soát', data: 'Lịch sử giao dịch 90 ngày (lần đầu)' },
+  { timestamp: '2027-09-10 06:00', actor: LEGAL_NAME, purpose: 'A1 — đối soát', data: 'Giao dịch 01–10/09' },
+  { timestamp: '2027-09-15 10:02', actor: LEGAL_NAME, purpose: 'A2 — đánh giá tín dụng', data: 'Lịch sử giao dịch 180 ngày' },
   { timestamp: '2027-09-15 10:03', actor: 'Techcombank', purpose: 'A2 — đánh giá tín dụng', data: 'Hồ sơ doanh thu đã xác thực' },
   { timestamp: '2027-09-15 10:05', actor: 'Techcombank', purpose: 'A4 — đăng ký bảo đảm', data: 'RU-03, RU-04' },
-  { timestamp: '2027-09-19 06:00', actor: SOLUTION_NAME, purpose: 'A1 — đối soát', data: 'Giao dịch 11–19/09' },
-  { timestamp: '2027-09-20 06:00', actor: SOLUTION_NAME, purpose: 'A1 — đối soát', data: 'Giao dịch 20/09' },
+  { timestamp: '2027-09-19 06:00', actor: LEGAL_NAME, purpose: 'A1 — đối soát', data: 'Giao dịch 11–19/09' },
+  { timestamp: '2027-09-20 06:00', actor: LEGAL_NAME, purpose: 'A1 — đối soát', data: 'Giao dịch 20/09' },
 ]
 
 // Mục 10 — Dòng thời gian tất toán. Số dư nợ KHÔNG lưu tĩnh ở đây — Màn 6 tính từ
@@ -312,8 +320,9 @@ export const LOCK_CERTIFICATE = {
 }
 
 // Màn 2 — Cấp quyền A1 (docs/man-hinh.md mục Màn 2, docs/du-lieu.md mục 8)
+// Mã TPP hiển thị trên trang cấp quyền lấy từ TPP_CODE (src/config/brand.js), không
+// lặp lại ở đây.
 export const A1_CONSENT = {
-  registeredTppId: '0318 xxx xxx (giả định)',
   purposeLabel: 'Đối soát dòng tiền (A1)',
   dataScopes: [
     'Danh sách tài khoản',
@@ -328,7 +337,6 @@ export const A1_TOKEN_TTL_SECONDS = 3600
 
 // Màn 5, bước 5a — Cấp quyền A2 (trang mô phỏng Techcombank, cùng khuôn Bước 2b)
 export const A2_CONSENT = {
-  registeredTppId: A1_CONSENT.registeredTppId,
   purposeLabel: 'Đánh giá tín dụng (A2)',
   dataScopes: ['Lịch sử giao dịch 180 ngày', 'Hồ sơ doanh thu đã xác thực'],
   durationDays: 90,

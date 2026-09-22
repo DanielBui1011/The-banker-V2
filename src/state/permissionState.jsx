@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useMemo, useState } from 'react'
-import { GRANTED_PERMISSIONS, ACCESS_LOG, SELLER_PROFILE, SOLUTION_NAME } from '../data/mockData.js'
+import { GRANTED_PERMISSIONS, ACCESS_LOG, SELLER_PROFILE } from '../data/mockData.js'
+import { LEGAL_NAME, TPP_CODE } from '../config/brand.js'
 
 // Trạng thái quyền dùng chung — Màn 2 (cấp A1) và Màn 7 (trung tâm quyền riêng tư)
 // đọc/ghi cùng một nguồn, theo docs/man-hinh.md Màn 7 và docs/du-lieu.md mục 8, 9.
@@ -34,9 +35,10 @@ function nowTimestamp() {
   return `${A2_A4_GRANTED_DATE} ${hh}:${mm}`
 }
 
-// Tên pháp nhân đầy đủ dùng ở cột "Bên truy cập" — khớp với trang cấp quyền Techcombank.
+// Tên pháp nhân + mã TPP dùng ở cột "Bên truy cập" — khớp với trang cấp quyền Techcombank
+// (docs/thiet-ke.md mục 3: mọi vị trí pháp lý dùng LEGAL_NAME + TPP_CODE).
 function displayActor(actor) {
-  return actor === SOLUTION_NAME ? `Công ty ${SOLUTION_NAME}` : actor
+  return actor === LEGAL_NAME ? `${LEGAL_NAME} — mã TPP ${TPP_CODE}` : actor
 }
 
 const PermissionContext = createContext(null)
