@@ -34,8 +34,12 @@ export default {
       colors: {
         // Primary của Nền tảng (docs/thiet-ke.md mục 2). Không dùng đỏ cho ngân
         // hàng vì đỏ đã là màu ngữ nghĩa "đứt gãy".
+        // DEFAULT đọc từ biến CSS (src/index.css) — SurfaceFrame ghi đè biến này
+        // trong khung bank/bankOps để mọi bg-navy/border-navy/text-navy hiện có
+        // (nút, Stepper, ActProgress, ConfirmDialog...) tự động đổi sang màu trung
+        // tính khi đang ở trang Techcombank, không cần sửa từng màn (Vòng 8 mục 4).
         navy: {
-          DEFAULT: '#0B2545',
+          DEFAULT: 'var(--color-navy)',
           50: '#E7ECF2',
           600: '#123A6B',
           700: '#0B2545',

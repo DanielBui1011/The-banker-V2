@@ -4,5 +4,5 @@
 // trên trang ngân hàng, bên xử lý dữ liệu trong bảng quyền, và cột "Bên truy cập"
 // trong nhật ký quyền — không dùng DISPLAY_NAME ở các vị trí này.
 export const DISPLAY_NAME = 'Đừng Đóng Vai Anh'
-export const LEGAL_NAME = '<ĐIỀN TÊN PHÁP NHÂN>'
+export const LEGAL_NAME = 'Công ty [Tên giải pháp]'
 export const TPP_CODE = '0318 xxx xxx (giả định)'

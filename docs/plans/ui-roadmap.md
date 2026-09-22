@@ -5,39 +5,74 @@ Dựa trên `docs/ui-audit.md` (Vòng 7). Nguồn thẩm quyền: `DESIGN.md` > 
 mỗi vòng tương ứng. Mỗi tác vụ: file cụ thể, tiêu chí chấp nhận kiểm tra được,
 cách kiểm tra.
 
-## Vòng 8 — Nền móng
+## Vòng 8 — Nền móng thiết kế
 
-### 8.1 Điền `LEGAL_NAME` thật (Cao)
-- File: `src/config/brand.js`
-- Việc: thay `'<ĐIỀN TÊN PHÁP NHÂN>'` bằng "Công ty [tên giải pháp]" thật (hỏi
-  lại nếu chưa chốt tên, theo CLAUDE.md "Cách làm việc").
-- Tiêu chí chấp nhận: không còn chuỗi `<ĐIỀN` trong repo; Màn 2 bước 2b và Màn
-  5 bước 5a/5c hiện tên công ty thật ở "Bên yêu cầu".
-- Kiểm tra: `grep -rn "ĐIỀN TÊN" src/` không có kết quả; xem Màn 2/5 ở
-  1920×1080, đọc được dòng "Bên yêu cầu".
+Cập nhật theo prompt thực thi Vòng 8 (thay thế 8.1–8.4 cũ — phạm vi rộng hơn:
+hợp nhất StatusBadge, khung `bankOps` mới, màu hành động theo khung, kéo sớm
+hai tác vụ ScenarioPanel từ Vòng 11).
 
-### 8.2 Phân biệt thị giác khung `bankOps` (Cao)
-- File: `src/components/ui/SurfaceFrame.jsx` (thêm icon/màu riêng cho variant
-  `bankOps`, tương tự `icon: true` đã có ở `bank`)
-- Việc: thêm icon lucide riêng (không dùng `Lock` đã gán cho `bank`) và/hoặc
-  màu dải khác hẳn `platform`/`bank` cho `bankOps`, để Màn 8 nhận ra được
-  trong ≤10 giây kể cả khi nhìn xa.
-- Tiêu chí chấp nhận: `bankOps` có dấu hiệu thị giác (icon hoặc màu dải) không
-  trùng `platform` và không trùng `bank`; DESIGN.md ràng buộc khóa #2 vẫn đúng
-  (không dùng đỏ).
+### 8.1 Điền `LEGAL_NAME` thật (Cao) — Đã xử lý
+- File: `src/config/brand.js`, `src/config/brand.test.js` (mới).
+- Việc: `LEGAL_NAME = 'Công ty [Tên giải pháp]'` — dạng khung vuông có chủ
+  đích (người dùng xác nhận giữ dạng này thay vì tên thật), không phải
+  placeholder `<...>` chưa điền. `TPP_CODE` đã ghi rõ "(giả định)" từ trước,
+  không cần sửa.
+- Tiêu chí chấp nhận: không còn chuỗi `<ĐIỀN` trong repo; test Vitest xác nhận
+  `LEGAL_NAME` không chứa `<` và không trùng `DISPLAY_NAME`.
+- Kiểm tra: `grep -rn "ĐIỀN TÊN" src/` không có kết quả; `npm test`.
+
+### 8.2 Hợp nhất StatusBadge (mới) — Đã xử lý
+- File: `src/components/StatusBadge.jsx` (xóa).
+- Việc: Màn 4/6/7/9 đã dùng `src/components/ui/StatusBadge.jsx` từ Vòng 7A/7C
+  — bản cũ (tone + children, nền tối) không còn nơi nào import. Xóa file cũ,
+  không cần map lại màn nào.
+- Tiêu chí chấp nhận: `grep` không còn import `'../components/StatusBadge.jsx'`
+  ở đâu trong `src/`; badge luôn nằm trong `Card` nền trắng (đủ tương phản),
+  không cần đổi nền.
+- Kiểm tra: `npm run build` (build lỗi nếu còn import file đã xóa).
+
+### 8.3 Phân biệt thị giác khung `bankOps` (Cao) — Đã xử lý
+- File: `src/components/ui/SurfaceFrame.jsx` (chỉ sửa file này).
+- Việc: `bankOps` đổi từ strip ngang sang thanh điều hướng dọc bên trái kiểu
+  phần mềm nghiệp vụ nội bộ — icon `Landmark` (không dùng `Lock` đã gán cho
+  `bank`), nhãn "Nội bộ — mô phỏng", 3 mục điều hướng giả trang trí ("Tra cứu
+  nhà bán" đang chọn, "Danh mục khóa", "Cảnh báo" — không bấm được). Nền
+  `bg-slate-700`, không dùng đỏ/navy/`slate-800` (đã dùng cho strip `bank`).
+- Tiêu chí chấp nhận: `bankOps` nhận ra được bằng BỐ CỤC (thanh dọc bên trái),
+  không cần đọc chữ; không trùng `platform`/`bank`.
 - Kiểm tra: xem Màn 1 (platform), Màn 2 bước b (bank), Màn 8 (bankOps) liên
-  tiếp ở 1920×1080 — phân biệt được không cần đọc chữ.
+  tiếp ở 1920×1080.
 
-### 8.3 Font, tokens, số tiền chuẩn — xác nhận không cần sửa
-- File: không sửa (đã đúng: `@fontsource/be-vietnam-pro`, `Money` component,
-  `tabular-nums`). Việc của vòng này chỉ là XÁC NHẬN không có nơi nào bỏ qua
-  `Money`/`formatNumberVN` khi thêm code mới trong 8.1/8.2.
-- Tiêu chí chấp nhận: `npm run build` và `npm test` pass sau 8.1/8.2.
-- Kiểm tra: `npm run build`, `npm test`.
+### 8.4 Màu hành động theo khung (mới) — Đã xử lý
+- File: `tailwind.config.js` (`navy.DEFAULT` → `var(--color-navy)`),
+  `src/index.css` (khai báo `--color-navy` ở `:root`, ghi đè trong
+  `[data-surface-frame='bank'], [data-surface-frame='bankOps']`),
+  `src/components/ui/SurfaceFrame.jsx` (gắn `data-surface-frame` trên khung
+  ngoài cùng mọi variant).
+- Việc: nút chính/Stepper/ActProgress/ConfirmDialog trong khung `bank`/
+  `bankOps` không còn hiện `navy` (thương hiệu Nền tảng) — đổi tập trung qua
+  biến CSS, không sửa từng màn.
+- Tiêu chí chấp nhận: xem Màn 2 bước b (nút "Đồng ý cấp quyền..."), Màn 5 bước
+  a/c (Stepper bước hiện tại), Màn 8 (nút "Tiếp: Giai đoạn 3") — không còn màu
+  navy; Màn 1/6/9 (platform) vẫn giữ navy như cũ.
+- Kiểm tra: `npm run build`; xem trực tiếp ở 1920×1080.
 
-### 8.4 Nhãn trạng thái chữ+icon — xác nhận không cần sửa
-- Đã đúng qua `StatusBadge`/`src/ui/status.js`. Không có tác vụ, chỉ nhắc
-  người thực hiện Vòng 9-11 không tự vẽ badge màu rời khỏi `StatusBadge`.
+### 8.5 Money — xác nhận đã hỗ trợ đơn vị "nghìn đồng" — Đã xử lý (không cần sửa)
+- File: không sửa. `src/components/ui/Money.jsx` đã nhận prop `unit` tuỳ ý
+  (mặc định `'triệu'`) — truyền `unit="nghìn đồng"` đã hoạt động, không cần
+  thêm gì. Màn 6 (`interestThousandVN`) KHÔNG được sửa ở vòng này (ngoài phạm
+  vi prompt).
+- Tiêu chí chấp nhận: không có diff ở `Money.jsx`.
+
+### 8.6 ScenarioPanel — kéo sớm từ Vòng 11 — Đã xử lý
+- File: `src/components/ScenarioPanel.jsx`.
+- Việc: (a) nhãn kịch bản đang bật đổi từ `orange` sang
+  `border-slate-600 bg-slate-900/90 text-slate-100`; (b) toàn bộ
+  `text-sm/text-base/text-lg/text-xl` đổi sang `text-label/text-body/text-emphasis`.
+- Tiêu chí chấp nhận: không còn `orange` hay `text-sm/base/lg/xl` (thang
+  Tailwind mặc định) trong file.
+- Kiểm tra: `grep -n "text-\(sm\|base\|lg\|xl\)\b\|orange" src/components/ScenarioPanel.jsx`
+  không có kết quả (ngoại trừ class không phải font-size/màu, ví dụ `rounded-lg`).
 
 ## Vòng 9 — Màn 1, 2, 7, 3
 
@@ -124,24 +159,11 @@ cách kiểm tra.
   tên ngân hàng thật ngoài Techcombank.
 - Kiểm tra: đọc `src/data/mockData.js`, xác nhận bằng mắt.
 
-### 11.3 ScenarioPanel — thang chữ nhất quán (Thấp)
-- File: `src/components/ScenarioPanel.jsx`
-- Việc: đổi `text-sm/text-base/text-lg/text-xl` sang `text-label/text-body/text-emphasis`
-  cho nhất quán với các màn đã migrate (không bắt buộc vì panel không phải nội
-  dung trình chiếu chính).
-- Tiêu chí chấp nhận: không còn `text-sm/text-base/text-lg/text-xl` (thang
-  Tailwind mặc định) trong file, chỉ dùng thang `label/body/emphasis/...`.
-- Kiểm tra: `grep -n "text-\(sm\|base\|lg\|xl\)\b" src/components/ScenarioPanel.jsx`
-  không có kết quả (ngoại trừ các class không phải font-size như `rounded-lg`).
+### 11.3 ScenarioPanel — thang chữ nhất quán (Thấp) — Đã xử lý ở Vòng 8 mục 8.6
+Kéo sớm vì cùng file với 11.4 và rẻ để làm chung.
 
-### 11.4 ScenarioPanel — đổi màu nhãn kịch bản (Thấp)
-- File: `src/components/ScenarioPanel.jsx` (dòng ~21, `bg-orange-950/90`,
-  `text-orange-200`, `border-orange-600`)
-- Việc: đổi sang màu trung tính (slate/navy) để không trùng nghĩa "Tầng 3"
-  (orange) trong bảng màu ngữ nghĩa CLAUDE.md.
-- Tiêu chí chấp nhận: nhãn kịch bản không dùng `orange`; các toggle vẫn dùng
-  `teal` cho trạng thái bật (đã đúng, không đổi).
-- Kiểm tra: đọc lại `ScenarioPanel.jsx`, xác nhận không còn `orange`.
+### 11.4 ScenarioPanel — đổi màu nhãn kịch bản (Thấp) — Đã xử lý ở Vòng 8 mục 8.6
+Kéo sớm cùng 11.3.
 
 ## Kiểm tra chung mọi vòng
 - `npm run build` và `npm test` pass, dán kết quả thật (CLAUDE.md "Quy ước plugin").
