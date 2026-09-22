@@ -1,31 +1,43 @@
 import { useState } from 'react'
-import ScreenShell from '../components/ScreenShell.jsx'
+import TopBar from '../components/ui/TopBar.jsx'
+import ActProgress from '../components/ui/ActProgress.jsx'
+import SurfaceFrame from '../components/ui/SurfaceFrame.jsx'
+import Card from '../components/ui/Card.jsx'
+import StatusBadge from '../components/ui/StatusBadge.jsx'
+import ConfirmDialog from '../components/ui/ConfirmDialog.jsx'
+import Timeline from '../components/ui/Timeline.jsx'
+import Callout from '../components/ui/Callout.jsx'
+import { actForScreen } from '../config/flow.js'
 import { usePermissions } from '../state/permissionState.jsx'
+import { FOOTER_NOTE } from '../data/mockData.js'
+import { formatDateVN } from '../utils/format.js'
 
-const STATUS_STYLE = {
-  active: 'text-teal-400',
-  'in-effect': 'text-teal-400',
-  terminated: 'text-teal-400',
-  revoked: 'text-slate-500',
-  'not-granted': 'text-slate-500',
+// Bản chất mỗi quyền (docs/quy-tac.md mục 3, du-lieu.md mục 8): A1/A2 là quyền xử
+// lý dữ liệu qua Open API; A4 là biện pháp bảo đảm (đăng ký theo NĐ 99/2022/NĐ-CP),
+// không phải quyền xử lý dữ liệu.
+const NATURE_LABEL = {
+  A1: 'Xử lý dữ liệu',
+  A2: 'Xử lý dữ liệu',
+  A4: 'Biện pháp bảo đảm',
 }
 
-const REVOKE_CONFIRM_MESSAGE = {
-  A1: 'Rút quyền A1 sẽ dừng đối soát tự động. Bạn chắc chắn?',
-  A2: 'Rút quyền A2 sẽ dừng đánh giá tín dụng. Bạn chắc chắn?',
-}
-
-function formatDateVN(value) {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return value
-  const [y, m, d] = value.split('-')
-  return `${d}/${m}/${y}`
+// Hệ quả cụ thể khi rút từng quyền, và nhãn nút xác nhận nêu rõ hành động
+// (docs/man-hinh.md Màn 7) — không dùng "OK"/"Xác nhận" chung chung.
+const REVOKE_INFO = {
+  A1: {
+    message: 'Techcombank sẽ ngừng đọc dòng tiền phục vụ đối soát. Đối soát tự động (Màn 3) sẽ dừng cập nhật.',
+    confirmLabel: 'Rút quyền A1',
+  },
+  A2: {
+    message: 'Techcombank sẽ không còn xem dữ liệu phục vụ đánh giá tín dụng. Đối soát (A1) vẫn hoạt động.',
+    confirmLabel: 'Rút quyền A2',
+  },
 }
 
 function formatLogTimestamp(value) {
   const [datePart, timePart] = value.split(' ')
   if (!/^\d{4}-\d{2}-\d{2}$/.test(datePart)) return value
-  const [y, m, d] = datePart.split('-')
-  return `${d}/${m}/${y} ${timePart}`
+  return `${formatDateVN(datePart)} ${timePart}`
 }
 
 export default function Screen7({ onBack, onPrev, onGoToScreen }) {
@@ -58,158 +70,161 @@ export default function Screen7({ onBack, onPrev, onGoToScreen }) {
     return null
   }
 
+  const timelineItems = accessLog.map((entry) => ({
+    date: formatLogTimestamp(entry.timestamp),
+    label: `${entry.actor} · ${entry.purpose} — ${entry.data}`,
+    done: true,
+  }))
+
   return (
-    <ScreenShell screenNumber={7} title="Trung tâm quyền riêng tư">
-      <div className="space-y-6">
-        {goBack && (
-          <button
-            onClick={goBack}
-            className="rounded-lg border border-slate-700 bg-slate-900 px-4 py-2 text-base font-medium text-slate-300 hover:bg-slate-800"
-          >
-            ← Quay lại
-          </button>
-        )}
+    <div className="flex h-full flex-col">
+      <TopBar screenNumber={7} showPeekButton={false} />
+      <div className="min-h-0 flex-1">
+        <SurfaceFrame variant="platform">
+          <div className="flex h-full flex-col">
+            <div className="border-b border-slate-200 px-12 pb-3 pt-3">
+              <ActProgress currentAct={actForScreen(7)} tone="light" />
+            </div>
 
-        <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-5">
-          <div className="mb-4 text-xl font-semibold text-slate-200">Danh sách quyền</div>
-          {permissions.length === 0 ? (
-            <p className="text-lg text-slate-500">Chưa có quyền nào được cấp.</p>
-          ) : (
-            <div className="space-y-3">
-              {permissions.map((permission) => {
-                const action = actionFor(permission)
-                const lockedReason =
-                  permission.code === 'A4' && permission.status === 'in-effect' ? permission.revokeNote : null
+            <main className="flex-1 overflow-y-auto px-12 py-10">
+              <div className="mx-auto max-w-[1536px] space-y-6">
+                <div className="flex items-center justify-between">
+                  <h1 className="text-screen-title font-bold text-slate-900">Trung tâm quyền riêng tư</h1>
+                  {goBack && (
+                    <button
+                      onClick={goBack}
+                      className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-label font-medium text-slate-700 hover:bg-slate-50"
+                    >
+                      ← Quay lại
+                    </button>
+                  )}
+                </div>
 
-                return (
-                  <div key={permission.code} className="rounded-lg border border-slate-800 bg-slate-950/40 p-4">
-                    <div className="flex flex-wrap items-start justify-between gap-3">
-                      <div>
-                        <div className="text-lg font-semibold text-white">
-                          {permission.code} — {permission.purpose}
-                        </div>
-                        {permission.status === 'not-granted' ? (
-                          <div className="mt-1 text-base text-slate-500">{permission.pendingNote}</div>
-                        ) : (
-                          <>
-                            <div className="mt-1 text-base text-slate-400">
-                              {permission.from} → {permission.to}
+                <div>
+                  <div className="mb-3 text-section-title font-semibold text-slate-900">Danh sách quyền</div>
+                  {permissions.length === 0 ? (
+                    <Card>
+                      <p className="text-body text-slate-500">Chưa có quyền nào được cấp.</p>
+                    </Card>
+                  ) : (
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                      {permissions.map((permission) => {
+                        const action = actionFor(permission)
+                        const lockedReason =
+                          permission.code === 'A4' && permission.status === 'in-effect' ? permission.revokeNote : null
+                        const statusKey =
+                          permission.status === 'not-granted' ? 'not-granted' : `granted-${permission.status}`
+
+                        return (
+                          <Card key={permission.code} className="flex flex-col gap-3">
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="text-emphasis font-semibold text-slate-900">
+                                {permission.code} — {permission.purpose}
+                              </div>
+                              <StatusBadge status={statusKey} className="flex-shrink-0" />
                             </div>
-                            <div className="mt-1 text-base text-slate-500">
-                              Cấp ngày {formatDateVN(permission.grantedDate)} · Hạn {formatDateVN(permission.expiryDate)}
+
+                            <div className="text-label text-slate-600">
+                              Bản chất: {NATURE_LABEL[permission.code]}
                             </div>
-                          </>
-                        )}
-                      </div>
-                      <div className="text-right">
-                        <div className={`text-lg font-semibold ${STATUS_STYLE[permission.status]}`}>
-                          {permission.statusLabel}
-                        </div>
+                            <div className="text-label text-slate-600">
+                              Bên nhận: {permission.to}
+                            </div>
 
-                        {action?.kind === 'revoke' && (
-                          <button
-                            onClick={() => setConfirmCode(permission.code)}
-                            className="mt-2 rounded-lg border border-slate-700 bg-slate-800 px-3 py-1.5 text-base font-medium text-slate-200 hover:bg-slate-700"
-                          >
-                            Rút lại
-                          </button>
-                        )}
+                            {permission.status === 'not-granted' ? (
+                              <div className="text-label text-slate-500">{permission.pendingNote}</div>
+                            ) : (
+                              <div className="text-label text-slate-500">
+                                Cấp ngày {formatDateVN(permission.grantedDate)} · Hạn{' '}
+                                {/^\d{4}-\d{2}-\d{2}$/.test(permission.expiryDate)
+                                  ? formatDateVN(permission.expiryDate)
+                                  : permission.expiryDate}
+                              </div>
+                            )}
 
-                        {action?.kind === 'regrant' && (
-                          <button
-                            onClick={action.run}
-                            className="mt-2 rounded-lg border border-teal-700 bg-teal-950/40 px-3 py-1.5 text-base font-medium text-teal-300 hover:bg-teal-900/40"
-                          >
-                            Cấp lại
-                          </button>
-                        )}
+                            <div className="mt-auto pt-2">
+                              {action?.kind === 'revoke' && (
+                                <button
+                                  onClick={() => setConfirmCode(permission.code)}
+                                  className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-label font-medium text-slate-700 hover:bg-slate-50"
+                                >
+                                  Rút quyền {permission.code}
+                                </button>
+                              )}
 
-                        {!action && permission.status === 'in-effect' && (
-                          <div className="mt-2">
-                            <button
-                              disabled
-                              className="cursor-not-allowed rounded-lg border border-slate-800 bg-slate-900 px-3 py-1.5 text-base font-medium text-slate-600"
-                            >
-                              Rút lại
-                            </button>
-                            {lockedReason && <div className="mt-1 text-base text-amber-300">{lockedReason}</div>}
-                          </div>
-                        )}
-                      </div>
+                              {action?.kind === 'regrant' && (
+                                <button
+                                  onClick={action.run}
+                                  className="w-full rounded-lg border border-teal-600 bg-teal-50 px-3 py-2 text-label font-medium text-teal-700 hover:bg-teal-100"
+                                >
+                                  Cấp lại quyền {permission.code}
+                                </button>
+                              )}
+
+                              {!action && permission.status === 'in-effect' && (
+                                <div className="space-y-1.5">
+                                  <button
+                                    disabled
+                                    className="w-full cursor-not-allowed rounded-lg border border-slate-200 bg-slate-100 px-3 py-2 text-label font-medium text-slate-400"
+                                  >
+                                    Không thể rút quyền {permission.code}
+                                  </button>
+                                  {lockedReason && (
+                                    <Callout variant="warn">{lockedReason}</Callout>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          </Card>
+                        )
+                      })}
+                    </div>
+                  )}
+                </div>
+
+                <Card>
+                  <div className="mb-4 text-section-title font-semibold text-slate-900">Nhật ký truy cập</div>
+                  {timelineItems.length === 0 ? (
+                    <p className="text-body text-slate-500">Chưa có hoạt động truy cập nào.</p>
+                  ) : (
+                    <div className="max-h-[360px] overflow-y-auto pr-1">
+                      <Timeline items={timelineItems} />
+                    </div>
+                  )}
+
+                  <div className="mt-5 flex justify-end">
+                    <div className="text-right">
+                      <button
+                        onClick={handleExport}
+                        className="rounded-xl border border-slate-300 px-5 py-2.5 text-body font-semibold text-slate-700 transition hover:bg-slate-50"
+                      >
+                        Xuất hồ sơ doanh thu đã xác thực của tôi
+                      </button>
+                      {exportMessage && <p className="mt-2 text-label text-teal-700">{exportMessage}</p>}
                     </div>
                   </div>
-                )
-              })}
-            </div>
-          )}
-        </div>
+                </Card>
+              </div>
+            </main>
 
-        <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-5">
-          <div className="mb-4 text-xl font-semibold text-slate-200">Nhật ký truy cập</div>
-          {accessLog.length === 0 ? (
-            <p className="text-lg text-slate-500">Chưa có hoạt động truy cập nào.</p>
-          ) : (
-            <table className="w-full text-base">
-              <thead>
-                <tr className="border-b border-slate-800 text-left text-slate-500">
-                  <th className="py-2 pr-3 font-medium">Thời điểm</th>
-                  <th className="py-2 pr-3 font-medium">Bên truy cập</th>
-                  <th className="py-2 pr-3 font-medium">Mục đích</th>
-                  <th className="py-2 font-medium">Dữ liệu</th>
-                </tr>
-              </thead>
-              <tbody>
-                {accessLog.map((entry, i) => (
-                  <tr key={i} className="border-b border-slate-800/60">
-                    <td className="py-2 pr-3 whitespace-nowrap text-slate-400">{formatLogTimestamp(entry.timestamp)}</td>
-                    <td className="py-2 pr-3 text-slate-300">{entry.actor}</td>
-                    <td className="py-2 pr-3 text-slate-400">{entry.purpose}</td>
-                    <td className="py-2 text-slate-400">{entry.data}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-
-          <div className="mt-4 flex justify-end">
-            <div className="text-right">
-              <button
-                onClick={handleExport}
-                className="rounded-xl border border-slate-600 px-5 py-2.5 text-lg font-semibold text-slate-200 transition hover:bg-slate-800"
-              >
-                Xuất hồ sơ doanh thu đã xác thực của tôi
-              </button>
-              {exportMessage && <p className="mt-2 text-base text-emerald-400">{exportMessage}</p>}
-            </div>
+            <footer className="border-t border-slate-200 px-12 py-3 text-label text-slate-500">{FOOTER_NOTE}</footer>
           </div>
-        </div>
+        </SurfaceFrame>
       </div>
 
-      {confirmCode && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 px-6">
-          <div className="w-full max-w-md rounded-xl border border-slate-700 bg-slate-900 p-6 shadow-xl">
-            <p className="text-lg text-slate-100">{REVOKE_CONFIRM_MESSAGE[confirmCode]}</p>
-            <div className="mt-6 flex gap-3">
-              <button
-                onClick={() => setConfirmCode(null)}
-                className="flex-1 rounded-lg border border-slate-600 py-2.5 text-base font-semibold text-slate-300 hover:bg-slate-800"
-              >
-                Hủy
-              </button>
-              <button
-                onClick={() => {
-                  if (confirmCode === 'A1') revokeA1()
-                  if (confirmCode === 'A2') revokeA2()
-                  setConfirmCode(null)
-                }}
-                className="flex-1 rounded-lg bg-red-700 py-2.5 text-base font-semibold text-white hover:bg-red-600"
-              >
-                Xác nhận rút quyền
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </ScreenShell>
+      <ConfirmDialog
+        open={confirmCode != null}
+        title={confirmCode ? `Rút quyền ${confirmCode}?` : ''}
+        message={confirmCode ? REVOKE_INFO[confirmCode].message : ''}
+        confirmLabel={confirmCode ? REVOKE_INFO[confirmCode].confirmLabel : 'Xác nhận'}
+        cancelLabel="Hủy"
+        onCancel={() => setConfirmCode(null)}
+        onConfirm={() => {
+          if (confirmCode === 'A1') revokeA1()
+          if (confirmCode === 'A2') revokeA2()
+          setConfirmCode(null)
+        }}
+      />
+    </div>
   )
 }

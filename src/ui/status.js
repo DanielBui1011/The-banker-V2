@@ -11,6 +11,12 @@
 //   neutral = trung tính / dự phóng / hết hiệu lực / đã hoàn / chưa đủ lịch sử (slate)
 
 export const STATUS_TABLE = {
+  // Trạng thái quyền (Màn 7, docs/man-hinh.md) — đọc từ src/state/permissionState.jsx.
+  'not-granted': { tone: 'neutral', icon: 'Clock', label: 'Chưa cấp' },
+  'granted-active': { tone: 'tier1', icon: 'ShieldCheck', label: 'Đang hoạt động' },
+  'granted-revoked': { tone: 'neutral', icon: 'CircleSlash', label: 'Đã thu hồi' },
+  'granted-in-effect': { tone: 'tier2', icon: 'Lock', label: 'Đang hiệu lực' },
+  'granted-terminated': { tone: 'neutral', icon: 'CheckCircle2', label: 'Đã chấm dứt — khoản vay đã tất toán' },
   projected: { tone: 'neutral', icon: 'Clock', label: 'Dự phóng' },
   'insufficient-history': { tone: 'neutral', icon: 'FileQuestion', label: 'Chưa đủ lịch sử' },
   verified: { tone: 'neutral', icon: 'ShieldCheck', label: 'Đã xác thực' },
