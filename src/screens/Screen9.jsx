@@ -1,17 +1,22 @@
+import Card from '../components/ui/Card.jsx'
+import StatusBadge from '../components/ui/StatusBadge.jsx'
+import Callout from '../components/ui/Callout.jsx'
 import { formatNumberVN } from '../utils/format.js'
 import { MarketplacePaymentNotice, TechcombankPageFrame, TechRow } from './Screen6.jsx'
 
 // Không phải điểm dừng riêng trong chuỗi mũi tên trái/phải — đây là diễn biến thay thế
 // của Màn 6 khi bật kịch bản rò rỉ (phím L), được Màn 6 gọi tới theo mốc hiện tại.
+// Vòng 7C: giọng điệu bình tĩnh, không trình bày như lỗi hệ thống — chỉ đổi cách
+// trình bày bằng component chung, giữ nguyên logic (src/state/settlementState.jsx).
 export default function LeakScenarioContent({ settlement }) {
   const m = settlement.currentMilestone
   if (!m) return null
 
   if (m.kind === 'leak-no-payment') {
     return (
-      <InfoBox tone="amber">
-        {m.marketplace} không có khoản thanh toán nào về tài khoản Techcombank cho {m.unit}.
-      </InfoBox>
+      <Callout variant="warn">
+        {m.marketplace} không có khoản thanh toán nào về tài khoản Techcombank cho {m.unit} trong cửa sổ thanh toán.
+      </Callout>
     )
   }
 
@@ -20,7 +25,7 @@ export default function LeakScenarioContent({ settlement }) {
   }
 
   if (m.kind === 'leak-window-closed') {
-    return <InfoBox tone="amber">Đã hết cửa sổ thanh toán {m.unit}.</InfoBox>
+    return <Callout variant="warn">Đã hết cửa sổ thanh toán {m.unit}. Đang trong 3 ngày ân hạn.</Callout>
   }
 
   if (m.kind === 'leak-broken') {
@@ -30,46 +35,69 @@ export default function LeakScenarioContent({ settlement }) {
   return null
 }
 
-function InfoBox({ tone = 'slate', children }) {
-  const toneClass =
-    tone === 'amber'
-      ? 'border-amber-700/60 bg-amber-950/20 text-amber-200'
-      : 'border-slate-800 bg-slate-900/60 text-slate-200'
-  return <div className={`rounded-xl border p-5 text-lg ${toneClass}`}>{children}</div>
-}
-
 function BrokenPanel({ settlement, unit, amount }) {
   return (
     <div className="space-y-4">
-      <div className="rounded-xl border border-red-700/60 bg-red-950/20 p-5 text-lg font-semibold text-red-300">
-        Tiền không về tài khoản neo — đã thông báo Techcombank.
-      </div>
+      <Card className="border-red-600 bg-red-50">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <div className="text-emphasis font-semibold text-red-800">{unit} — đơn vị khoản phải thu đứt gãy</div>
+            <p className="mt-1 text-label text-red-700">
+              1/8 lô hàng không về tài khoản neo sau hết 3 ngày ân hạn — đã tự động thông báo tới Techcombank.
+            </p>
+          </div>
+          <StatusBadge status="broken" />
+        </div>
+      </Card>
 
       {settlement.fundingFrozen && (
-        <div className="inline-block rounded-full border border-amber-700 bg-amber-950/40 px-4 py-1.5 text-base font-medium text-amber-300">
-          Tạm dừng cấp vốn mới
-        </div>
+        <Callout variant="warn">Đang tạm dừng cấp vốn mới cho tới khi xử lý xong.</Callout>
       )}
 
       {!settlement.leakRemediated ? (
-        <>
-          <p className="text-lg text-slate-300">Vui lòng xác nhận tài khoản nhận tiền trên sàn.</p>
-          <button
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <OptionCard
+            title="Giải trình tài khoản nhận tiền"
+            description="Xác nhận với Techcombank tài khoản đã dùng để nhận tiền từ Shopee cho lô hàng này."
+            actionLabel="Giải trình →"
             onClick={settlement.openLeakExplain}
-            className="rounded-xl bg-blue-600 px-5 py-2.5 text-lg font-semibold text-white transition hover:bg-blue-500"
-          >
-            Tôi đã đổi tài khoản — giải trình
-          </button>
-        </>
+          />
+          <OptionCard
+            title="Trả nợ từ nguồn khác"
+            description={`Trả ${formatNumberVN(amount)} triệu cho khoản vay bằng tài khoản khác của chị Lan tại Techcombank.`}
+            actionLabel="Trả từ nguồn khác →"
+            onClick={settlement.openLeakExplain}
+          />
+        </div>
       ) : (
-        <div className="rounded-xl border border-teal-800/60 bg-teal-950/20 p-5 text-lg text-teal-200">
+        <Callout variant="info">
           Đã giải trình và trả {formatNumberVN(amount)} triệu từ nguồn khác. Dư nợ về 0, đã gỡ tạm dừng cấp vốn mới.{' '}
           {unit} vẫn giữ trạng thái "Đứt gãy" trong lịch sử.
-        </div>
+        </Callout>
       )}
 
       {settlement.leakExplainOpen && <LeakExplainModal settlement={settlement} amount={amount} />}
     </div>
+  )
+}
+
+// Hai lựa chọn xử lý trình bày tách biệt (man-hinh.md Màn 9) — cùng dẫn tới một bước
+// xác nhận trên trang Techcombank vì đây là một quy trình khôi phục duy nhất trong
+// state hiện có (settlementState.jsx); không đổi logic nghiệp vụ, chỉ đổi trình bày.
+function OptionCard({ title, description, actionLabel, onClick }) {
+  return (
+    <Card className="flex flex-col justify-between">
+      <div>
+        <div className="text-emphasis font-semibold text-slate-900">{title}</div>
+        <p className="mt-2 text-label text-slate-600">{description}</p>
+      </div>
+      <button
+        onClick={onClick}
+        className="mt-4 rounded-xl bg-navy px-5 py-2.5 text-body font-semibold text-white transition hover:opacity-90"
+      >
+        {actionLabel}
+      </button>
+    </Card>
   )
 }
 

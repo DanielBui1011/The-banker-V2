@@ -1,30 +1,39 @@
 import { useEffect, useMemo, useState } from 'react'
-import ScreenShell from '../components/ScreenShell.jsx'
+import TopBar from '../components/ui/TopBar.jsx'
+import ActProgress from '../components/ui/ActProgress.jsx'
+import SurfaceFrame from '../components/ui/SurfaceFrame.jsx'
+import Stepper from '../components/ui/Stepper.jsx'
+import Card from '../components/ui/Card.jsx'
+import Money from '../components/ui/Money.jsx'
+import { EstimateDisclaimer } from '../components/ui/Callout.jsx'
+import LockCertificate from '../components/LockCertificate.jsx'
+import { actForScreen } from '../config/flow.js'
 import { usePermissions } from '../state/permissionState.jsx'
 import { useScenario } from '../state/scenarioState.jsx'
 import {
   FOOTER_NOTE,
-  ESTIMATE_DISCLAIMER,
   A2_CONSENT,
   A4_AGREEMENT,
   RECEIVABLE_UNITS,
   MEGA_SALE_UNITS,
   PRICING_PARAMS,
   LENDER_QUOTES,
+  LOCK_CERTIFICATE,
 } from '../data/mockData.js'
 import { LEGAL_NAME, TPP_CODE } from '../config/brand.js'
-import { computeAvailableValue, computeAdvanceInterest } from '../logic/pricing.js'
+import { computeAvailableValueStaircase, computeAvailableValue, computeAdvanceInterest } from '../logic/pricing.js'
 import { formatNumberVN, formatPercentVN } from '../utils/format.js'
 
 const NORMAL_UNITS = RECEIVABLE_UNITS.filter((u) => u.code === 'RU-03' || u.code === 'RU-04')
 const TECHCOMBANK_QUOTE = LENDER_QUOTES.find((q) => q.lender === 'Techcombank')
 const INTEREST_DAYS = 5
+const STEPS = ['Cấp A2', 'Xem ước tính', 'Ký A4 tại Techcombank', 'Gửi đề nghị']
 
 // Thứ tự Màn 5 (docs/man-hinh.md): 5a cấp A2 → 5b xem ước tính → 5c ký A4 →
-// 5d gửi đề nghị và nhận kết quả. Đổi so với bản đặc tả gốc để nhà bán biết
-// giá trị và chi phí trước khi ký chuyển giao quyền đòi nợ.
+// 5d gửi đề nghị và nhận kết quả. Vòng 7C: áp SurfaceFrame + component chung,
+// giữ nguyên logic đã có (không đổi công thức/state).
 export default function Screen5({ onNext, onPrev }) {
-  const { grantA2A4 } = usePermissions()
+  const { grantA2A4, openPeek } = usePermissions()
   const { megaSale } = useScenario()
 
   const [step, setStep] = useState('a') // a | b | c | d
@@ -35,17 +44,19 @@ export default function Screen5({ onNext, onPrev }) {
   const units = megaSale ? MEGA_SALE_UNITS : NORMAL_UNITS
   const params = megaSale ? PRICING_PARAMS.megaSale : PRICING_PARAMS.normal
 
-  const pricing = useMemo(
-    () => computeAvailableValue({ units, params, lockedByOthers: 0 }),
+  const staircase = useMemo(
+    () => computeAvailableValueStaircase({ units, params, lockedByOthers: 0 }),
     [units, params]
   )
 
-  const unitRows = units.map((u) => {
-    const breakdown = pricing.unitBreakdown.find((b) => b.code === u.code)
-    return { ...u, ...breakdown }
-  })
+  const interestEstimate = computeAdvanceInterest(staircase.result, TECHCOMBANK_QUOTE.annualRate, INTEREST_DAYS)
 
-  const interestEstimate = computeAdvanceInterest(pricing.result, TECHCOMBANK_QUOTE.annualRate, INTEREST_DAYS)
+  // Chứng thư khóa hiển thị giá trị theo đơn vị — luôn theo bộ RU-03/RU-04 thật
+  // (kết quả T1 của mục 4.2: 46,75 + 38,25 = 85), bất kể Mega Sale có bật hay không.
+  const lockAmounts = useMemo(() => {
+    const pricing = computeAvailableValue({ units: NORMAL_UNITS, params: PRICING_PARAMS.normal })
+    return Object.fromEntries(pricing.unitBreakdown.map((u) => [u.code, u.formulaValue]))
+  }, [])
 
   useEffect(() => {
     if (submitPhase !== 'reviewing') return
@@ -68,10 +79,12 @@ export default function Screen5({ onNext, onPrev }) {
     setStep('d')
   }
 
+  const currentStepNumber = { a: 1, b: 2, c: 3, d: 4 }[step]
+
   return (
-    <>
+    <Screen5Chrome variant={step === 'a' || step === 'c' ? 'bank' : 'platform'} currentStepNumber={currentStepNumber} onOpenPeek={openPeek}>
       {step === 'a' && (
-        <TechcombankStep
+        <BankConsent
           heading="Yêu cầu cấp quyền đánh giá tín dụng"
           subheading="Vui lòng xem lại phạm vi trước khi quyết định."
           confirmed={a2Confirmed}
@@ -81,19 +94,10 @@ export default function Screen5({ onNext, onPrev }) {
           onApprove={approveA2}
           onReject={rejectA2}
         >
+          <ConsentRow label="Bên yêu cầu" value={`${LEGAL_NAME} (mã TPP: ${TPP_CODE})`} />
+          <ConsentRow label="Mục đích" value={A2_CONSENT.purposeLabel} />
           <div>
-            <div className="text-base font-medium text-slate-500">Bên yêu cầu</div>
-            <div className="text-slate-900">{LEGAL_NAME}</div>
-            <div className="text-base text-slate-500">Mã TPP đã đăng ký: {TPP_CODE}</div>
-          </div>
-
-          <div>
-            <div className="text-base font-medium text-slate-500">Mục đích</div>
-            <div className="text-slate-900">{A2_CONSENT.purposeLabel}</div>
-          </div>
-
-          <div>
-            <div className="mb-2 text-base font-medium text-slate-500">Phạm vi dữ liệu</div>
+            <div className="mb-2 text-label font-medium text-slate-500">Phạm vi dữ liệu</div>
             <ul className="list-disc space-y-1 pl-5">
               {A2_CONSENT.dataScopes.map((scope) => (
                 <li key={scope} className="text-slate-800">
@@ -102,33 +106,18 @@ export default function Screen5({ onNext, onPrev }) {
               ))}
             </ul>
           </div>
-
-          <div className="rounded-lg bg-slate-100 p-4 text-base text-slate-600">
+          <div className="rounded-lg bg-slate-100 p-4 text-label text-slate-600">
             Quyền này KHÔNG cho phép: chuyển tiền, thay đổi thông tin tài khoản, xem mật khẩu hoặc mã OTP.
           </div>
-
-          <div>
-            <div className="text-base font-medium text-slate-500">Thời hạn</div>
-            <div className="text-slate-900">{A2_CONSENT.durationDays} ngày</div>
-          </div>
-
-          <p className="text-base text-slate-500">{A2_CONSENT.independenceNote}</p>
-        </TechcombankStep>
+          <ConsentRow label="Thời hạn" value={`${A2_CONSENT.durationDays} ngày`} />
+          <p className="text-label text-slate-500">{A2_CONSENT.independenceNote}</p>
+        </BankConsent>
       )}
 
-      {step === 'b' && (
-        <ScreenShell screenNumber={5} title="Đề nghị ứng vốn — Xem ước tính">
-          <EstimateStep
-            unitRows={unitRows}
-            pricing={pricing}
-            interestEstimate={interestEstimate}
-            onNext={() => setStep('c')}
-          />
-        </ScreenShell>
-      )}
+      {step === 'b' && <EstimateStep staircase={staircase} interestEstimate={interestEstimate} onNext={() => setStep('c')} />}
 
       {step === 'c' && (
-        <TechcombankStep
+        <BankConsent
           heading="Thỏa thuận chuyển giao quyền đòi nợ"
           subheading="Vui lòng đọc kỹ nội dung trước khi ký."
           confirmed={a4Confirmed}
@@ -137,174 +126,230 @@ export default function Screen5({ onNext, onPrev }) {
           approveLabel="Ký thỏa thuận"
           onApprove={signA4}
         >
+          <ConsentRow label="Bên nhận bảo đảm" value="Techcombank" />
           <div>
-            <div className="text-base font-medium text-slate-500">Nội dung thỏa thuận</div>
+            <div className="text-label font-medium text-slate-500">Tài sản bảo đảm</div>
             <div className="text-slate-900">
-              Chuyển giao quyền đòi nợ đối với{' '}
-              {unitRows.map((u, i) => (
+              Các đơn vị khoản phải thu được ghi nhận khóa cho Techcombank tại sổ đăng ký:{' '}
+              {units.map((u, i) => (
                 <span key={u.code}>
-                  {i > 0 && (i === unitRows.length - 1 ? ' và ' : ', ')}
-                  {u.code} ({formatNumberVN(u.formulaValue)} triệu)
+                  {i > 0 && (i === units.length - 1 ? ' và ' : ', ')}
+                  {u.code}
                 </span>
-              ))}{' '}
-              làm tài sản bảo đảm cho khoản vay {formatNumberVN(pricing.result)} triệu của Techcombank.
+              ))}
+              .
             </div>
           </div>
-
-          <div>
-            <div className="text-base font-medium text-slate-500">Đăng ký biện pháp bảo đảm</div>
-            <div className="text-slate-900">{A4_AGREEMENT.registrationNote}</div>
-          </div>
-
-          <div>
-            <div className="text-base font-medium text-slate-500">Dòng tiền</div>
-            <div className="text-slate-900">{A4_AGREEMENT.settlementNote}</div>
-          </div>
-        </TechcombankStep>
+          <ConsentRow label="Đăng ký biện pháp bảo đảm" value={`${A4_AGREEMENT.registrationNote} Mã đăng ký giả định: ${LOCK_CERTIFICATE.registrationId}.`} />
+          <ConsentRow label="Dòng tiền" value={A4_AGREEMENT.settlementNote} />
+        </BankConsent>
       )}
 
       {step === 'd' && (
-        <ScreenShell screenNumber={5} title="Đề nghị ứng vốn — Gửi đề nghị">
-          <SubmitStep
-            pricing={pricing}
-            submitPhase={submitPhase}
-            onSubmit={() => setSubmitPhase('reviewing')}
-            onNext={onNext}
-          />
-        </ScreenShell>
+        <SubmitStep
+          staircase={staircase}
+          submitPhase={submitPhase}
+          onSubmit={() => setSubmitPhase('reviewing')}
+          onNext={onNext}
+          lockAmounts={lockAmounts}
+        />
       )}
-    </>
+    </Screen5Chrome>
   )
 }
 
-// Khuôn trang mô phỏng Techcombank dùng chung cho bước 5a và 5c — cùng khuôn
-// Bước 2b (docs/man-hinh.md): nền sáng, tách biệt hẳn với Nền tảng, dòng
-// "Bạn đang ở trang của Techcombank", một ô xác nhận không tích sẵn.
-function TechcombankStep({ heading, subheading, children, confirmed, setConfirmed, confirmLabel, approveLabel, onApprove, onReject }) {
+// Khung dùng chung cho Màn 5 — Stepper hiện suốt màn, đặt trên SurfaceFrame để phân
+// biệt bề mặt (platform/bank) mà không phá cấu trúc "chỉ 1 vùng cuộn" của SurfaceFrame.
+function Screen5Chrome({ variant, currentStepNumber, onOpenPeek, children }) {
   return (
-    <div className="flex h-full flex-col bg-white text-slate-900">
-      <header className="border-b border-slate-200 px-8 py-4">
-        <div className="text-base font-medium text-slate-500">Bạn đang ở trang của Techcombank</div>
-        <div className="mt-1 text-3xl font-bold text-slate-900">Techcombank</div>
-      </header>
-
-      <main className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-8 pt-8 pb-24">
-        <div className="mx-auto w-full max-w-3xl rounded-2xl border border-slate-200 p-8 shadow-sm">
-          <h1 className="mb-1 text-3xl font-bold text-slate-900">{heading}</h1>
-          {subheading && <p className="mb-6 text-lg text-slate-500">{subheading}</p>}
-
-          <div className="space-y-4 text-lg">
-            {children}
-
-            <label className="flex items-start gap-3 text-base text-slate-800">
-              <input
-                type="checkbox"
-                checked={confirmed}
-                onChange={(e) => setConfirmed(e.target.checked)}
-                className="mt-1 h-5 w-5 rounded border-slate-300"
-              />
-              <span>{confirmLabel}</span>
-            </label>
+    <div className="flex h-full flex-col">
+      {variant === 'platform' && <TopBar screenNumber={5} onOpenPeek={() => onOpenPeek?.(5)} />}
+      <SurfaceFrame variant={variant} bankName="Techcombank">
+        <div className="flex h-full flex-col">
+          <div className={`border-b px-12 pb-3 pt-3 ${variant === 'platform' ? 'border-slate-200' : 'border-slate-200'}`}>
+            <ActProgress currentAct={actForScreen(5)} tone="light" />
           </div>
-
-          <div className="mt-8 flex gap-3">
-            {onReject && (
-              <button
-                onClick={onReject}
-                className="flex-1 rounded-xl border border-slate-300 py-3 text-lg font-semibold text-slate-700 transition hover:bg-slate-50"
-              >
-                Từ chối
-              </button>
-            )}
-            <button
-              onClick={onApprove}
-              disabled={!confirmed}
-              className="flex-1 rounded-xl bg-slate-900 py-3 text-lg font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500 disabled:hover:bg-slate-300"
-            >
-              {approveLabel}
-            </button>
+          <div className="border-b border-slate-200 bg-slate-50 px-12 py-4">
+            <Stepper steps={STEPS} currentStep={currentStepNumber} />
           </div>
+          <main className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-12 py-10">
+            <div className="mx-auto w-full max-w-[1536px] space-y-6">{children}</div>
+          </main>
+          <footer className="border-t border-slate-200 px-12 py-3 text-label text-slate-500">{FOOTER_NOTE}</footer>
         </div>
-      </main>
-
-      <footer className="border-t border-slate-200 px-8 py-3 text-base text-slate-400">{FOOTER_NOTE}</footer>
+      </SurfaceFrame>
     </div>
   )
 }
 
-function Row({ label, value, highlight }) {
+function ConsentRow({ label, value }) {
   return (
-    <div className="flex items-center justify-between py-2.5">
-      <span className="text-base text-slate-400">{label}</span>
-      <span className={`text-base font-medium ${highlight ? 'text-teal-300' : 'text-slate-100'}`}>{value}</span>
+    <div>
+      <div className="text-label font-medium text-slate-500">{label}</div>
+      <div className="text-slate-900">{value}</div>
     </div>
   )
 }
 
-// Bước 5b — Bảng tính giá trị khả dụng, hiện TỪNG DÒNG (docs/du-lieu.md mục 4.2).
-function EstimateStep({ unitRows, pricing, interestEstimate, onNext }) {
+// Bước 5a / 5c — trang mô phỏng Techcombank, tách biệt hẳn với Nền tảng, một ô
+// xác nhận không tích sẵn (CLAUDE.md #3, quy-tac.md mục 3).
+function BankConsent({ heading, subheading, children, confirmed, setConfirmed, confirmLabel, approveLabel, onApprove, onReject }) {
   return (
-    <div className="space-y-6">
-      <p className="text-lg text-slate-400">
-        Giá trị khả dụng tính từ các đơn vị khoản phải thu đã xác thực, trước khi ký chuyển giao quyền đòi nợ.
-      </p>
+    <Card padding="p-8" className="mx-auto max-w-3xl">
+      <h1 className="mb-1 text-section-title font-bold text-slate-900">{heading}</h1>
+      {subheading && <p className="mb-6 text-body text-slate-600">{subheading}</p>}
 
-      <div className="grid grid-cols-2 gap-4">
-        {unitRows.map((u) => (
-          <div key={u.code} className="rounded-xl border border-slate-800 bg-slate-900/60 p-5">
-            <div className="flex items-center justify-between">
-              <div className="text-lg font-semibold text-white">{u.code}</div>
-              <div className="text-base text-slate-400">Điểm xác thực {u.verificationScore}</div>
+      <div className="space-y-4 text-body">
+        {children}
+
+        <label className="flex items-start gap-3 text-label text-slate-800">
+          <input
+            type="checkbox"
+            checked={confirmed}
+            onChange={(e) => setConfirmed(e.target.checked)}
+            className="mt-1 h-5 w-5 rounded border-slate-300"
+          />
+          <span>{confirmLabel}</span>
+        </label>
+      </div>
+
+      <div className="mt-8 flex gap-3">
+        {onReject && (
+          <button
+            onClick={onReject}
+            className="flex-1 rounded-xl border border-slate-300 py-3 text-emphasis font-semibold text-slate-700 transition hover:bg-slate-50"
+          >
+            Từ chối
+          </button>
+        )}
+        <button
+          onClick={onApprove}
+          disabled={!confirmed}
+          className="flex-1 rounded-xl bg-slate-900 py-3 text-emphasis font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500 disabled:hover:bg-slate-300"
+        >
+          {approveLabel}
+        </button>
+      </div>
+    </Card>
+  )
+}
+
+// Thẻ bậc thang dựng bằng div (không dùng thư viện chart) — docs/du-lieu.md mục 4.2.
+function StaircaseCard({ staircase }) {
+  const cap = staircase.debtCap
+  // Trục hiển thị theo giá trị lớn nhất cần vẽ (tổng dự phóng hoặc trần, tuỳ cái nào lớn hơn).
+  const axisMax = Math.max(staircase.totalProjectedNetValue, cap, staircase.result) * 1.05
+  let running = staircase.totalProjectedNetValue
+
+  const bars = staircase.steps.map((s) => {
+    const startRunning = running
+    running += s.value
+    return { ...s, startRunning, endRunning: running }
+  })
+
+  function pct(v) {
+    return `${Math.max(0, Math.min(100, (v / axisMax) * 100))}%`
+  }
+
+  const capExceeded = staircase.cappedByDebtCap
+
+  return (
+    <Card>
+      <div className="mb-4 text-emphasis font-semibold text-slate-900">Bảng tính giá trị khả dụng</div>
+
+      <div className="relative space-y-3">
+        {/* Vạch ngang trần dư nợ */}
+        <div className="pointer-events-none absolute inset-x-0 z-10 border-t-2 border-dashed border-red-500" style={{ top: `${100 - parseFloat(pct(cap))}%` }}>
+          <span className="absolute -top-3 right-0 bg-white px-1 text-label font-medium text-red-600">
+            Trần dư nợ {formatNumberVN(cap)} triệu
+          </span>
+        </div>
+
+        {bars.map((b) => (
+          <div key={b.key} className="flex items-center gap-4">
+            <div className="w-64 flex-shrink-0 text-label text-slate-600">{b.label}</div>
+            <div className="relative h-8 flex-1 rounded bg-slate-100">
+              <div
+                className={`absolute h-8 rounded ${b.value >= 0 ? 'bg-navy' : 'bg-slate-400'}`}
+                style={{
+                  left: pct(Math.min(b.startRunning, b.endRunning)),
+                  width: pct(Math.abs(b.value)),
+                }}
+              />
             </div>
-            <div className="mt-2 divide-y divide-slate-800/60">
-              <Row label="Giá trị ròng dự phóng" value={`${formatNumberVN(u.projectedNetValue)} triệu`} />
-              <Row label="Tỷ lệ hoàn gia quyền" value={formatPercentVN(pricing.weightedReturnRate)} />
-              <Row label="Biên an toàn" value={formatPercentVN(pricing.safetyMargin)} />
-              <Row label="Chiết khấu xác thực" value={formatPercentVN(u.verificationDiscount)} />
-              <Row label="Tỷ lệ ứng" value={formatPercentVN(u.advanceRate)} highlight />
-              <Row label="Giá trị theo công thức" value={`${formatNumberVN(u.formulaValue)} triệu`} highlight />
+            <div className="w-28 flex-shrink-0 text-right text-label tabular-nums text-slate-700">
+              {b.value >= 0 ? '' : '− '}
+              {formatNumberVN(Math.abs(b.value))}
             </div>
           </div>
         ))}
-      </div>
 
-      <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-5">
-        <div className="mb-1 text-xl font-semibold text-slate-200">Tổng hợp</div>
-        <div className="divide-y divide-slate-800/60">
-          <Row label="Tổng giá trị theo công thức" value={`${formatNumberVN(pricing.formulaValueTotal)} triệu`} />
-          <Row label="Trần dư nợ" value={`${formatNumberVN(pricing.debtCap)} triệu`} />
-          <Row label="Phần đã bị bên khác khóa" value={`${formatNumberVN(pricing.lockedByOthers)} triệu`} />
+        <div className="flex items-center gap-4 border-t border-slate-200 pt-3">
+          <div className="w-64 flex-shrink-0 text-label font-semibold text-slate-900">Giá trị theo công thức</div>
+          <div className="relative h-8 flex-1 rounded bg-slate-100">
+            <div
+              className={`absolute h-8 rounded ${capExceeded ? 'bg-slate-300' : 'bg-teal-600'}`}
+              style={{ left: 0, width: pct(staircase.formulaValueTotal) }}
+            />
+            {capExceeded && (
+              <div
+                className="absolute h-8 rounded border-2 border-dashed border-red-400 bg-red-50/60"
+                style={{ left: pct(staircase.result), width: pct(staircase.formulaValueTotal - staircase.result) }}
+                title="Vượt trần dư nợ"
+              />
+            )}
+          </div>
+          <div className="w-28 flex-shrink-0 text-right text-label font-semibold tabular-nums text-slate-900">
+            {formatNumberVN(staircase.formulaValueTotal)}
+          </div>
         </div>
 
-        {pricing.cappedByDebtCap && (
-          <div className="mt-3 rounded-lg border border-amber-700/60 bg-amber-950/20 px-4 py-2.5 text-base font-semibold text-amber-300">
-            Bị chặn bởi trần dư nợ
+        {capExceeded && (
+          <div className="text-right text-label font-medium text-red-600">
+            Phần vượt trần dư nợ: {formatNumberVN(staircase.formulaValueTotal - staircase.result)} triệu — Vượt trần dư nợ
           </div>
         )}
-
-        <div className="mt-4 flex items-center justify-between rounded-lg border border-teal-800/60 bg-teal-950/20 px-4 py-3.5">
-          <span className="text-lg font-semibold text-teal-200">GIÁ TRỊ KHẢ DỤNG</span>
-          <span className="text-3xl font-bold text-teal-100">{formatNumberVN(pricing.result)} triệu</span>
-        </div>
       </div>
 
-      <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-5">
-        <div className="mb-1 text-xl font-semibold text-slate-200">Chi phí</div>
-        <div className="divide-y divide-slate-800/60">
-          <Row label="Bên cấp tín dụng" value="Techcombank" />
-          <Row label="Lãi suất" value={`${formatPercentVN(TECHCOMBANK_QUOTE.annualRate)}/năm`} />
-          <Row
+      <div className="mt-6 flex items-center justify-between rounded-xl border border-teal-600 bg-teal-50 px-6 py-5">
+        <span className="text-emphasis font-semibold text-teal-800">GIÁ TRỊ KHẢ DỤNG</span>
+        <Money value={staircase.result} size="hero" className="text-teal-800" />
+      </div>
+
+      {capExceeded && (
+        <div className="mt-3 text-label font-semibold text-amber-700">Bị chặn bởi trần dư nợ</div>
+      )}
+
+      <EstimateDisclaimer className="mt-4" />
+    </Card>
+  )
+}
+
+// Bước 5b — Bảng tính giá trị khả dụng dạng bậc thang.
+function EstimateStep({ staircase, interestEstimate, onNext }) {
+  return (
+    <div className="space-y-6">
+      <p className="text-body text-slate-600">
+        Giá trị khả dụng tính từ các đơn vị khoản phải thu đã xác thực, trước khi ký chuyển giao quyền đòi nợ.
+      </p>
+
+      <StaircaseCard staircase={staircase} />
+
+      <Card>
+        <div className="mb-1 text-emphasis font-semibold text-slate-900">Chi phí</div>
+        <div className="divide-y divide-slate-100">
+          <CostRow label="Bên cấp tín dụng" value="Techcombank" />
+          <CostRow label="Lãi suất" value={`${formatPercentVN(TECHCOMBANK_QUOTE.annualRate)}/năm`} />
+          <CostRow
             label={`Tiền lãi ước tính nếu tất toán sau ${INTEREST_DAYS} ngày`}
             value={`≈ ${formatNumberVN(interestEstimate)} triệu`}
           />
         </div>
-      </div>
-
-      <p className="text-lg font-semibold text-amber-300">{ESTIMATE_DISCLAIMER}</p>
+      </Card>
 
       <button
         onClick={onNext}
-        className="w-full rounded-xl bg-blue-600 py-3 text-lg font-semibold text-white transition hover:bg-blue-500"
+        className="w-full rounded-xl bg-navy py-4 text-emphasis font-semibold text-white transition hover:opacity-90"
       >
         Tiếp: Ký thỏa thuận A4 →
       </button>
@@ -312,40 +357,54 @@ function EstimateStep({ unitRows, pricing, interestEstimate, onNext }) {
   )
 }
 
-// Bước 5d — Gửi đề nghị: hiệu ứng ngắn "đang thẩm định" rồi kết quả phê duyệt.
-function SubmitStep({ pricing, submitPhase, onSubmit, onNext }) {
+function CostRow({ label, value }) {
+  return (
+    <div className="flex items-center justify-between py-2.5 text-body">
+      <span className="text-slate-500">{label}</span>
+      <span className="font-medium text-slate-900">{value}</span>
+    </div>
+  )
+}
+
+// Bước 5d — Gửi đề nghị: hiệu ứng ngắn "đang thẩm định" rồi chứng thư khóa.
+function SubmitStep({ staircase, submitPhase, onSubmit, onNext, lockAmounts }) {
   return (
     <div className="space-y-6">
-      <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-6">
-        <div className="text-base text-slate-400">Sẵn sàng gửi đề nghị ứng vốn</div>
-        <div className="mt-1 text-4xl font-bold text-teal-200">{formatNumberVN(pricing.result)} triệu</div>
-        <p className="mt-2 text-lg font-semibold text-amber-300">{ESTIMATE_DISCLAIMER}</p>
-      </div>
+      <Card padding="p-8">
+        <div className="text-label text-slate-500">Sẵn sàng gửi đề nghị ứng vốn</div>
+        <Money value={staircase.result} size="hero" className="mt-1 block text-slate-900" />
+        <EstimateDisclaimer className="mt-4" />
+      </Card>
 
       {submitPhase === 'idle' && (
         <button
           onClick={onSubmit}
-          className="w-full rounded-xl bg-blue-600 py-3 text-lg font-semibold text-white transition hover:bg-blue-500"
+          className="w-full rounded-xl bg-navy py-4 text-emphasis font-semibold text-white transition hover:opacity-90"
         >
           Gửi đề nghị tới Techcombank
         </button>
       )}
 
       {submitPhase === 'reviewing' && (
-        <div className="flex items-center gap-3 rounded-xl border border-slate-800 bg-slate-900/60 p-6 text-lg text-slate-300">
-          <span className="h-3 w-3 animate-pulse rounded-full bg-blue-500" />
+        <div className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-6 text-body text-slate-600">
+          <span className="h-3 w-3 animate-pulse rounded-full bg-navy" />
           Techcombank đang thẩm định...
         </div>
       )}
 
       {submitPhase === 'approved' && (
         <>
-          <div className="rounded-xl border border-teal-700/60 bg-teal-950/20 p-6 text-lg font-semibold text-teal-200">
-            Techcombank đã phê duyệt và giải ngân {formatNumberVN(pricing.result)} triệu vào tài khoản của bạn.
-          </div>
+          <Card padding="p-6" className="border-teal-600 bg-teal-50">
+            <div className="text-body font-semibold text-teal-800">
+              Techcombank đã phê duyệt và giải ngân {formatNumberVN(staircase.result)} triệu vào tài khoản của bạn.
+            </div>
+          </Card>
+
+          <LockCertificate amounts={lockAmounts} />
+
           <button
             onClick={onNext}
-            className="w-full rounded-xl bg-blue-600 py-3 text-lg font-semibold text-white transition hover:bg-blue-500"
+            className="w-full rounded-xl bg-navy py-4 text-emphasis font-semibold text-white transition hover:opacity-90"
           >
             Tiếp →
           </button>
