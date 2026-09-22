@@ -70,21 +70,34 @@ Nút: "Xem khả năng ứng vốn" → Màn 5.
 ## Màn 5 — Đề nghị ứng vốn (BẮT BUỘC)
 Tái sử dụng: khung Màn 4 của bản cũ. BỎ phần gọi Claude API.
 
-Bước 5a — Cấp quyền A2 (trang Techcombank): mục đích đánh giá tín dụng,
-phạm vi lịch sử giao dịch 180 ngày, "Rút lại A2 không ảnh hưởng A1".
-Bước 5b — Ký thỏa thuận A4 (trang Techcombank): "Chuyển giao quyền đòi nợ đối với
-khoản phải thu được khóa, làm tài sản bảo đảm cho khoản vay của Techcombank.
-Thỏa thuận được đăng ký theo Nghị định 99/2022/NĐ-CP."
-Bước 5c — Bảng tính giá trị khả dụng, hiện từng dòng (du-lieu.md, mục 4):
-  tiền ký quỹ → tỷ lệ hoàn gia quyền → biên an toàn → chiết khấu xác thực →
-  tỷ lệ ứng → giá trị theo công thức → trần dư nợ → phần đã bị khóa → KẾT QUẢ.
-  Nếu bị chặn bởi trần: hiện rõ dòng "Bị chặn bởi trần dư nợ".
-  Dòng bắt buộc: "Ước tính, chưa phải đề nghị cấp tín dụng".
-  Bên cấp tín dụng hiện rõ: "Techcombank".
-Bước 5d — Nút "Gửi đề nghị tới Techcombank" → thông báo "Techcombank đã phê duyệt
-và giải ngân 85 triệu vào tài khoản của bạn" → Màn 6.
+Thứ tự bước (nhà bán phải biết giá trị và chi phí trước khi ký chuyển giao quyền
+đòi nợ, nên đổi so với bản trước): 5a cấp A2 → 5b xem ước tính → 5c ký A4 →
+5d gửi đề nghị và nhận kết quả.
 
-Khi Mega Sale bật (phím M): bảng tính cập nhật theo du-lieu.md mục 4.
+Bước 5a — Cấp quyền A2 (trang mô phỏng Techcombank, cùng khuôn Bước 2b): mục đích
+đánh giá tín dụng (A2); phạm vi lịch sử giao dịch 180 ngày và hồ sơ doanh thu đã
+xác thực; thời hạn 90 ngày; một ô xác nhận không tích sẵn; dòng "Rút lại quyền này
+không ảnh hưởng đến đối soát (A1)."
+Bước 5b — Xem ước tính (trang Nền tảng): bảng tính giá trị khả dụng hiện TỪNG DÒNG
+(du-lieu.md, mục 4): giá trị ròng dự phóng từng đơn vị → tỷ lệ hoàn gia quyền →
+biên an toàn → chiết khấu xác thực → tỷ lệ ứng → giá trị theo công thức → trần dư
+nợ → phần đã bị bên khác khóa → GIÁ TRỊ KHẢ DỤNG. Nếu bị chặn bởi trần: hiện rõ
+dòng "Bị chặn bởi trần dư nợ". Khối chi phí: bên cấp tín dụng Techcombank, lãi
+suất năm, tiền lãi ước tính nếu tất toán sau 5 ngày. Dòng bắt buộc: "Ước tính,
+chưa phải đề nghị cấp tín dụng".
+Bước 5c — Ký thỏa thuận A4 (trang mô phỏng Techcombank, cùng khuôn Bước 2b):
+"Chuyển giao quyền đòi nợ đối với RU-03 và RU-04, làm tài sản bảo đảm cho khoản
+vay của Techcombank. Thỏa thuận được đăng ký theo Nghị định 99/2022/NĐ-CP; tiền
+sàn về tài khoản Techcombank dùng để trả khoản vay." Một ô xác nhận không tích
+sẵn; nút "Ký thỏa thuận" chỉ bấm được khi đã tích.
+Bước 5d — Nút "Gửi đề nghị tới Techcombank" → hiệu ứng ngắn "Techcombank đang thẩm
+định" → thông báo "Techcombank đã phê duyệt và giải ngân 85 triệu vào tài khoản
+của bạn" → cập nhật state dùng chung (RU-03, RU-04 sang "Đã khóa" ở Màn 4; A2, A4
+sang hiệu lực ở Màn 7) → Màn 6.
+
+Khi Mega Sale bật (phím M): bảng tính ở Bước 5b dùng RU-M1, RU-M2 và tham số Mega
+Sale, cập nhật theo du-lieu.md mục 4; hiện nhãn nhỏ "Kịch bản: Mega Sale" ở góc
+màn. Phím R đặt lại trạng thái Mega Sale.
 
 ## Màn 6 — Tất toán (BẮT BUỘC)
 Mới hoàn toàn.

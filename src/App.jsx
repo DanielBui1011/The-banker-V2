@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { useJourneyState } from './state/journeyState.js'
 import { PermissionProvider, usePermissions } from './state/permissionState.jsx'
+import { ScenarioProvider, useScenario } from './state/scenarioState.jsx'
 import Screen1 from './screens/Screen1.jsx'
 import Screen2 from './screens/Screen2.jsx'
 import Screen3 from './screens/Screen3.jsx'
@@ -27,23 +28,29 @@ export default function App() {
   const journey = useJourneyState()
 
   return (
-    <PermissionProvider
-      hasPassedScreen5={journey.hasPassedScreen(5)}
-      hasPassedScreen6={journey.hasPassedScreen(6)}
-    >
-      <AppScreens journey={journey} />
-    </PermissionProvider>
+    <ScenarioProvider>
+      <PermissionProvider hasPassedScreen6={journey.hasPassedScreen(6)}>
+        <AppScreens journey={journey} />
+      </PermissionProvider>
+    </ScenarioProvider>
   )
 }
 
 function AppScreens({ journey }) {
   const { currentScreen, goNext, goPrev, goToScreen } = journey
   const { isPeeking, closePeek, reset } = usePermissions()
+  const { toggleMegaSale, resetScenario } = useScenario()
 
   useEffect(() => {
     function handleKeyDown(event) {
-      if (event.key.toLowerCase() === 'r') {
+      const key = event.key.toLowerCase()
+      if (key === 'r') {
         reset()
+        resetScenario()
+        return
+      }
+      if (key === 'm') {
+        toggleMegaSale()
         return
       }
       if (isPeeking) return
@@ -52,7 +59,7 @@ function AppScreens({ journey }) {
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [goNext, goPrev, isPeeking, reset])
+  }, [goNext, goPrev, isPeeking, reset, resetScenario, toggleMegaSale])
 
   const CurrentScreen = SCREEN_COMPONENTS[currentScreen]
   return (

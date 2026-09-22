@@ -3,11 +3,14 @@ import ScreenShell from '../components/ScreenShell.jsx'
 import StatusBadge from '../components/StatusBadge.jsx'
 import { RECEIVABLE_UNITS, VERIFICATION_METRICS, MIN_LOTS_FOR_SCORE } from '../data/mockData.js'
 import { computeVerificationScore, isScoreAvailable } from '../logic/verification.js'
-import { formatNumberVN } from '../utils/format.js'
+import { usePermissions } from '../state/permissionState.jsx'
+import { formatNumberVN, formatPercentVN } from '../utils/format.js'
 
+// 'verified-then-locked' bắt đầu là "Đã xác thực" (gray); sau khi qua Màn 5 bước 5d
+// (Techcombank giải ngân, quyền A4 có hiệu lực) chuyển "Đã khóa" (purple).
 const STATUS_LABEL = {
   settled: 'Đã tất toán',
-  'verified-then-locked': 'Đã xác thực',
+  'verified-then-locked': (unit, advanceGranted) => (advanceGranted ? 'Đã khóa' : 'Đã xác thực'),
   'projected-insufficient-history': (unit) =>
     `Dự phóng — chưa đủ lịch sử (${unit.lots}/${MIN_LOTS_FOR_SCORE} lô)`,
   reversed: 'Đã hoàn',
@@ -16,20 +19,26 @@ const STATUS_LABEL = {
 const VERIFICATION_CHANNELS = ['Shopee', 'TikTok Shop', 'Hãng vận chuyển A']
 
 const METRIC_ROWS = [
-  { key: 'projectionAccuracy', label: 'Độ sát dự phóng', format: (v) => `${formatNumberVN(v * 100)}%` },
-  { key: 'volatility', label: 'Độ dao động', format: (v) => `${formatNumberVN(v * 100)}%` },
-  { key: 'feeDeviation', label: 'Sai lệch phí', format: (v) => `${formatNumberVN(v * 100)}%` },
-  { key: 'leakRate', label: 'Tỷ lệ rò rỉ', format: (v) => `${formatNumberVN(v * 100)}%` },
+  { key: 'projectionAccuracy', label: 'Độ sát dự phóng', format: formatPercentVN },
+  { key: 'volatility', label: 'Độ dao động', format: formatPercentVN },
+  { key: 'feeDeviation', label: 'Sai lệch phí', format: formatPercentVN },
+  { key: 'leakRate', label: 'Tỷ lệ rò rỉ', format: formatPercentVN },
   { key: 'p90DelayDays', label: 'Độ trễ P90', format: (v) => `${v} ngày` },
 ]
 
-function statusLabelFor(unit) {
+function statusLabelFor(unit, advanceGranted) {
   const entry = STATUS_LABEL[unit.status]
-  return typeof entry === 'function' ? entry(unit) : entry
+  return typeof entry === 'function' ? entry(unit, advanceGranted) : entry
+}
+
+function statusToneFor(unit, advanceGranted) {
+  if (unit.status === 'verified-then-locked' && advanceGranted) return unit.lockedColor
+  return unit.statusColor
 }
 
 export default function Screen4({ onNext }) {
   const [openChannel, setOpenChannel] = useState(null)
+  const { a2a4Granted } = usePermissions()
 
   const verifiedUnits = RECEIVABLE_UNITS.filter((u) => u.status === 'verified-then-locked')
   const pendingTotal = verifiedUnits.reduce((sum, u) => sum + u.projectedNetValue, 0)
@@ -48,7 +57,9 @@ export default function Screen4({ onNext }) {
             <div key={unit.code} className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
               <div className="flex items-center justify-between">
                 <div className="text-lg font-semibold text-white">{unit.code}</div>
-                <StatusBadge tone={unit.statusColor}>{statusLabelFor(unit)}</StatusBadge>
+                <StatusBadge tone={statusToneFor(unit, a2a4Granted)}>
+                  {statusLabelFor(unit, a2a4Granted)}
+                </StatusBadge>
               </div>
               <div className="mt-1 text-base text-slate-400">{unit.channel}</div>
               <div className="mt-2 text-2xl font-bold text-slate-100">{formatNumberVN(unit.projectedNetValue)} triệu</div>

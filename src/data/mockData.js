@@ -285,6 +285,21 @@ export const A1_CONSENT = {
 
 export const A1_TOKEN_TTL_SECONDS = 3600
 
+// Màn 5, bước 5a — Cấp quyền A2 (trang mô phỏng Techcombank, cùng khuôn Bước 2b)
+export const A2_CONSENT = {
+  registeredTppId: A1_CONSENT.registeredTppId,
+  purposeLabel: 'Đánh giá tín dụng (A2)',
+  dataScopes: ['Lịch sử giao dịch 180 ngày', 'Hồ sơ doanh thu đã xác thực'],
+  durationDays: 90,
+  independenceNote: 'Rút lại quyền này không ảnh hưởng đến đối soát (A1).',
+}
+
+// Màn 5, bước 5c — Ký thỏa thuận A4 (trang mô phỏng Techcombank, cùng khuôn Bước 2b)
+export const A4_AGREEMENT = {
+  registrationNote: 'Thỏa thuận được đăng ký theo Nghị định 99/2022/NĐ-CP.',
+  settlementNote: 'Tiền sàn về tài khoản Techcombank dùng để trả khoản vay.',
+}
+
 // Chân trang mọi màn (CLAUDE.md mục Quy tắc bắt buộc #8)
 export const FOOTER_NOTE = 'Giao diện mô phỏng — dữ liệu giả định'
 
