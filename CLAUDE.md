@@ -66,3 +66,9 @@ Không thêm thư viện khác nếu chưa hỏi.
 - Khi không chắc về nội dung, hỏi lại thay vì tự đoán.
 - Trước khi bắt đầu, cập nhật nhánh theo main mới nhất. Trước khi tạo pull request,
   chạy npm run build; không tạo pull request nếu build lỗi.
+## Quy ước plugin (mọi vòng)
+- Superpowers: thực thi bằng executing-plans; KHÔNG dùng brainstorming, git worktree, subagent-driven-development. TDD chỉ bắt buộc cho src/logic/*. Trước khi báo xong: chạy npm run build và npm test, dán kết quả thật.
+- Impeccable: mọi quyết định thị giác theo DESIGN.md; không đổi ý nghĩa màu trong docs/quy-tac.md; không dùng lệnh bolder.
+- Ponytail: không thêm dependency trừ khi DESIGN.md yêu cầu; chỉ tách component dùng chung khi ≥3 màn dùng; không sửa src/logic khi vòng chỉ làm giao diện.
+- Xung đột: quy-tac.md > đọc rõ trên máy chiếu 1920×1080 > ít code.
+- Tiết kiệm ngữ cảnh: chỉ đọc file màn đang sửa và các component nó import.
