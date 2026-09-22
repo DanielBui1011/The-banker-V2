@@ -1,31 +1,9 @@
 import { useState, useCallback, useEffect, useMemo } from 'react'
+import { screenOrderFor } from '../config/flow.js'
 
-// Thứ tự khi bấm mũi tên phải — docs/man-hinh.md:
-// "1 → 2 → 7 → 3 → 4 → 5 → 6 → 8 → (10 nếu Giai đoạn 3 đang bật)"
-// Màn 9 không nằm trong chuỗi này: đó là diễn biến thay thế của Màn 6 khi bật rò rỉ (phím L),
-// sẽ được nối vào từ trạng thái kịch bản, không qua mũi tên trái/phải.
-const BASE_SCREEN_ORDER = [1, 2, 7, 3, 4, 5, 6, 8]
-
-// Màn 10 chỉ xuất hiện trong chuỗi mũi tên khi Giai đoạn 3 (phím 3) đang bật.
-export function screenOrderFor(phase3) {
-  return phase3 ? [...BASE_SCREEN_ORDER, 10] : BASE_SCREEN_ORDER
-}
-
-const ACT_BY_SCREEN = {
-  1: 1,
-  2: 2,
-  7: 2,
-  3: 3,
-  4: 3,
-  5: 3,
-  6: 4,
-  8: 4,
-  10: 4,
-}
-
-export function actForScreen(screenNumber) {
-  return ACT_BY_SCREEN[screenNumber] ?? null
-}
+// Thứ tự màn và ánh xạ màn → hồi nay sống ở src/config/flow.js (nguồn duy nhất) —
+// re-export screenOrderFor để các nơi đã import từ đây không phải đổi đường dẫn.
+export { screenOrderFor }
 
 export function useJourneyState(phase3) {
   const screenOrder = useMemo(() => screenOrderFor(phase3), [phase3])
