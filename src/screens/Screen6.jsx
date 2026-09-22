@@ -211,7 +211,7 @@ function InfoBox({ children }) {
 // (Màn 9) — cùng khuôn Bước 2b: nền sáng, tách biệt hẳn với Nền tảng.
 export function TechcombankPageFrame({ heading, subheading, children, confirmLabel, onConfirm }) {
   return (
-    <div className="fixed inset-0 z-[90] flex min-h-screen flex-col overflow-y-auto bg-white text-slate-900">
+    <div className="fixed inset-0 z-[90] flex flex-col overflow-y-auto bg-white text-slate-900">
       <header className="border-b border-slate-200 px-8 py-4">
         <div className="text-base font-medium text-slate-500">Bạn đang ở trang của Techcombank</div>
         <div className="mt-1 text-3xl font-bold text-slate-900">Techcombank</div>

@@ -162,7 +162,7 @@ function QuotesStep({ quotes, onSelect }) {
 // sáng, tách biệt hẳn với Nền tảng), chỉ đổi tên bên cho vay theo chào giá đã chọn.
 function LenderSignPage({ quote, confirmed, setConfirmed, onConfirm }) {
   return (
-    <div className="flex min-h-screen flex-col bg-white text-slate-900">
+    <div className="flex h-full flex-col bg-white text-slate-900">
       <header className="border-b border-slate-200 px-8 py-4">
         <div className="text-base font-medium text-slate-500">Bạn đang ở trang của {quote.lender}</div>
         <div className="mt-1 text-3xl font-bold text-slate-900">{quote.lender}</div>

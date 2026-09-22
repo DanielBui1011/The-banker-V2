@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import ScreenShell from '../components/ScreenShell.jsx'
 import { usePermissions } from '../state/permissionState.jsx'
-import { SOLUTION_NAME, FOOTER_NOTE, LENDER_QUOTES, A1_CONSENT, A1_TOKEN_TTL_SECONDS } from '../data/mockData.js'
+import { FOOTER_NOTE, LENDER_QUOTES, A1_CONSENT, A1_TOKEN_TTL_SECONDS } from '../data/mockData.js'
+import { LEGAL_NAME, TPP_CODE } from '../config/brand.js'
 
 const OTHER_BANKS = LENDER_QUOTES.map((l) => l.lender).filter((name) => name !== 'Techcombank')
 
@@ -113,7 +114,7 @@ function TechcombankConsentPage({ onApprove, onReject }) {
   const [confirmed, setConfirmed] = useState(false)
 
   return (
-    <div className="flex min-h-screen flex-col bg-white text-slate-900">
+    <div className="flex h-full flex-col bg-white text-slate-900">
       <header className="border-b border-slate-200 px-8 py-4">
         <div className="text-base font-medium text-slate-500">Bạn đang ở trang của Techcombank</div>
         <div className="mt-1 text-3xl font-bold text-slate-900">Techcombank</div>
@@ -127,8 +128,8 @@ function TechcombankConsentPage({ onApprove, onReject }) {
           <div className="space-y-4 text-lg">
             <div>
               <div className="text-base font-medium text-slate-500">Bên yêu cầu</div>
-              <div className="text-slate-900">Công ty {SOLUTION_NAME}</div>
-              <div className="text-base text-slate-500">Mã TPP đã đăng ký: {A1_CONSENT.registeredTppId}</div>
+              <div className="text-slate-900">{LEGAL_NAME}</div>
+              <div className="text-base text-slate-500">Mã TPP đã đăng ký: {TPP_CODE}</div>
             </div>
 
             <div>

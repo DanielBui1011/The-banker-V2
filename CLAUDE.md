@@ -10,7 +10,11 @@ không gọi API bên ngoài, không lưu dữ liệu thật.
 - docs/man-hinh.md — đặc tả 10 màn
 - docs/du-lieu.md — nguồn số liệu duy nhất, kèm công thức và kết quả bắt buộc
 - docs/quy-tac.md — ràng buộc pháp lý và nội dung
+- docs/thiet-ke.md — hệ thống thiết kế và khung trình chiếu (Stage/TopBar/token)
 - docs/reference/settlesync_prototype.html — bản cũ, tham khảo để tái sử dụng
+
+Mọi thay đổi giao diện theo docs/thiet-ke.md và chỉ dùng component trong
+src/components/ui/.
 
 ## Công nghệ
 Vite + React + Tailwind CSS. Vitest cho kiểm thử công thức.
