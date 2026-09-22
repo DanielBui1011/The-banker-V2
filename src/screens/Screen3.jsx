@@ -10,7 +10,7 @@ import Stat from '../components/ui/Stat.jsx'
 import { actForScreen } from '../config/flow.js'
 import { BANK_TRANSACTIONS, FEE_DEVIATIONS, RECONCILIATION_COMPARISON, FOOTER_NOTE } from '../data/mockData.js'
 import { summarizeTransactions, isFeeDeviationFlagged } from '../logic/reconciliation.js'
-import { formatNumberVN, formatDateVN } from '../utils/format.js'
+import { formatNumberVN, formatDateVN, formatPercentVN } from '../utils/format.js'
 
 const STATUS_LABEL = {
   matched: 'Đã khớp',
@@ -68,6 +68,9 @@ export default function Screen3({ onNext }) {
 
   const summary = summarizeTransactions(BANK_TRANSACTIONS)
   const total = BANK_TRANSACTIONS.length
+  // Con số chính của màn — tỷ lệ giao dịch khớp tự động, tính trực tiếp từ dữ liệu
+  // (không viết cứng), trả lời câu hỏi "Đối soát có tự động không?".
+  const autoMatchRate = total === 0 ? 0 : summary.matchedCount / total
 
   // Chip lọc kèm số đếm — tên nhóm giữ nguyên như đã chốt (all/matched/exception/
   // reversed/outflow), số đếm tính từ summary (không viết cứng, docs/du-lieu.md mục 5).
@@ -98,20 +101,26 @@ export default function Screen3({ onNext }) {
                   Giao dịch tài khoản Techcombank được đọc qua quyền A1 và tự động khớp với đơn hàng.
                 </p>
 
-                <div className="grid grid-cols-4 gap-4">
-                  <Card>
-                    <Stat label="Đã khớp" value={summary.matchedCount} hint={`${formatNumberVN(summary.matchedTotal)} triệu tổng cộng`} />
-                  </Card>
-                  <Card>
-                    <Stat label="Ngoại lệ" value={summary.exceptionCount} hint="Cần tra thủ công" />
-                  </Card>
-                  <Card>
-                    <Stat label="Hoàn" value={summary.reversedCount} hint="Đảo chuyển" />
-                  </Card>
-                  <Card>
-                    <Stat label="Chi ra" value={summary.outflowCount} hint="Không đối soát" />
-                  </Card>
-                </div>
+                {/* Con số chủ đạo — trả lời "Đối soát có tự động không?" */}
+                <Card padding="p-8">
+                  <div className="text-label font-medium text-slate-500">Tỷ lệ giao dịch khớp tự động</div>
+                  <span className="mt-2 block text-hero font-bold tabular-nums text-teal-700">
+                    {formatPercentVN(autoMatchRate)}
+                  </span>
+                  <div className="mt-3 text-body text-slate-600">
+                    {summary.matchedCount}/{total} giao dịch tự khớp — không cần tra thủ công
+                  </div>
+                </Card>
+
+                {/* Bốn số liệu phụ, hạ thành một hàng — không cạnh tranh với con số chính */}
+                <Card padding="p-4">
+                  <div className="grid grid-cols-4 divide-x divide-slate-200">
+                    <Stat label="Đã khớp" value={summary.matchedCount} hint={`${formatNumberVN(summary.matchedTotal)} triệu`} className="px-4 first:pl-0" />
+                    <Stat label="Ngoại lệ" value={summary.exceptionCount} hint="Cần tra thủ công" className="px-4" />
+                    <Stat label="Hoàn" value={summary.reversedCount} hint="Đảo chuyển" className="px-4" />
+                    <Stat label="Chi ra" value={summary.outflowCount} hint="Không đối soát" className="px-4" />
+                  </div>
+                </Card>
 
                 <Card padding="p-0" className="overflow-hidden">
                   <div className="flex flex-wrap gap-2 border-b border-slate-200 p-4">
@@ -143,8 +152,9 @@ export default function Screen3({ onNext }) {
                   </div>
                 </Card>
 
+                {/* Mức nhấn thứ hai — bằng chứng cho cơ chế học ngược biểu phí, không phải con số chính của màn */}
                 <div>
-                  <div className="mb-3 text-section-title font-semibold text-slate-900">Phát hiện sai lệch phí</div>
+                  <div className="mb-3 text-emphasis font-semibold text-slate-900">Phát hiện sai lệch phí</div>
                   <div className="grid grid-cols-2 gap-4">
                     {FEE_DEVIATIONS.map((fd) => {
                       const flagged = isFeeDeviationFlagged(fd.deviationRate)

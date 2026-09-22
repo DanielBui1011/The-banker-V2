@@ -1,6 +1,9 @@
 // Stepper (docs/thiet-ke.md mục 4) — dùng cho các luồng nhiều bước (ví dụ Màn 5:
-// 5a → 5b → 5c → 5d). steps là mảng nhãn chữ; currentStep đánh số từ 1.
-export default function Stepper({ steps, currentStep }) {
+// 5a → 5b → 5c → 5d, Màn 2: 2a → 2d). steps là mảng nhãn chữ; currentStep đánh số
+// từ 1. tone="light" cho bề mặt sáng (mặc định), tone="dark" cho bề mặt tối
+// (vd. SurfaceFrame variant="tech") — cùng quy ước tone với ActProgress.
+export default function Stepper({ steps, currentStep, tone = 'light' }) {
+  const isDark = tone === 'dark'
   return (
     <div className="flex items-center">
       {steps.map((step, i) => {
@@ -15,15 +18,27 @@ export default function Stepper({ steps, currentStep }) {
                   isDone
                     ? 'bg-navy text-white'
                     : isActive
-                      ? 'border-2 border-navy text-navy'
-                      : 'border border-slate-300 text-slate-400'
+                      ? `border-2 border-navy ${isDark ? 'text-slate-100' : 'text-navy'}`
+                      : isDark
+                        ? 'border border-slate-600 text-slate-500'
+                        : 'border border-slate-300 text-slate-400'
                 }`}
               >
                 {stepNumber}
               </div>
-              <span className={`text-label ${isActive ? 'font-semibold text-slate-900' : 'text-slate-500'}`}>{step}</span>
+              <span
+                className={`text-label ${
+                  isActive
+                    ? `font-semibold ${isDark ? 'text-slate-100' : 'text-slate-900'}`
+                    : isDark
+                      ? 'text-slate-500'
+                      : 'text-slate-500'
+                }`}
+              >
+                {step}
+              </span>
             </div>
-            {stepNumber !== steps.length && <div className="mx-3 h-px w-8 bg-slate-300" />}
+            {stepNumber !== steps.length && <div className={`mx-3 h-px w-8 ${isDark ? 'bg-slate-700' : 'bg-slate-300'}`} />}
           </div>
         )
       })}

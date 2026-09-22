@@ -88,35 +88,30 @@ export default function Screen1({ onNext }) {
                   </div>
                 </Card>
 
-                {/* Thanh ngang cơ cấu doanh thu 4 kênh, đánh dấu phần qua sàn */}
+                {/* Thanh ngang cơ cấu doanh thu 4 kênh, một thanh chia đoạn, nhãn ngay trên từng đoạn */}
                 <Card>
                   <div className="text-label font-medium text-slate-500">Cơ cấu doanh thu tháng</div>
                   <Money value={TOTAL_MONTHLY_REVENUE} size="emphasis" className="mt-1 block text-slate-900" />
 
-                  <div className="mt-4 flex h-10 w-full overflow-hidden rounded-lg" role="img" aria-label="Cơ cấu doanh thu theo kênh">
-                    {SALES_CHANNELS.map((c) => (
-                      <div
-                        key={c.channel}
-                        style={{ width: `${(c.monthlyRevenue / TOTAL_MONTHLY_REVENUE) * 100}%` }}
-                        className={MARKETPLACE_CHANNELS.has(c.channel) ? 'bg-teal-600' : 'bg-slate-300'}
-                        title={`${c.channel}: ${formatNumberVN(c.monthlyRevenue)} triệu`}
-                      />
-                    ))}
-                  </div>
-
-                  <div className="mt-4 grid grid-cols-2 gap-x-6 gap-y-2 sm:grid-cols-4">
-                    {SALES_CHANNELS.map((c) => (
-                      <div key={c.channel} className="flex items-center gap-2 text-label text-slate-600">
-                        <span
-                          className={`h-3 w-3 flex-shrink-0 rounded-sm ${
-                            MARKETPLACE_CHANNELS.has(c.channel) ? 'bg-teal-600' : 'bg-slate-300'
+                  <div className="mt-4 flex h-16 w-full overflow-hidden rounded-lg" role="img" aria-label="Cơ cấu doanh thu theo kênh">
+                    {SALES_CHANNELS.map((c) => {
+                      const isMarketplace = MARKETPLACE_CHANNELS.has(c.channel)
+                      return (
+                        <div
+                          key={c.channel}
+                          style={{ width: `${(c.monthlyRevenue / TOTAL_MONTHLY_REVENUE) * 100}%` }}
+                          className={`flex flex-col items-center justify-center overflow-hidden px-1 text-center leading-tight ${
+                            isMarketplace ? 'bg-teal-600 text-white' : 'bg-slate-300 text-slate-800'
                           }`}
-                        />
-                        <span>
-                          {c.channel} · {formatNumberVN(c.monthlyRevenue)} triệu
-                        </span>
-                      </div>
-                    ))}
+                          title={`${c.channel}: ${formatNumberVN(c.monthlyRevenue)} triệu`}
+                        >
+                          <span className="w-full truncate text-label font-semibold">{c.channel}</span>
+                          <span className={`w-full truncate text-label ${isMarketplace ? 'text-teal-50' : 'text-slate-600'}`}>
+                            {formatNumberVN(c.monthlyRevenue)} triệu
+                          </span>
+                        </div>
+                      )
+                    })}
                   </div>
 
                   <div className="mt-4 text-label font-medium text-teal-700">
@@ -124,35 +119,30 @@ export default function Screen1({ onNext }) {
                   </div>
                 </Card>
 
-                {/* Hai Stat phụ */}
-                <div className="grid grid-cols-2 gap-6">
-                  <Card>
-                    <Stat
-                      label="Đối soát thủ công mỗi tháng"
-                      value={`${formatNumberVN(SELLER_PROFILE.monthlyManualReconciliationHours)} giờ`}
-                      hint="Ngồi đối chiếu Excel thủ công"
-                    />
-                  </Card>
-                  <Card>
-                    <Stat label="Lựa chọn vốn hiện tại" value={SELLER_PROFILE.currentFundingOption} />
-                  </Card>
-                </div>
-
-                {/* Mô phỏng bảng Excel đối soát thủ công — tái sử dụng từ bản cũ */}
+                {/* Một Stat phụ duy nhất — lựa chọn vốn hiện tại gộp vào làm chú thích, không tách thẻ riêng */}
                 <Card>
+                  <Stat
+                    label="Đối soát thủ công mỗi tháng"
+                    value={`${formatNumberVN(SELLER_PROFILE.monthlyManualReconciliationHours)} giờ`}
+                    hint={`Lựa chọn vốn hiện tại: ${SELLER_PROFILE.currentFundingOption}`}
+                  />
+                </Card>
+
+                {/* Mô phỏng bảng Excel đối soát thủ công — bằng chứng nỗi đau, hạ cấp thị giác so với con số chính */}
+                <Card className="border-slate-100 bg-slate-50/60">
                   <div className="mb-3 flex items-center justify-between">
-                    <span className="text-emphasis font-semibold text-slate-900">Đối soát thủ công — bảng Excel</span>
+                    <span className="text-label font-medium text-slate-500">Cách chị Lan đối soát hiện nay</span>
                     <button
                       onClick={runSimulation}
                       disabled={isSimulating}
-                      className="rounded-lg border border-slate-300 bg-slate-50 px-3 py-1.5 text-label font-medium text-slate-700 transition hover:bg-slate-100 disabled:opacity-60"
+                      className="rounded-lg border border-slate-300 bg-white px-3 py-1 text-label font-medium text-slate-500 transition hover:bg-slate-100 disabled:opacity-60"
                     >
                       {isSimulating ? 'Đang tô màu…' : 'Mô phỏng ▶'}
                     </button>
                   </div>
 
                   {revealedCount === 0 ? (
-                    <p className="text-label italic text-slate-500">
+                    <p className="text-label italic text-slate-400">
                       Bấm "Mô phỏng ▶" để xem từng dòng được đối chiếu và tô màu bằng tay.
                     </p>
                   ) : (
