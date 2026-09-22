@@ -1,57 +1,33 @@
-import { SOLUTION_NAME, FOOTER_NOTE } from '../data/mockData.js'
-import { actForScreen } from '../state/journeyState.js'
+import { FOOTER_NOTE } from '../data/mockData.js'
+import { actForScreen } from '../config/flow.js'
 import { usePermissions } from '../state/permissionState.jsx'
+import TopBar from './ui/TopBar.jsx'
+import ActProgress from './ui/ActProgress.jsx'
 
-const ACT_LABELS = ['Hồi 1 — Vấn đề', 'Hồi 2 — Cấp quyền', 'Hồi 3 — Nhận giá trị', 'Hồi 4 — Tất toán và hệ sinh thái']
-
-// Vùng nội dung chính rộng ~80% màn hình ở độ phân giải trình chiếu 1920×1080
-// (CLAUDE.md mục #7 / quy-tac.md mục 8): 1920 × 0,8 = 1536px.
+// Khung dùng chung cho bề mặt Nền tảng (Màn 1, 3, 4, 5b/5d, 6, 7, 10) — Vòng 7A
+// thay phần đầu trang tự vẽ trước đây bằng TopBar + ActProgress dùng chung
+// (docs/thiet-ke.md mục 4), sống bên trong Stage (App.jsx). Phần thân màn (bg tối,
+// bố cục) giữ nguyên như trước để không đổi nội dung Màn 2–10 ngoài việc đặt
+// chúng vào Stage/TopBar (yêu cầu "Không làm" của Vòng 7A).
 export default function ScreenShell({ screenNumber, title, children, maxWidth = 'max-w-[1536px]' }) {
   const currentAct = actForScreen(screenNumber)
   const { openPeek } = usePermissions()
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100">
-      <header className="border-b border-slate-800 px-8 py-4">
-        <div className="flex items-center justify-between">
-          <span className="text-lg font-semibold">{SOLUTION_NAME}</span>
-          <div className="flex items-center gap-4">
-            {screenNumber !== 7 && (
-              <button
-                onClick={() => openPeek(screenNumber)}
-                className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-1.5 text-base font-medium text-slate-300 hover:bg-slate-800"
-              >
-                Quyền của tôi
-              </button>
-            )}
-            <span className="text-base text-slate-400">Màn {screenNumber}</span>
-          </div>
-        </div>
-        <div className="mt-3 grid grid-cols-4 gap-2">
-          {ACT_LABELS.map((label, i) => {
-            const actNumber = i + 1
-            const isActive = actNumber === currentAct
-            return (
-              <div
-                key={label}
-                className={`h-1.5 rounded-full ${isActive ? 'bg-blue-500' : 'bg-slate-800'}`}
-                title={label}
-              />
-            )
-          })}
-        </div>
-      </header>
+    <div className="flex h-full flex-col bg-slate-950 text-slate-100">
+      <TopBar screenNumber={screenNumber} onOpenPeek={() => openPeek(screenNumber)} showPeekButton={screenNumber !== 7} />
+      <div className="border-b border-slate-800 px-12 pb-3 pt-3">
+        <ActProgress currentAct={currentAct} tone="dark" />
+      </div>
 
-      <main className="flex-1 flex items-center justify-center px-8 py-10">
+      <main className="flex flex-1 items-center justify-center overflow-y-auto px-8 py-10">
         <div className={`${maxWidth} w-full`}>
           <h1 className="text-3xl font-bold mb-4">{title}</h1>
           {children}
         </div>
       </main>
 
-      <footer className="border-t border-slate-800 px-8 py-3 text-base text-slate-500">
-        {FOOTER_NOTE}
-      </footer>
+      <footer className="border-t border-slate-800 px-8 py-3 text-base text-slate-500">{FOOTER_NOTE}</footer>
     </div>
   )
 }

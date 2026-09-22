@@ -3,6 +3,8 @@ import { useJourneyState } from './state/journeyState.js'
 import { PermissionProvider, usePermissions } from './state/permissionState.jsx'
 import { ScenarioProvider, useScenario } from './state/scenarioState.jsx'
 import { SettlementProvider, useSettlement } from './state/settlementState.jsx'
+import { isTypingTarget } from './utils/keyboard.js'
+import Stage from './components/ui/Stage.jsx'
 import ScenarioPanel from './components/ScenarioPanel.jsx'
 import Screen1 from './screens/Screen1.jsx'
 import Screen2 from './screens/Screen2.jsx'
@@ -62,6 +64,7 @@ function AppScreens() {
 
   useEffect(() => {
     function handleKeyDown(event) {
+      if (isTypingTarget(event.target)) return
       const key = event.key.toLowerCase()
       if (key === 'r') {
         handleReset()
@@ -95,7 +98,7 @@ function AppScreens() {
 
   const CurrentScreen = SCREEN_COMPONENTS[currentScreen]
   return (
-    <>
+    <Stage>
       <CurrentScreen onNext={goNext} onPrev={goPrev} onGoToScreen={goToScreen} />
       <ScenarioPanel onReset={handleReset} />
       {isPeeking && (
@@ -103,6 +106,6 @@ function AppScreens() {
           <Screen7 onBack={closePeek} onGoToScreen={goToScreen} />
         </div>
       )}
-    </>
+    </Stage>
   )
 }

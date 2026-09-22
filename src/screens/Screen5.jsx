@@ -3,7 +3,6 @@ import ScreenShell from '../components/ScreenShell.jsx'
 import { usePermissions } from '../state/permissionState.jsx'
 import { useScenario } from '../state/scenarioState.jsx'
 import {
-  SOLUTION_NAME,
   FOOTER_NOTE,
   ESTIMATE_DISCLAIMER,
   A2_CONSENT,
@@ -13,6 +12,7 @@ import {
   PRICING_PARAMS,
   LENDER_QUOTES,
 } from '../data/mockData.js'
+import { LEGAL_NAME, TPP_CODE } from '../config/brand.js'
 import { computeAvailableValue, computeAdvanceInterest } from '../logic/pricing.js'
 import { formatNumberVN, formatPercentVN } from '../utils/format.js'
 
@@ -83,8 +83,8 @@ export default function Screen5({ onNext, onPrev }) {
         >
           <div>
             <div className="text-base font-medium text-slate-500">Bên yêu cầu</div>
-            <div className="text-slate-900">Công ty {SOLUTION_NAME}</div>
-            <div className="text-base text-slate-500">Mã TPP đã đăng ký: {A2_CONSENT.registeredTppId}</div>
+            <div className="text-slate-900">{LEGAL_NAME}</div>
+            <div className="text-base text-slate-500">Mã TPP đã đăng ký: {TPP_CODE}</div>
           </div>
 
           <div>
@@ -182,7 +182,7 @@ export default function Screen5({ onNext, onPrev }) {
 // "Bạn đang ở trang của Techcombank", một ô xác nhận không tích sẵn.
 function TechcombankStep({ heading, subheading, children, confirmed, setConfirmed, confirmLabel, approveLabel, onApprove, onReject }) {
   return (
-    <div className="flex min-h-screen flex-col bg-white text-slate-900">
+    <div className="flex h-full flex-col bg-white text-slate-900">
       <header className="border-b border-slate-200 px-8 py-4">
         <div className="text-base font-medium text-slate-500">Bạn đang ở trang của Techcombank</div>
         <div className="mt-1 text-3xl font-bold text-slate-900">Techcombank</div>

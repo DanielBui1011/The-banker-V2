@@ -75,7 +75,7 @@ export default function Screen8({ onNext }) {
   const tiktokScore = computeVerificationScore(VERIFICATION_METRICS['TikTok Shop'])
 
   return (
-    <div className="flex min-h-screen flex-col bg-gray-100 text-gray-900">
+    <div className="flex h-full flex-col bg-gray-100 text-gray-900">
       <header className="bg-blue-950 px-8 py-5 text-white">
         <div className="text-sm font-medium uppercase tracking-wide text-blue-300">Hệ thống nội bộ</div>
         <h1 className="mt-1 text-3xl font-bold">Techcombank — Cổng thẩm định (mô phỏng)</h1>
