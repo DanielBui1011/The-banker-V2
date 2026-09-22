@@ -14,7 +14,7 @@
 | Chủ shop | Chị Lan |
 | Ngành hàng | Mỹ phẩm |
 | Tài khoản thanh toán | Techcombank, số giả 1903 **** 8826 |
-| Phần mềm bán hàng | [Phần mềm thí điểm] |
+| Phần mềm bán hàng | Shopee |
 | Ngày kết nối | 01/08/2027 |
 | Giờ đối soát thủ công trước khi dùng | 9 giờ/tháng |
 | Lựa chọn vốn hiện tại | Vay tín chấp từ 2%/tháng |
