@@ -263,6 +263,20 @@ export const LOCK_CERTIFICATE = {
   signature: 'JWS, RS256 — kiểm chứng độc lập',
 }
 
+// Màn 2 — Cấp quyền A1 (docs/man-hinh.md mục Màn 2, docs/du-lieu.md mục 8)
+export const A1_CONSENT = {
+  purposeLabel: 'Đối soát dòng tiền (A1)',
+  dataScopes: [
+    'Danh sách tài khoản',
+    'Số dư',
+    'Lịch sử giao dịch trong kỳ đối soát hiện hành',
+  ],
+  durationDays: 90,
+  renewalNote: 'Tự gia hạn khi nhà bán xác nhận',
+}
+
+export const A1_TOKEN_TTL_SECONDS = 3600
+
 // Chân trang mọi màn (CLAUDE.md mục Quy tắc bắt buộc #8)
 export const FOOTER_NOTE = 'Giao diện mô phỏng — dữ liệu giả định'
 

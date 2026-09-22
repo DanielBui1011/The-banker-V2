@@ -26,14 +26,34 @@ export function actForScreen(screenNumber) {
 
 export function useJourneyState() {
   const [position, setPosition] = useState(0)
+  // Vị trí xa nhất từng đạt tới — dùng để suy ra "đã qua Màn X" một chiều,
+  // không bị lùi lại khi người trình bày bấm mũi tên trái để xem lại màn trước.
+  const [maxPosition, setMaxPosition] = useState(0)
 
   const goNext = useCallback(() => {
-    setPosition((p) => Math.min(p + 1, SCREEN_ORDER.length - 1))
+    setPosition((p) => {
+      const next = Math.min(p + 1, SCREEN_ORDER.length - 1)
+      setMaxPosition((m) => Math.max(m, next))
+      return next
+    })
   }, [])
 
   const goPrev = useCallback(() => {
     setPosition((p) => Math.max(p - 1, 0))
   }, [])
+
+  const goToScreen = useCallback((screenNumber) => {
+    const index = SCREEN_ORDER.indexOf(screenNumber)
+    if (index === -1) return
+    setPosition(index)
+    setMaxPosition((m) => Math.max(m, index))
+  }, [])
+
+  // "Đã qua Màn N": vị trí xa nhất đã vượt qua chỗ của Màn N trong SCREEN_ORDER.
+  const hasPassedScreen = useCallback(
+    (screenNumber) => maxPosition > SCREEN_ORDER.indexOf(screenNumber),
+    [maxPosition]
+  )
 
   return {
     currentScreen: SCREEN_ORDER[position],
@@ -41,5 +61,7 @@ export function useJourneyState() {
     totalSteps: SCREEN_ORDER.length,
     goNext,
     goPrev,
+    goToScreen,
+    hasPassedScreen,
   }
 }
