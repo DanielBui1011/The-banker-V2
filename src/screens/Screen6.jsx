@@ -1,5 +1,12 @@
-import ScreenShell from '../components/ScreenShell.jsx'
-import StatusBadge from '../components/StatusBadge.jsx'
+import TopBar from '../components/ui/TopBar.jsx'
+import ActProgress from '../components/ui/ActProgress.jsx'
+import SurfaceFrame from '../components/ui/SurfaceFrame.jsx'
+import Card from '../components/ui/Card.jsx'
+import Money from '../components/ui/Money.jsx'
+import StatusBadge from '../components/ui/StatusBadge.jsx'
+import Callout from '../components/ui/Callout.jsx'
+import { actForScreen } from '../config/flow.js'
+import { usePermissions } from '../state/permissionState.jsx'
 import { useScenario } from '../state/scenarioState.jsx'
 import { useSettlement } from '../state/settlementState.jsx'
 import { LENDER_QUOTES, SELLER_PROFILE, FOOTER_NOTE } from '../data/mockData.js'
@@ -10,10 +17,12 @@ import LeakScenarioContent from './Screen9.jsx'
 const TECHCOMBANK_QUOTE = LENDER_QUOTES.find((q) => q.lender === 'Techcombank')
 const INTEREST_DAYS = 5
 
-const RU_STATUS_TONE = { locked: 'tier2', settled: 'tier1', broken: 'broken' }
-const RU_STATUS_LABEL = { locked: 'Đã khóa', settled: 'Đã tất toán', broken: 'Đứt gãy' }
+const RU_STATUS = { locked: 'locked', settled: 'settled', broken: 'broken' }
 
+// Vòng 7C — Màn 6 dựng lại bằng SurfaceFrame(platform)/TopBar/ActProgress dùng
+// chung, không đổi logic tất toán (src/state/settlementState.jsx).
 export default function Screen6({ onNext }) {
+  const { openPeek } = usePermissions()
   const { leak } = useScenario()
   const settlement = useSettlement()
 
@@ -21,65 +30,82 @@ export default function Screen6({ onNext }) {
   const interestThousandVN = Math.round(interestVN * 1000)
 
   return (
-    <ScreenShell screenNumber={6} title="Tất toán">
-      <div className="space-y-6">
-        <DebtBlock debt={settlement.debt} ru03Status={settlement.ru03Status} ru04Status={settlement.ru04Status} />
+    <div className="flex h-full flex-col">
+      <TopBar screenNumber={6} onOpenPeek={() => openPeek(6)} />
+      <SurfaceFrame variant="platform">
+        <div className="flex h-full flex-col">
+          <div className="border-b border-slate-200 px-12 pb-3 pt-3">
+            <ActProgress currentAct={actForScreen(6)} tone="light" />
+          </div>
 
-        <Timeline timeline={settlement.timeline} stepIndex={settlement.stepIndex} />
+          <main className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-12 py-10">
+            <div className="mx-auto w-full max-w-[1536px] space-y-6">
+              <h1 className="text-screen-title font-bold text-slate-900">Tất toán</h1>
 
-        <div className="flex justify-center">
-          <button
-            onClick={settlement.advance}
-            disabled={settlement.atLastStep}
-            className="rounded-xl bg-blue-600 px-6 py-3 text-lg font-semibold text-white transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:bg-slate-700 disabled:text-slate-400"
-          >
-            Sự kiện tiếp theo (phím Space) →
-          </button>
+              <DebtBlock debt={settlement.debt} ru03Status={settlement.ru03Status} ru04Status={settlement.ru04Status} />
+
+              <Card>
+                <MilestoneTimeline timeline={settlement.timeline} stepIndex={settlement.stepIndex} />
+              </Card>
+
+              <div className="flex justify-center">
+                <button
+                  onClick={settlement.advance}
+                  disabled={settlement.atLastStep}
+                  className="rounded-xl bg-navy px-6 py-3 text-emphasis font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:bg-slate-300"
+                >
+                  Sự kiện tiếp theo (phím Space) →
+                </button>
+              </div>
+
+              {leak ? (
+                <LeakScenarioContent settlement={settlement} />
+              ) : (
+                <NormalMilestoneDetail settlement={settlement} interestThousandVN={interestThousandVN} />
+              )}
+
+              {settlement.atLastStep && (
+                <button
+                  onClick={onNext}
+                  className="w-full rounded-xl border border-slate-300 bg-white py-3 text-emphasis font-semibold text-slate-800 transition hover:bg-slate-50"
+                >
+                  Tiếp →
+                </button>
+              )}
+            </div>
+          </main>
+
+          <footer className="border-t border-slate-200 px-12 py-3 text-label text-slate-500">{FOOTER_NOTE}</footer>
         </div>
-
-        {leak ? (
-          <LeakScenarioContent settlement={settlement} />
-        ) : (
-          <NormalMilestoneDetail settlement={settlement} interestThousandVN={interestThousandVN} />
-        )}
-
-        {settlement.atLastStep && (
-          <button
-            onClick={onNext}
-            className="w-full rounded-xl border border-slate-700 bg-slate-800 py-3 text-lg font-semibold text-slate-100 transition hover:bg-slate-700"
-          >
-            Tiếp →
-          </button>
-        )}
-      </div>
+      </SurfaceFrame>
 
       {settlement.repayModalUnit && <TechcombankRepayPage unit={settlement.repayModalUnit} settlement={settlement} />}
-    </ScreenShell>
+    </div>
   )
 }
 
 function DebtBlock({ debt, ru03Status, ru04Status }) {
   return (
-    <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
+    <Card padding="p-8">
+      <div className="flex flex-wrap items-center justify-between gap-6">
         <div>
-          <div className="text-base text-slate-400">Dư nợ còn lại</div>
-          <div className="mt-1 text-4xl font-bold text-teal-200">{formatNumberVN(debt)} triệu</div>
+          <div className="text-label font-medium text-slate-500">Dư nợ còn lại</div>
+          <Money value={debt} size="hero" className="mt-1 block text-slate-900" />
         </div>
-        <div className="flex gap-4">
+        <div className="flex gap-6">
           <RuChip code="RU-03" status={ru03Status} />
           <RuChip code="RU-04" status={ru04Status} />
         </div>
       </div>
-    </div>
+    </Card>
   )
 }
 
 function RuChip({ code, status }) {
   return (
     <div className="text-center">
-      <div className="mb-1 text-base font-semibold text-slate-200">{code}</div>
-      <StatusBadge tone={RU_STATUS_TONE[status]}>{RU_STATUS_LABEL[status]}</StatusBadge>
+      <div className="mb-1 text-label font-semibold text-slate-900">{code}</div>
+      <StatusBadge status={RU_STATUS[status]} />
     </div>
   )
 }
@@ -105,7 +131,9 @@ function milestoneShortLabel(m) {
   }
 }
 
-function Timeline({ timeline, stepIndex }) {
+// Dòng thời gian ngang các mốc 15/09 → 19/09 → 20/09 (docs/du-lieu.md mục 10),
+// khoảng cách đều giữa các mốc theo lưới 8px.
+function MilestoneTimeline({ timeline, stepIndex }) {
   return (
     <div className="overflow-x-auto pb-2">
       <div className="flex min-w-max">
@@ -113,26 +141,22 @@ function Timeline({ timeline, stepIndex }) {
           const reached = i <= stepIndex
           const isCurrent = i === stepIndex
           return (
-            <div key={m.id} className="flex w-56 flex-col items-center px-2 text-center">
+            <div key={m.id} className="flex w-56 flex-col items-center gap-2 px-2 text-center">
               <div className="flex w-full items-center">
-                <div className={`h-0.5 flex-1 ${i === 0 ? 'opacity-0' : reached ? 'bg-teal-500' : 'bg-slate-800'}`} />
+                <div className={`h-0.5 flex-1 ${i === 0 ? 'opacity-0' : reached ? 'bg-teal-500' : 'bg-slate-200'}`} />
                 <div
                   className={`h-4 w-4 shrink-0 rounded-full border-2 ${
-                    reached ? 'border-teal-400 bg-teal-500' : 'border-slate-700 bg-slate-800'
+                    reached ? 'border-teal-600 bg-teal-500' : 'border-slate-300 bg-white'
                   } ${isCurrent ? 'ring-4 ring-teal-500/30' : ''}`}
                 />
                 <div
                   className={`h-0.5 flex-1 ${
-                    i === timeline.length - 1 ? 'opacity-0' : reached ? 'bg-teal-500' : 'bg-slate-800'
+                    i === timeline.length - 1 ? 'opacity-0' : reached ? 'bg-teal-500' : 'bg-slate-200'
                   }`}
                 />
               </div>
-              <div className={`mt-2 text-base font-semibold ${reached ? 'text-slate-100' : 'text-slate-500'}`}>
-                {m.date}
-              </div>
-              <div className={`mt-1 text-sm ${reached ? 'text-slate-300' : 'text-slate-600'}`}>
-                {milestoneShortLabel(m)}
-              </div>
+              <div className={`text-label font-semibold ${reached ? 'text-slate-900' : 'text-slate-400'}`}>{m.date}</div>
+              <div className={`text-label ${reached ? 'text-slate-600' : 'text-slate-400'}`}>{milestoneShortLabel(m)}</div>
             </div>
           )
         })}
@@ -146,28 +170,29 @@ function Timeline({ timeline, stepIndex }) {
 export function MarketplacePaymentNotice({ milestone, settlement }) {
   const alreadyRepaid = settlement.repaid[milestone.unit]
   return (
-    <div className="space-y-3 rounded-xl border border-purple-800/60 bg-purple-950/20 p-5">
-      <div className="text-lg font-semibold text-purple-200">
+    <Card className="border-violet-600 bg-violet-50">
+      <div className="text-body font-semibold text-violet-900">
         {milestone.marketplace} đã thanh toán {formatNumberVN(milestone.marketplaceAmount)} triệu cho {milestone.unit}{' '}
         về tài khoản Techcombank. Trả {formatNumberVN(milestone.repaymentAmount)} triệu cho khoản vay?
       </div>
 
       {alreadyRepaid ? (
-        <div className="text-base font-semibold text-teal-300">Đã trả nợ trên Techcombank.</div>
+        <div className="mt-2 text-label font-semibold text-teal-700">Đã trả nợ trên Techcombank.</div>
       ) : (
         <>
-          <p className="text-sm text-slate-400">
-            Nếu quá thời hạn ân hạn mà chưa trả, Techcombank trích nợ theo hợp đồng tín dụng.
+          <p className="mt-2 text-label text-slate-600">
+            Nếu quá thời hạn ân hạn mà chưa trả, Techcombank trích nợ theo hợp đồng tín dụng. Nền tảng chỉ thông báo
+            và dẫn sang trang Techcombank — không thực hiện giao dịch.
           </p>
           <button
             onClick={() => settlement.openRepayModal(milestone.unit)}
-            className="rounded-xl bg-blue-600 px-5 py-2.5 text-lg font-semibold text-white transition hover:bg-blue-500"
+            className="mt-4 rounded-xl bg-navy px-5 py-2.5 text-body font-semibold text-white transition hover:opacity-90"
           >
-            Trả nợ trên Techcombank
+            Trả nợ một chạm — sang trang Techcombank
           </button>
         </>
       )}
-    </div>
+    </Card>
   )
 }
 
@@ -192,48 +217,48 @@ function NormalMilestoneDetail({ settlement, interestThousandVN }) {
   }
   if (m.kind === 'settled') {
     return (
-      <div className="space-y-2 rounded-xl border border-teal-800/60 bg-teal-950/20 p-5">
-        <div className="text-lg font-semibold text-teal-200">
+      <Card className="border-teal-600 bg-teal-50">
+        <div className="text-body font-semibold text-teal-800">
           Khoản vay đã tất toán — tiền lãi {formatNumberVN(interestThousandVN)} nghìn đồng ({INTEREST_DAYS} ngày)
         </div>
-        <div className="text-base text-teal-300">Điểm xác thực đã cập nhật sau lô tất toán.</div>
-      </div>
+        <div className="mt-1 text-label text-teal-700">Điểm xác thực được cập nhật sau lô tất toán.</div>
+      </Card>
     )
   }
   return null
 }
 
 function InfoBox({ children }) {
-  return <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-5 text-lg text-slate-200">{children}</div>
+  return <Callout variant="info">{children}</Callout>
 }
 
 // Khuôn trang mô phỏng Techcombank dùng chung cho trả nợ (Màn 6) và giải trình rò rỉ
-// (Màn 9) — cùng khuôn Bước 2b: nền sáng, tách biệt hẳn với Nền tảng.
+// (Màn 9) — SurfaceFrame kiểu bank, tách biệt hẳn với Nền tảng.
 export function TechcombankPageFrame({ heading, subheading, children, confirmLabel, onConfirm }) {
   return (
-    <div className="fixed inset-0 z-[90] flex flex-col overflow-hidden bg-white text-slate-900">
-      <header className="border-b border-slate-200 px-8 py-4">
-        <div className="text-base font-medium text-slate-500">Bạn đang ở trang của Techcombank</div>
-        <div className="mt-1 text-3xl font-bold text-slate-900">Techcombank</div>
-      </header>
+    <div className="fixed inset-0 z-[90] overflow-hidden">
+      <SurfaceFrame variant="bank" bankName="Techcombank">
+        <div className="flex h-full flex-col">
+          <main className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-8 pt-8 pb-24">
+            <div className="mx-auto w-full max-w-xl">
+              <Card padding="p-8">
+                <h1 className="mb-1 text-section-title font-bold text-slate-900">{heading}</h1>
+                {subheading && <p className="mb-6 text-body text-slate-600">{subheading}</p>}
 
-      <main className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-8 pt-8 pb-24">
-        <div className="mx-auto w-full max-w-xl rounded-2xl border border-slate-200 p-8 shadow-sm">
-          <h1 className="mb-1 text-3xl font-bold text-slate-900">{heading}</h1>
-          {subheading && <p className="mb-6 text-lg text-slate-500">{subheading}</p>}
+                <div className="space-y-4 text-body">{children}</div>
 
-          <div className="space-y-4 text-lg">{children}</div>
-
-          <button
-            onClick={onConfirm}
-            className="mt-8 w-full rounded-xl bg-slate-900 py-3 text-lg font-semibold text-white transition hover:bg-slate-800"
-          >
-            {confirmLabel}
-          </button>
+                <button
+                  onClick={onConfirm}
+                  className="mt-8 w-full rounded-xl bg-slate-900 py-3 text-emphasis font-semibold text-white transition hover:bg-slate-800"
+                >
+                  {confirmLabel}
+                </button>
+              </Card>
+            </div>
+          </main>
+          <footer className="border-t border-slate-200 px-8 py-3 text-label text-slate-500">{FOOTER_NOTE}</footer>
         </div>
-      </main>
-
-      <footer className="border-t border-slate-200 px-8 py-3 text-base text-slate-400">{FOOTER_NOTE}</footer>
+      </SurfaceFrame>
     </div>
   )
 }
@@ -241,7 +266,7 @@ export function TechcombankPageFrame({ heading, subheading, children, confirmLab
 export function TechRow({ label, value }) {
   return (
     <div>
-      <div className="text-base font-medium text-slate-500">{label}</div>
+      <div className="text-label font-medium text-slate-500">{label}</div>
       <div className="text-slate-900">{value}</div>
     </div>
   )
@@ -252,10 +277,12 @@ function TechcombankRepayPage({ unit, settlement }) {
   return (
     <TechcombankPageFrame
       heading="Trả nợ khoản vay"
+      subheading="Techcombank thực hiện trả nợ trực tiếp từ khoản thanh toán vừa về tài khoản."
       confirmLabel="Xác nhận trả nợ"
       onConfirm={() => settlement.confirmRepay(unit)}
     >
-      <TechRow label="Khoản vay" value={`Khoản ứng bảo đảm bằng ${unit}`} />
+      <TechRow label="Bên thực hiện trả nợ" value="Techcombank" />
+      <TechRow label="Khoản vay" value={`Khoản vay có bảo đảm bằng khoản phải thu ${unit}`} />
       <TechRow label="Số tiền trả" value={`${formatNumberVN(amount)} triệu`} />
       <TechRow label="Tài khoản trích" value={SELLER_PROFILE.paymentAccount} />
     </TechcombankPageFrame>
