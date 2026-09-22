@@ -57,7 +57,7 @@ export default function Screen1({ onNext }) {
   }, [isSimulating, revealedCount])
 
   return (
-    <ScreenShell screenNumber={1} title="Trạng thái hiện tại" maxWidth="max-w-5xl">
+    <ScreenShell screenNumber={1} title="Trạng thái hiện tại">
       <div className="space-y-6">
         <span className="inline-block rounded-full border border-amber-800 bg-amber-950/50 px-3 py-1 text-base font-medium text-amber-300">
           Tình trạng hiện tại
