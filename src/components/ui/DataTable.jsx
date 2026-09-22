@@ -1,6 +1,7 @@
 // DataTable (docs/thiet-ke.md mục 4) — hàng cao ≥ 56px (h-14), số căn phải.
 // columns: [{ key, header, align, render? }]. rows: mảng dữ liệu. rowKey(row) => string.
-export default function DataTable({ columns, rows, rowKey }) {
+// onRowClick(row)? — khi có, mỗi hàng bấm được (ví dụ mở Drawer chi tiết).
+export default function DataTable({ columns, rows, rowKey, onRowClick }) {
   return (
     <table className="w-full text-label">
       <thead>
@@ -14,7 +15,11 @@ export default function DataTable({ columns, rows, rowKey }) {
       </thead>
       <tbody>
         {rows.map((row) => (
-          <tr key={rowKey(row)} className="h-14 border-b border-slate-100">
+          <tr
+            key={rowKey(row)}
+            onClick={onRowClick ? () => onRowClick(row) : undefined}
+            className={`h-14 border-b border-slate-100 ${onRowClick ? 'cursor-pointer hover:bg-slate-50' : ''}`}
+          >
             {columns.map((col) => (
               <td
                 key={col.key}
