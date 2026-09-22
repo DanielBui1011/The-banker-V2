@@ -18,3 +18,10 @@ export function formatPercentVN(value) {
     maximumFractionDigits: 1,
   })}%`
 }
+
+// Định dạng ngày ISO (yyyy-mm-dd) sang dd/mm/yyyy dùng chung cho mọi màn.
+export function formatDateVN(isoDate) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(isoDate)) return isoDate
+  const [y, m, d] = isoDate.split('-')
+  return `${d}/${m}/${y}`
+}
