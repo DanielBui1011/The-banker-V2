@@ -2,7 +2,7 @@ import { useState } from 'react'
 import ScreenShell from '../components/ScreenShell.jsx'
 import { BANK_TRANSACTIONS, FEE_DEVIATIONS, RECONCILIATION_COMPARISON } from '../data/mockData.js'
 import { summarizeTransactions, isFeeDeviationFlagged } from '../logic/reconciliation.js'
-import { formatNumberVN, formatMillion } from '../utils/format.js'
+import { formatNumberVN } from '../utils/format.js'
 
 const FILTERS = [
   { key: 'all', label: 'Tất cả' },
@@ -57,7 +57,7 @@ export default function Screen3({ onNext }) {
           <div className="rounded-xl border border-teal-800/60 bg-teal-950/20 p-4">
             <div className="text-base text-teal-300">Đã khớp</div>
             <div className="mt-1 text-3xl font-bold text-teal-200">{summary.matchedCount}</div>
-            <div className="mt-1 text-base text-slate-400">{formatMillion(summary.matchedTotal)} tổng cộng</div>
+            <div className="mt-1 text-base text-slate-400">{formatNumberVN(summary.matchedTotal)} triệu tổng cộng</div>
           </div>
           <div className="rounded-xl border border-amber-800/60 bg-amber-950/20 p-4">
             <div className="text-base text-amber-300">Ngoại lệ</div>
@@ -172,16 +172,16 @@ export default function Screen3({ onNext }) {
                   <div className="mt-2 space-y-1 text-base text-slate-400">
                     <div className="flex justify-between">
                       <span>Dự phóng</span>
-                      <span className="text-slate-200">{formatMillion(fd.projected)}</span>
+                      <span className="text-slate-200">{formatNumberVN(fd.projected)} triệu</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Thực nhận</span>
-                      <span className="text-slate-200">{formatMillion(fd.actual)}</span>
+                      <span className="text-slate-200">{formatNumberVN(fd.actual)} triệu</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Chênh lệch</span>
                       <span className={flagged ? 'text-amber-300' : 'text-slate-300'}>
-                        {formatMillion(fd.deviation)} ({formatNumberVN(fd.deviationRate * 100)}%)
+                        {formatNumberVN(fd.deviation)} triệu ({formatNumberVN(fd.deviationRate * 100)}%)
                       </span>
                     </div>
                   </div>
