@@ -32,6 +32,12 @@ function formatDateDisplay(isoDate) {
   return `${isoDate.slice(8, 10)}/${isoDate.slice(5, 7)}`
 }
 
+// Mã giao dịch đã khớp đóng góp vào thực nhận của một đơn vị — tính từ BANK_TRANSACTIONS,
+// không viết cứng (docs/du-lieu.md mục 5).
+function contributingCodes(unit) {
+  return BANK_TRANSACTIONS.filter((tx) => tx.linkedTo === unit && tx.status === 'matched').map((tx) => tx.code)
+}
+
 export default function Screen3({ onNext }) {
   const [filter, setFilter] = useState('all')
   const [showExceptions, setShowExceptions] = useState(false)
@@ -169,6 +175,7 @@ export default function Screen3({ onNext }) {
                       {flagged ? 'Cảnh báo' : 'Trong ngưỡng'}
                     </span>
                   </div>
+                  <div className="mt-1 text-base text-slate-500">Từ {contributingCodes(fd.unit).join(' + ')}</div>
                   <div className="mt-2 space-y-1 text-base text-slate-400">
                     <div className="flex justify-between">
                       <span>Dự phóng</span>
