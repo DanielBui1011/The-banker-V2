@@ -23,7 +23,9 @@ export function computeVerificationScore(metrics) {
     (1 - leakRate * 3) *
     computeOnTimeFactor(p90DelayDays)
 
-  return Math.round(raw)
+  // Làm tròn xuống — theo ví dụ kiểm tra ở docs/du-lieu.md mục 7:
+  // TikTok Shop ≈ 90,505 → 90 (không làm tròn lên theo quy tắc thông thường).
+  return Math.floor(raw)
 }
 
 export function isScoreAvailable(score) {
