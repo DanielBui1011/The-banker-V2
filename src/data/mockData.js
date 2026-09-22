@@ -265,6 +265,7 @@ export const LOCK_CERTIFICATE = {
 
 // Màn 2 — Cấp quyền A1 (docs/man-hinh.md mục Màn 2, docs/du-lieu.md mục 8)
 export const A1_CONSENT = {
+  registeredTppId: '0318 xxx xxx (giả định)',
   purposeLabel: 'Đối soát dòng tiền (A1)',
   dataScopes: [
     'Danh sách tài khoản',
@@ -272,7 +273,7 @@ export const A1_CONSENT = {
     'Lịch sử giao dịch trong kỳ đối soát hiện hành',
   ],
   durationDays: 90,
-  renewalNote: 'Tự gia hạn khi nhà bán xác nhận',
+  renewalNote: 'Tự gia hạn khi bạn xác nhận',
 }
 
 export const A1_TOKEN_TTL_SECONDS = 3600
