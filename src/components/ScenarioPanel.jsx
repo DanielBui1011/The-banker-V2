@@ -4,9 +4,16 @@ import { useScenario } from '../state/scenarioState.jsx'
 // Nhãn kịch bản đang bật hiện ở góc trên phải, trên mọi màn (mount một lần ở App).
 
 export default function ScenarioPanel({ onReset }) {
-  const { megaSale, toggleMegaSale, leak, toggleLeak, panelOpen, togglePanel, closePanel } = useScenario()
+  const { megaSale, toggleMegaSale, leak, toggleLeak, phase3, togglePhase3, panelOpen, togglePanel, closePanel } =
+    useScenario()
 
-  const activeLabel = megaSale ? 'Kịch bản: Mega Sale' : leak ? 'Kịch bản: Rò rỉ' : null
+  const activeLabel = megaSale
+    ? 'Kịch bản: Mega Sale'
+    : leak
+      ? 'Kịch bản: Rò rỉ'
+      : phase3
+        ? 'Kịch bản: Giai đoạn 3 — minh họa tầm nhìn'
+        : null
 
   return (
     <>
@@ -36,7 +43,7 @@ export default function ScenarioPanel({ onReset }) {
           <div className="space-y-3">
             <ScenarioToggle label="Mega Sale" hint="Phím M" active={megaSale} onToggle={toggleMegaSale} />
             <ScenarioToggle label="Rò rỉ" hint="Phím L" active={leak} onToggle={toggleLeak} />
-            <ScenarioToggle label="Giai đoạn 3" hint="Sắp có — khóa tới Vòng 6" locked />
+            <ScenarioToggle label="Giai đoạn 3" hint="Phím 3" active={phase3} onToggle={togglePhase3} />
           </div>
 
           <button
