@@ -106,34 +106,30 @@ export default function Screen8({ onNext }) {
   return (
     <SurfaceFrame variant="bankOps" bankName="Techcombank">
       <div className="flex h-full flex-col">
-        <div className="px-12 pt-8">
-          <h1 className="text-screen-title font-bold text-slate-900">Techcombank</h1>
-          <p className="mt-1 text-label text-slate-500">Cổng nghiệp vụ — tra cứu nhà bán Lan Beauty</p>
-        </div>
+        <main className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-12 pb-24 pt-8">
+          <div className="mx-auto max-w-5xl space-y-6">
+            <h1 className="text-screen-title font-bold text-slate-900">Tra cứu nhà bán — Lan Beauty</h1>
 
-        <main className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-12 pb-24 pt-6">
-          {duplicateCallout && (
-            <div className="mb-6 max-w-5xl mx-auto">
+            {duplicateCallout && (
               <Callout variant="info">
                 Lệnh khóa này đã được ghi nhận lúc {duplicateCallout.lockedAt} — không tạo khóa mới. Thứ tự ưu tiên #{duplicateCallout.priority} giữ nguyên. Tổng đã khóa: {formatNumberVN(duplicateCallout.total)} triệu.
               </Callout>
-            </div>
-          )}
-          {a2Revoked ? (
-            <Card className="mx-auto max-w-5xl">
-              <div className="text-emphasis font-semibold text-slate-900">Không có dữ liệu để hiển thị</div>
-              <p className="mt-2 text-label text-slate-600">
-                Nhà bán đã rút quyền A2 (đánh giá tín dụng), cấp ngày {formatDateVN(A2_PERMISSION.grantedDate)}. Ghi
-                chú rút quyền: {A2_PERMISSION.revokeNote}.
-              </p>
-            </Card>
-          ) : (
-            <div className="mx-auto max-w-5xl space-y-6">
+            )}
+            {a2Revoked ? (
+              <Card>
+                <div className="text-emphasis font-semibold text-slate-900">Không có dữ liệu để hiển thị</div>
+                <p className="mt-2 text-label text-slate-600">
+                  Nhà bán đã rút quyền A2 (đánh giá tín dụng), cấp ngày {formatDateVN(A2_PERMISSION.grantedDate)}. Ghi
+                  chú rút quyền: {A2_PERMISSION.revokeNote}.
+                </p>
+              </Card>
+            ) : (
+              <>
               <div>
-                <div className="text-emphasis font-semibold text-slate-900">Ngân hàng thấy gì, và KHÔNG thấy gì?</div>
-                <div className="mt-2 flex items-baseline gap-3">
-                  <Money value={availableToLock} size="hero" className="text-slate-900" />
-                  <span className="text-label text-slate-500">giá trị khả dụng còn lại để khóa</span>
+                <Money value={totalExposure} size="hero" className="text-slate-900" />
+                <div className="mt-1 text-label text-slate-500">bảo đảm bằng {lockedTierUnits.length} đơn vị đã khóa</div>
+                <div className="mt-2 text-label text-slate-500">
+                  Khả dụng còn lại để khóa: <Money value={availableToLock} size="body" className="font-medium text-slate-700" />
                 </div>
               </div>
 
@@ -151,15 +147,26 @@ export default function Screen8({ onNext }) {
                 )}
               </div>
 
-              <Callout variant="info">
-                Sổ đăng ký chỉ cho biết giá trị đã khóa và số bên khóa, không tiết lộ danh tính bên khóa khác.
-              </Callout>
-
               <Card>
-                <div className="text-label text-slate-500">Tổng phơi nhiễm hợp nhất</div>
-                <div className="mt-1 flex items-baseline gap-2">
-                  <Money value={totalExposure} size="section-title" className="text-slate-900" />
-                  <span className="text-label text-slate-500">trên {baseLenderCount} bên cho vay</span>
+                <div className="grid grid-cols-2 gap-6">
+                  <div>
+                    <div className="mb-2 text-label font-semibold text-slate-900">Ngân hàng thấy</div>
+                    <ul className="space-y-1 text-label text-slate-700">
+                      <li>Doanh thu đã xác thực</li>
+                      <li>Điểm xác thực</li>
+                      <li>Trạng thái đơn vị</li>
+                      <li>Giá trị đã khóa</li>
+                      <li>Số bên khóa</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <div className="mb-2 text-label font-semibold text-slate-400">Ngân hàng KHÔNG thấy</div>
+                    <ul className="space-y-1 text-label text-slate-400">
+                      <li>Dữ liệu đơn hàng thô</li>
+                      <li>Danh tính bên khóa khác</li>
+                      <li>Dữ liệu ngoài phạm vi A2</li>
+                    </ul>
+                  </div>
                 </div>
               </Card>
 
@@ -209,8 +216,9 @@ export default function Screen8({ onNext }) {
                   <Button onClick={onNext}>Tiếp: Giai đoạn 3 — nhiều bên chào giá →</Button>
                 </div>
               )}
-            </div>
-          )}
+              </>
+            )}
+          </div>
         </main>
 
         <footer className="border-t border-slate-200 px-12 py-3 text-label text-slate-500">{FOOTER_NOTE}</footer>
@@ -231,9 +239,9 @@ function LayerGroup({ layer, title, units }) {
         <thead>
           <tr className="border-b border-slate-200 text-left text-slate-500">
             <th className="w-24 px-3 py-2 font-medium">Đơn vị</th>
-            <th className="w-48 px-3 py-2 font-medium">Giá trị ròng dự phóng</th>
-            <th className="w-48 px-3 py-2 font-medium">Giá trị khả dụng</th>
-            <th className="w-40 px-3 py-2 font-medium">Đã bị khóa</th>
+            <th className="w-48 px-3 py-2 text-right font-medium">Giá trị ròng dự phóng</th>
+            <th className="w-48 px-3 py-2 text-right font-medium">Giá trị khả dụng</th>
+            <th className="w-40 px-3 py-2 text-right font-medium">Đã bị khóa</th>
             <th className="w-40 px-3 py-2 font-medium">Số bên đang khóa</th>
           </tr>
         </thead>
@@ -241,9 +249,9 @@ function LayerGroup({ layer, title, units }) {
           {units.map((u) => (
             <tr key={u.code} className="h-14 border-b border-slate-100 last:border-0">
               <td className="px-3 font-semibold text-slate-900">{u.code}</td>
-              <td className="px-3 tabular-nums">{formatNumberVN(u.projectedNetValue)} triệu</td>
-              <td className="px-3 tabular-nums">{formatNumberVN(u.availableValue)} triệu</td>
-              <td className="px-3 tabular-nums">{formatNumberVN(u.lockedAmount)} triệu</td>
+              <td className="px-3 text-right tabular-nums">{formatNumberVN(u.projectedNetValue)} triệu</td>
+              <td className="px-3 text-right tabular-nums">{formatNumberVN(u.availableValue)} triệu</td>
+              <td className="px-3 text-right tabular-nums">{formatNumberVN(u.lockedAmount)} triệu</td>
               <td className="px-3 tabular-nums">{u.lockerCount}</td>
             </tr>
           ))}
@@ -261,7 +269,6 @@ function InsufficientGroup({ units }) {
         <div key={u.code} className="flex items-center justify-between border-t border-slate-100 py-2.5 text-label first:border-t-0">
           <span className="font-semibold text-slate-900">{u.code}</span>
           <span className="tabular-nums text-slate-600">{formatNumberVN(u.projectedNetValue)} triệu dự phóng</span>
-          <span className="text-slate-500">{u.availableValueNote}</span>
         </div>
       ))}
     </Card>

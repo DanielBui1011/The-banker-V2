@@ -38,7 +38,7 @@ export default function SurfaceFrame({ variant = 'platform', bankName, children,
         <div className="flex w-56 flex-shrink-0 flex-col bg-slate-700 text-slate-100">
           <div className="flex items-center gap-2 px-5 py-5">
             <Landmark size={24} aria-hidden="true" />
-            <span className="text-label font-semibold">Nội bộ — mô phỏng</span>
+            <span className="text-label font-semibold">{bankName ? `${bankName} · Nội bộ — mô phỏng` : 'Nội bộ — mô phỏng'}</span>
           </div>
           <nav className="flex-1 space-y-1 border-t border-slate-600 px-3 py-4" aria-hidden="true">
             {BANK_OPS_NAV.map((label, i) => (

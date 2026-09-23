@@ -4,7 +4,6 @@ import ActProgress from '../components/ui/ActProgress.jsx'
 import SurfaceFrame from '../components/ui/SurfaceFrame.jsx'
 import Card from '../components/ui/Card.jsx'
 import StatusBadge from '../components/ui/StatusBadge.jsx'
-import Stepper from '../components/ui/Stepper.jsx'
 import Money from '../components/ui/Money.jsx'
 import Drawer from '../components/ui/Drawer.jsx'
 import Callout from '../components/ui/Callout.jsx'
@@ -25,7 +24,10 @@ import { useSettlement } from '../state/settlementState.jsx'
 import { useScenario } from '../state/scenarioState.jsx'
 import { formatNumberVN, formatPercentVN } from '../utils/format.js'
 
-const LIFECYCLE_STEPS = ['Dựng', 'Đã xác thực', 'Đã khóa', 'Tất toán']
+// Chú giải vòng đời (yêu cầu Vòng 14) — chuỗi StatusBadge thật, không phải thanh
+// bước có số: đây là chú giải tĩnh cho MỌI đơn vị, không phải thanh tiến trình
+// của một đơn vị cụ thể, nên không có bước nào mang trạng thái "đang ở đây".
+const LIFECYCLE_BADGES = ['projected', 'verified', 'locked', 'settled']
 
 const VERIFICATION_CHANNELS = ['Shopee', 'TikTok Shop', 'Hãng vận chuyển A']
 
@@ -57,18 +59,17 @@ function settlementStatusFor(unit, settlement) {
   return null
 }
 
-// Trạng thái chuẩn hóa dùng để chọn nhãn StatusBadge từ src/ui/status.js và bước
-// hiện tại trên Stepper vòng đời Dựng → Đã xác thực → Đã khóa → Tất toán. Nhánh
+// Trạng thái chuẩn hóa dùng để chọn nhãn StatusBadge từ src/ui/status.js. Nhánh
 // "Tất toán thiếu"/"Đứt gãy" chỉ hiện khi settlementStatus thực sự bằng giá trị đó.
 function lifecycleFor(unit, settlementStatus) {
-  if (settlementStatus === 'broken') return { badge: 'broken', step: 3, broken: true }
-  if (settlementStatus === 'settled') return { badge: 'settled', step: 4 }
-  if (settlementStatus === 'locked') return { badge: 'locked', step: 3 }
-  if (unit.status === 'settled') return { badge: 'settled', step: 4 }
-  if (unit.status === 'verified-then-locked') return { badge: 'verified', step: 2 }
-  if (unit.status === 'projected-insufficient-history') return { badge: 'insufficient-history', step: 1 }
-  if (unit.status === 'reversed') return { badge: 'reversed', step: null }
-  return { badge: 'projected', step: 1 }
+  if (settlementStatus === 'broken') return { badge: 'broken', broken: true }
+  if (settlementStatus === 'settled') return { badge: 'settled' }
+  if (settlementStatus === 'locked') return { badge: 'locked' }
+  if (unit.status === 'settled') return { badge: 'settled' }
+  if (unit.status === 'verified-then-locked') return { badge: 'verified' }
+  if (unit.status === 'projected-insufficient-history') return { badge: 'insufficient-history' }
+  if (unit.status === 'reversed') return { badge: 'reversed' }
+  return { badge: 'projected' }
 }
 
 export default function Screen4({ onNext }) {
@@ -84,17 +85,6 @@ export default function Screen4({ onNext }) {
     []
   )
 
-  // Thanh vòng đời dùng chung ở đầu màn (yêu cầu Vòng 10) — hiện bước xa nhất
-  // mà bất kỳ đơn vị nào đã đạt tới, tính lại mỗi render từ settlement (không
-  // cache) để phản ánh đúng khi quay lại màn này sau Màn 5/6.
-  const globalStep = useMemo(() => {
-    const steps = RECEIVABLE_UNITS.map((u) => {
-      const s = settlementStatusFor(u, settlement)
-      return lifecycleFor(u, s).step ?? 0
-    })
-    return Math.max(1, ...steps)
-  }, [settlement])
-
   return (
     <div className="flex h-full flex-col">
       <TopBar screenNumber={4} />
@@ -108,6 +98,17 @@ export default function Screen4({ onNext }) {
             <main className="flex-1 overflow-y-auto px-12 pt-10 pb-24">
               <div className="mx-auto max-w-[1536px] space-y-6">
                 <h1 className="text-screen-title font-bold text-slate-900">Khoản phải thu và điểm xác thực</h1>
+
+                <Card className="border-teal-200 bg-teal-50">
+                  <div className="text-label font-medium text-teal-700">Đang chờ sàn thanh toán</div>
+                  <div className="mt-1">
+                    <Money value={pendingTotal} size="section-title" className="text-teal-700" />{' '}
+                    <span className="text-body font-normal text-teal-700">
+                      ({verifiedUnits.length} đơn vị đã xác thực)
+                    </span>
+                  </div>
+                </Card>
+
                 <p className="text-body text-slate-600">
                   Đơn hàng đã giao nhưng sàn chưa thanh toán được gom theo kênh và cửa sổ thanh toán thành đơn vị
                   khoản phải thu.
@@ -115,15 +116,19 @@ export default function Screen4({ onNext }) {
 
                 <Card>
                   <div className="mb-3 text-label font-medium text-slate-500">Vòng đời một đơn vị khoản phải thu</div>
-                  <div className="overflow-x-auto">
-                    <Stepper steps={LIFECYCLE_STEPS} currentStep={globalStep} />
+                  <div className="flex flex-wrap items-center gap-2">
+                    {LIFECYCLE_BADGES.map((status, i) => (
+                      <span key={status} className="flex items-center gap-2">
+                        {i > 0 && <span className="text-slate-300">→</span>}
+                        <StatusBadge status={status} />
+                      </span>
+                    ))}
                   </div>
+                  <div className="mt-2 text-label text-slate-500">Nhánh rủi ro: Tất toán thiếu · Đứt gãy</div>
                 </Card>
 
                 <div className="grid grid-cols-3 gap-4">
-                  {sortedUnits.map((unit) => {
-                    if (unit.code === 'RU-06') return <ReversedUnitCard key={unit.code} unit={unit} />
-
+                  {sortedUnits.filter((unit) => unit.code !== 'RU-06').map((unit) => {
                     const settlementStatus = settlementStatusFor(unit, settlement)
                     const lifecycle = lifecycleFor(unit, settlementStatus)
                     const isRU0304 = unit.code === 'RU-03' || unit.code === 'RU-04'
@@ -164,6 +169,8 @@ export default function Screen4({ onNext }) {
                   })}
                 </div>
 
+                <ReversedUnitCard unit={sortedUnits.find((u) => u.code === 'RU-06')} />
+
                 {megaSale && (
                   <Card className="border-amber-200 bg-amber-50/40">
                     <div className="mb-3 flex items-center gap-2 text-section-title font-semibold text-slate-900">
@@ -188,18 +195,8 @@ export default function Screen4({ onNext }) {
                   </Card>
                 )}
 
-                <Card className="border-teal-200 bg-teal-50">
-                  <div className="text-label font-medium text-teal-700">Đang chờ sàn thanh toán</div>
-                  <div className="mt-1">
-                    <Money value={pendingTotal} size="section-title" className="text-teal-700" />{' '}
-                    <span className="text-body font-normal text-teal-700">
-                      ({verifiedUnits.length} đơn vị đã xác thực)
-                    </span>
-                  </div>
-                </Card>
-
                 <Card>
-                  <div className="mb-3 text-section-title font-semibold text-slate-900">Điểm xác thực theo kênh</div>
+                  <div className="mb-3 text-emphasis font-semibold text-slate-900">Điểm xác thực theo kênh</div>
                   <div className="flex flex-wrap items-center gap-x-2 gap-y-2 text-body">
                     {VERIFICATION_CHANNELS.map((channel, i) => {
                       const metrics = VERIFICATION_METRICS[channel]
@@ -265,16 +262,17 @@ export default function Screen4({ onNext }) {
 // mã, kênh, số tiền hoàn và badge (yêu cầu Vòng 10).
 function ReversedUnitCard({ unit }) {
   return (
-    <Card className="flex items-center justify-between">
-      <div>
-        <div className="text-body font-semibold text-slate-700">
-          {unit.code} · {unit.channel}
-        </div>
-        <div className="text-label text-slate-500">Đơn hoàn</div>
+    <Card padding="p-3" className="flex items-center justify-between">
+      <div className="flex items-center gap-2 text-label">
+        <span className="font-semibold text-slate-700">{unit.code}</span>
+        <span className="text-slate-400">·</span>
+        <span className="text-slate-500">{unit.channel}</span>
+        <span className="text-slate-400">·</span>
+        <span className="text-slate-500">Đơn hoàn</span>
       </div>
       <div className="flex items-center gap-3">
-        <Money value={unit.actualReceived} size="body" className="text-slate-500" />
-        <StatusBadge status="reversed" />
+        <Money value={unit.actualReceived} size="label" className="text-slate-500" />
+        <StatusBadge status="reversed" size="sm" />
       </div>
     </Card>
   )
