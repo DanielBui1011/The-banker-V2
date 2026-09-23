@@ -39,3 +39,34 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* Vòng 10 — hiệu ứng đổi trạng thái một đơn vị khoản phải thu (Màn 6/9).
+   Dùng animation CSS thuần để bị chặn tự động bởi khối
+   prefers-reduced-motion ở trên (animation-duration → 0.01ms !important) —
+   không cần kiểm matchMedia thủ công vì không dùng setTimeout để dựng hiệu
+   ứng, chỉ remount phần tử bằng key React khi trạng thái đổi. */
+@keyframes ru-badge-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes ru-card-glow {
+  0% {
+    box-shadow: 0 0 0 3px rgba(51, 65, 85, 0.45);
+  }
+  100% {
+    box-shadow: 0 0 0 3px rgba(51, 65, 85, 0);
+  }
+}
+
+.animate-ru-badge-fade {
+  animation: ru-badge-fade 300ms ease-in-out;
+}
+
+.animate-ru-card-glow {
+  animation: ru-card-glow 800ms ease-out;
+}

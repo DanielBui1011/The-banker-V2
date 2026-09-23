@@ -31,7 +31,7 @@ export default function LockCertificate({ amounts, secured = LOCK_CERTIFICATE.se
           value={
             <span>
               {Object.entries(amounts)
-                .map(([, value]) => formatNumberVN(value))
+                .map(([code, value]) => `${code} ${formatNumberVN(value)}`)
                 .join(' + ')}{' '}
               = <Money value={total} size="label" className="text-slate-900" />
             </span>
