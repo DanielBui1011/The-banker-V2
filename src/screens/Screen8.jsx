@@ -47,11 +47,14 @@ const TIMEPOINTS = [
 
 // Vòng 7C — Màn 8 dựng trên SurfaceFrame kiểu bankOps. Vòng 18: ba mục thanh bên
 // bấm được — Tra cứu nhà bán (mặc định), Danh mục khóa, Cảnh báo.
-export default function Screen8({ onNext }) {
+// Vòng 21: section/onSection = mục thanh bên theo URL hash; thiếu thì dùng state cục bộ.
+export default function Screen8({ onNext, section: routeSection, onSection }) {
   const { permissions } = usePermissions()
   const { leak, phase3, resetSignal } = useScenario()
   const settlement = useSettlement()
-  const [section, setSection] = useState('lookup')
+  const [localSection, setLocalSection] = useState('lookup')
+  const section = routeSection ?? localSection
+  const setSection = onSection ?? setLocalSection
   const [timepoint, setTimepoint] = useState('15-09')
   const [crossExposureOn, setCrossExposureOn] = useState(false)
   const [duplicateCallout, setDuplicateCallout] = useState(null)
@@ -59,7 +62,7 @@ export default function Screen8({ onNext }) {
 
   // Phím R đặt lại mục thanh bên, bộ chọn thời điểm và công tắc minh họa, kể cả khi vẫn đang ở Màn 8.
   useEffect(() => {
-    setSection('lookup')
+    setLocalSection('lookup')
     setTimepoint('15-09')
     setCrossExposureOn(false)
     setCertUnit(null)

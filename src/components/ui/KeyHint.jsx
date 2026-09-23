@@ -1,12 +1,14 @@
 // KeyHint phục vụ hai vai trò (docs/thiet-ke.md mục 4):
 // - Gợi ý phím nhỏ dạng chip (label): dùng cạnh nút/công tắc, ví dụ "Phím M".
-// - Bảng phím tắt đầy đủ (onClose): mở/đóng bằng phím ? (Stage.jsx).
+// - Bảng phím tắt đầy đủ (onClose): mở/đóng bằng phím ? hoặc nút "?" trên thanh trên
+//   (tạm thay ngăn Hướng dẫn đầy đủ ở Vòng 26 — san-pham.md D.5).
 const SHORTCUTS = [
-  { key: '→ / ←', desc: 'Chuyển màn' },
-  { key: 'M', desc: 'Bật/tắt kịch bản Mega Sale' },
-  { key: 'L', desc: 'Bật/tắt kịch bản Rò rỉ' },
+  { key: 'Space', desc: 'Tua tới sự kiện tiếp theo' },
+  { key: 'M', desc: 'Bật/tắt Mùa cao điểm' },
+  { key: 'L', desc: 'Bật/tắt Đổi tài khoản nhận tiền' },
   { key: '3', desc: 'Bật/tắt Giai đoạn 3' },
-  { key: 'R', desc: 'Đặt lại' },
+  { key: 'R', desc: 'Bắt đầu lại (có xác nhận)' },
+  { key: 'D', desc: 'Gửi lại lệnh khóa (cổng ngân hàng)' },
   { key: 'F', desc: 'Bật/tắt toàn màn hình' },
   { key: '?', desc: 'Hiện/ẩn bảng phím tắt' },
 ]

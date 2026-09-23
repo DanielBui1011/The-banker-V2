@@ -77,6 +77,7 @@ bằng ảnh chụp. Việc đầu tiên trong Antigravity là Vòng 15 — đ�
 | 18 | Màn 8: thanh bên bấm được (Tra cứu / Danh mục khóa / Cảnh báo), sửa hiển thị Tra cứu |
 | 19 | Chuyển hướng sản phẩm: từ prototype trình chiếu sang **app tự dùng trên laptop**. Chỉ tài liệu: docs/san-pham.md (vai, kiến trúc thông tin, bảng Mô phỏng, hướng dẫn 5 lớp, chuỗi sự kiện E0–E5, mô hình trạng thái, ràng buộc luồng, thuật ngữ, hệ màu, chuyển động), docs/hanh-trinh.md (3 hành trình), docs/palette.html, docs/plans/san-pham-roadmap.md (Vòng 20–26) |
 | 20 | Chốt thiết kế (Hướng B cả 4 mẫu, sửa quy-tac mục 7, chứng thư dùng chung mã, chào giá C khóa 44 + 36, bankOps `#141414`, danh sách nhiệm vụ ở cuối thanh điều hướng trái, `DISPLAY_NAME` = "[TÊN APP]") + lõi logic `src/logic/journey.js` (reducer, E0–E5, 10 selector, `availability`, localStorage) theo TDD, 98 test. Không sửa src/screens, src/components |
+| 21 | Khung app nhà bán (AppShell: thanh trên, điều hướng trái 6 trang theo màu Tầng, khu nhiệm vụ, chân trang), bỏ `Stage` co giãn (px thật, tối thiểu 1280, tối đa 1440 căn giữa), token K.4/K.5/L.1, store `src/state/appState.jsx` bọc reducer journey.js + localStorage, router hash `src/utils/route.js` (Back dùng được, sai vai → trang mặc định), chuyển trang View Transitions + flushSync, bảng Mô phỏng đầy đủ (vai, ngày + Tua, 3 tình huống, Bắt đầu lại có xác nhận, phím tắt dùng chung `availability`, thông báo ngắn). Test quy-tac: Quy tắc 9 (token tcb-* chỉ trong SurfaceFrame, tier*-* chỉ trong file đã duyệt), Quy tắc 7 bỏ miễn trừ. Màn cũ chạy qua adapter tạm (mục 7a). Ảnh: docs/shots/v21/ |
 
 ## 5. Quyết định đã chốt — KHÔNG tự ý đảo
 
@@ -159,6 +160,24 @@ Việc tồn sau Vòng 17:
 - Bấm L (rò rỉ) khi đang ở Màn 6 gọi resetProgress làm sổ khóa rỗng (`locksInitialized` = false), nên Màn 4/8 quay về "Đã xác thực" và không còn số khóa trong khi Màn 6 vẫn hiện "Đã khóa". Không phát sinh ở Vòng 17 (cổng cũ giữ nguyên); nên bật L trước khi vào Màn 5 hoặc sửa settlementState. **Vòng 20:** đã sửa trong logic mới (`journey.js`: bật Đổi tài khoản không đụng sổ khóa, có test); giao diện cũ vẫn lỗi cho tới khi Vòng 21 nối reducer.
 
 Từ Vòng 20, danh sách trên được thay bằng lộ trình docs/plans/san-pham-roadmap.md (Vòng 21–26).
+
+### 7a. Adapter tạm Vòng 21 — gỡ ở Vòng 24
+
+Các màn cũ (Screen1–10) chưa viết lại vẫn chạy trong khung app mới qua các lớp dưới đây. Mọi dữ kiện
+đọc từ store journey.js (selector); không còn state miền song song. Gỡ toàn bộ khi Vòng 24 thay xong các trang.
+
+| Adapter | Làm gì |
+|---|---|
+| `src/components/LegacyScreen.jsx` | Route → màn cũ theo san-pham.md mục I; `onNext/onPrev/onGoToScreen` → điều hướng hash (Màn 6 "Tiếp" → đổi vai) |
+| `src/state/scenarioState.jsx` (`useScenario`) | megaSale/leak/phase3 = `state.scenario`; toggle → dispatch; `resetSignal` từ appState |
+| `src/state/settlementState.jsx` (`useSettlement`) | Mốc dòng thời gian cũ suy từ `simDate`; dư nợ = `loan()`; trạng thái RU = `unitStatus()`; trả nợ/giải trình/khóa → dispatch `repay`/`resolveAccountChange`/`submit`; `retryLock` = `resendLock()`. Provider chỉ giữ hộp trả nợ, hộp giải trình |
+| `src/state/permissionState.jsx` (`usePermissions`) | Bảng quyền từ `consents` + `loan()`; nhật ký = `accessLog()`; `grantA2A4` → grantA2 + viewEstimate + signA4; lớp phủ peek bỏ, `openPeek` mở Quyền & dữ liệu. Provider chỉ giữ cờ "cấp lại A1" |
+| `src/components/ui/TopBar.jsx`, `ActProgress.jsx` | Trả về null — thanh trên và thanh 4 hồi riêng của màn cũ không hiện nữa (còn import trong Screen1–10) |
+| `src/config/flow.js` | Chỉ còn cho `actForScreen` mà màn cũ import; không còn dùng để điều hướng |
+| `src/index.css` `[data-legacy-screen] footer` | Ẩn chân trang riêng của màn cũ (khung app có chân trang chung) |
+| `Screen8` props `section`/`onSection` | Mục thanh bên cổng ngân hàng theo URL hash |
+
+Giới hạn đã biết của giai đoạn chuyển tiếp: màn cũ vẫn giữ bước con cục bộ (vd. Màn 5 bắt đầu ở bước A2 dù vào từ `#/techcombank/a4`); Màn 10 (Giai đoạn 3) chưa ghi sổ khóa qua reducer; bước A2 của Màn 5 hiện trong khung app ở trang Ứng vốn. Tất cả thuộc phạm vi Vòng 22–24.
 
 ## 8. Cập nhật ngược vào bản viết đề án (không phải việc của code, người dùng tự làm)
 
