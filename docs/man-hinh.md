@@ -54,16 +54,21 @@ Khối nội dung:
 Nút: "Xử lý ngoại lệ" mở danh sách 2 ngoại lệ; "Tiếp" → Màn 4.
 
 ## Màn 4 — Khoản phải thu và điểm xác thực (BẮT BUỘC)
-Mới hoàn toàn.
+Mới hoàn toàn. Bố cục lại ở Vòng 17 để hiểu trong 10 giây; mạch lập luận từ trên xuống, bốn vùng:
 
-Khối nội dung:
-- Danh sách 6 đơn vị khoản phải thu (du-lieu.md, mục 6), mỗi đơn vị một thẻ:
-  mã, kênh, giá trị ròng dự phóng, cửa sổ thanh toán, trạng thái có màu.
-- Dòng tổng: "Đang chờ sàn thanh toán: 100 triệu (2 đơn vị đã xác thực)".
-- Thẻ điểm xác thực theo kênh (du-lieu.md, mục 7): Shopee 92, TikTok Shop 90,
-  Hãng vận chuyển A "Chưa đủ lịch sử (4/6 lô)".
-  Bấm vào một thẻ thì mở phân rã 5 chỉ số.
-- Chú thích ngắn: "Điểm xác thực đo mức độ dự phóng khớp với tiền thật về tài khoản."
+- A. Câu dẫn nối Màn 1: "100 triệu đang kẹt ở sàn nay là 2 đơn vị tài sản đã xác thực" (số lấy từ dữ liệu).
+  Dòng phụ định nghĩa: đơn vị khoản phải thu = đơn hàng đã giao, sàn chưa trả, gom theo kênh và cửa sổ thanh toán.
+- B. "Sẵn sàng làm tài sản bảo đảm": RU-03, RU-04 là hai thẻ lớn (mã, kênh, giá trị ròng dự phóng, cửa sổ
+  thanh toán, vệt vòng đời 4 chấm Dự phóng → Đã xác thực → Đã khóa → Đã tất toán với chấm hiện tại được tô,
+  dòng "Đủ điều kiện ứng vốn" màu navy kèm icon). Dòng "55 + 45 = 100 triệu" ngay dưới hai thẻ.
+  Bật M (Mega Sale): RU-M1, RU-M2 thay vào vùng B với nhãn "Mega Sale", tổng 165 + 135 = 300 triệu,
+  kèm phép tính 73% → 219 → bị chặn ở trần 150.
+- C. "Vì sao tin được": RU-01 "Dự phóng 42 → thực nhận 41,3 (khớp 98,3%)", RU-02 "35 → 34,6"; cạnh mỗi dòng là
+  điểm xác thực (Shopee 92, TikTok Shop 90), bấm mở Drawer phân rã 5 chỉ số. Đây là nơi DUY NHẤT nói về điểm
+  xác thực. Chú thích: "Điểm xác thực đo mức độ dự phóng khớp với tiền thật về tài khoản."
+- D. "Chưa dùng được": RU-05 COD (chưa đủ lịch sử 4/6 lô) và RU-06 đơn hoàn (−2,3), dạng dòng mảnh, trung tính.
+
+Mọi tỷ lệ phần trăm tính từ src/logic (computeMatchRate, computeAvailableValue).
 
 Nút: "Xem khả năng ứng vốn" → Màn 5.
 

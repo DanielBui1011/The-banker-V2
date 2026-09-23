@@ -164,10 +164,7 @@ const ALLOWED_SCREEN_COLOR_CLASSES = {
   'Screen1.jsx': ['teal-700', 'amber-700', 'amber-50'],
   'Screen2.jsx': ['red-500', 'amber-400'],
   'Screen3.jsx': ['teal-700', 'teal-200', 'teal-50', 'amber-700'],
-  'Screen4.jsx': [
-    'violet-100', 'violet-300', 'teal-700', 'violet-700',
-    'amber-200', 'amber-50', 'teal-200', 'teal-50', 'amber-300', 'amber-700',
-  ],
+  'Screen4.jsx': ['teal-700', 'teal-200', 'teal-50', 'amber-50', 'amber-300', 'amber-700'],
   'Screen5.jsx': ['teal-600', 'red-400', 'red-50', 'red-600', 'teal-50', 'teal-800', 'amber-700'],
   'Screen6.jsx': ['teal-500', 'teal-600', 'teal-50', 'violet-50', 'violet-600', 'violet-900', 'teal-700', 'teal-800'],
   'Screen7.jsx': ['teal-100', 'teal-50', 'teal-600', 'teal-700'],

@@ -40,3 +40,8 @@ export function computeLeakAdjustedScore(baseScore, leakRate) {
   if (!isScoreAvailable(baseScore)) return baseScore
   return Math.round(baseScore * (1 - leakRate * 3))
 }
+
+// Tỷ lệ khớp của một đơn vị đã tất toán: thực nhận / dự phóng ròng (Màn 4, vùng "Vì sao tin được").
+export function computeMatchRate(projected, actual) {
+  return projected > 0 ? actual / projected : 0
+}

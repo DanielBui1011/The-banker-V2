@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { computeVerificationScore, computeLeakAdjustedScore } from './verification.js'
+import { computeVerificationScore, computeLeakAdjustedScore, computeMatchRate } from './verification.js'
 import { VERIFICATION_METRICS, LEAK_BATCH_RATE } from '../data/mockData.js'
 
 describe('computeVerificationScore', () => {
@@ -24,5 +24,15 @@ describe('computeLeakAdjustedScore', () => {
     const base = computeVerificationScore(VERIFICATION_METRICS.Shopee)
     expect(base).toBe(92)
     expect(computeLeakAdjustedScore(base, LEAK_BATCH_RATE)).toBe(58)
+  })
+})
+
+describe('computeMatchRate', () => {
+  it('RU-01: thực nhận 41,3 trên dự phóng 42 → 98,3%', () => {
+    expect(Math.round(computeMatchRate(42, 41.3) * 1000) / 10).toBe(98.3)
+  })
+
+  it('dự phóng bằng 0 → 0, không NaN', () => {
+    expect(computeMatchRate(0, 5)).toBe(0)
   })
 })
