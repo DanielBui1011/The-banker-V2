@@ -25,12 +25,13 @@ Không thêm thư viện khác nếu chưa hỏi.
 - src/logic/pricing.js — công thức giá trị khả dụng
 - src/logic/verification.js — công thức điểm xác thực
 - src/logic/registry.js — hàm thuần lockUnit() event-sourced; lũy đẳng theo requestId
-- src/state/ — trạng thái hành trình và trạng thái kịch bản
-- src/state/settlementState.jsx — tất toán + sổ đăng ký khóa (performLocks, retryLock)
-- src/screens/ — mỗi màn một file
+- src/logic/journey.js — reducer + selector hành trình (availability, nextStep, loan, accessLog…)
+- src/state/appState.jsx — store duy nhất bọc journey.js, lưu localStorage
+- src/pages/ — 6 trang nhà bán; src/pages/bank/ — trang Techcombank (A1, A2, A4, Trả nợ, Rút quyền)
+- src/screens/ — màn cũ còn lại (Screen8 cổng ngân hàng, Screen10 Giai đoạn 3) tới Vòng 25
 - src/components/ — thành phần dùng chung
-- src/components/ScenarioPanel.jsx — bảng điều khiển kịch bản
-- tests/quy-tac.test.js — kiểm tra vi phạm quy tắc nội dung (quét src/screens và src/components)
+- src/components/ScenarioPanel.jsx — bảng điều khiển Mô phỏng
+- tests/quy-tac.test.js — kiểm tra vi phạm quy tắc nội dung (quét src/pages, src/screens và src/components)
 
 ## Quy tắc bắt buộc
 1. Không viết cứng số liệu trong component. Mọi con số lấy từ mockData.js

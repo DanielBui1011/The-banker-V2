@@ -53,7 +53,11 @@
      SurfaceFrame gắn data-surface-frame trên khung ngoài cùng của mỗi biến thể. */
   [data-surface-frame='bank'],
   [data-surface-frame='bankOps'] {
-    --color-navy: #0f172a; /* slate-900 — đã dùng làm nút chính ở BankConsent/TechcombankPageFrame */
+    --color-navy: #0f172a; /* slate-900 — nút chính bên cho vay khác / cổng nội bộ */
+  }
+  /* Nút chính trang Techcombank: #141414 (san-pham.md K.2). */
+  [data-surface-frame='bank'][data-bank='tcb'] {
+    --color-navy: var(--color-tcb-bar);
   }
 }
 
@@ -78,6 +82,56 @@
   from {
     opacity: 0;
     transform: translateY(8px);
+  }
+}
+
+/* Màn chuyển tiếp ngân hàng (L.2): vạch chạy từ trái sang phải một lần trong 700ms. */
+@keyframes handoff-bar {
+  from {
+    transform: translateX(-100%);
+  }
+}
+.animate-handoff-bar {
+  animation: handoff-bar var(--dur-handoff) var(--ease-standard) both;
+}
+
+/* Chuyển bước trong một luồng (L.2): nội dung trượt ngang 12px + mờ dần, 250ms.
+   Tiến: từ phải; lùi: từ trái. */
+@keyframes step-in-forward {
+  from {
+    opacity: 0;
+    transform: translateX(12px);
+  }
+}
+@keyframes step-in-back {
+  from {
+    opacity: 0;
+    transform: translateX(-12px);
+  }
+}
+.animate-step-forward {
+  animation: step-in-forward 250ms var(--ease-out) both;
+}
+.animate-step-back {
+  animation: step-in-back 250ms var(--ease-out) both;
+}
+
+/* Dấu tích tự vẽ (L.2: hoàn tất hành động) — stroke-dashoffset 300ms. */
+@keyframes check-draw {
+  from {
+    stroke-dashoffset: 24;
+  }
+}
+.animate-check-draw {
+  stroke-dasharray: 24;
+  animation: check-draw var(--dur-slow) var(--ease-out) both;
+}
+
+/* Hộp thoại mờ + thu từ 98% (L.2: 250ms vào). */
+@keyframes dialog-in {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
   }
 }
 

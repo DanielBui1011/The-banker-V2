@@ -1,4 +1,4 @@
-// Kiểm tra vi phạm quy tắc nội dung — quét src/screens/** và src/components/**
+// Kiểm tra vi phạm quy tắc nội dung — quét src/pages/**, src/screens/** và src/components/**
 // docs/quy-tac.md + ràng buộc CLAUDE.md
 import { describe, it, expect } from 'vitest'
 import { readFileSync, readdirSync, statSync } from 'fs'
@@ -7,6 +7,7 @@ import { fileURLToPath } from 'url'
 
 const ROOT = join(fileURLToPath(import.meta.url), '..', '..')
 const SCREENS_DIR = join(ROOT, 'src', 'screens')
+const PAGES_DIR = join(ROOT, 'src', 'pages')
 const COMPONENTS_DIR = join(ROOT, 'src', 'components')
 
 function collectJsxFiles(dir) {
@@ -26,8 +27,10 @@ function getLines(filepath) {
     .map((line, i) => ({ text: line, num: i + 1, rel: relative(ROOT, filepath) }))
 }
 
-const allFiles = [...collectJsxFiles(SCREENS_DIR), ...collectJsxFiles(COMPONENTS_DIR)]
-const screenFiles = collectJsxFiles(SCREENS_DIR)
+// Vòng 22: trang mới nằm ở src/pages (màn cũ còn lại ở src/screens tới Vòng 25) — mọi luật
+// áp cho src/screens áp y hệt cho src/pages.
+const screenFiles = [...collectJsxFiles(SCREENS_DIR), ...collectJsxFiles(PAGES_DIR)]
+const allFiles = [...screenFiles, ...collectJsxFiles(COMPONENTS_DIR)]
 
 // ─── 1. Cụm từ cấm ─────────────────────────────────────────────────────────────
 const BANNED_PHRASES = [
@@ -136,13 +139,13 @@ describe('Quy tắc 4 — không viết cứng số có đơn vị trong JSX', (
 })
 
 // ─── 5. Màn hiện giá trị ước tính phải có EstimateDisclaimer ───────────────────
-// Các màn biết có hiển thị giá trị ước tính (theo man-hinh.md): Màn 5 (bước 5b/5d), Màn 10
-const SCREENS_WITH_ESTIMATES = ['Screen5.jsx', 'Screen10.jsx']
+// Các trang có hiển thị giá trị ước tính: Ứng vốn (Màn 5 cũ, bước ước tính/gửi) và Màn 10
+const SCREENS_WITH_ESTIMATES = [join(PAGES_DIR, 'UngVon.jsx'), join(SCREENS_DIR, 'Screen10.jsx')]
 describe('Quy tắc 5 — màn ước tính phải có EstimateDisclaimer', () => {
-  it('Screen5 và Screen10 import EstimateDisclaimer', () => {
+  it('UngVon và Screen10 import EstimateDisclaimer', () => {
     const violations = []
-    for (const name of SCREENS_WITH_ESTIMATES) {
-      const file = join(SCREENS_DIR, name)
+    for (const file of SCREENS_WITH_ESTIMATES) {
+      const name = relative(ROOT, file)
       const content = readFileSync(file, 'utf-8')
       if (!content.includes('EstimateDisclaimer')) {
         violations.push(`${name} thiếu EstimateDisclaimer`)
@@ -160,15 +163,11 @@ describe('Quy tắc 5 — màn ước tính phải có EstimateDisclaimer', () =
 // vô tình sao chép class cũ từ màn khác. StatusBadge/src/ui/status.js và mọi
 // component trong src/components/ui/* không bị quét (được phép tự do).
 const COLOR_CLASS_RE = /\b(?:red|amber|teal|violet|orange)-\d{2,3}\b/g
+// Vòng 22: Screen1–7, 9 đã xóa (thay bằng src/pages) → bỏ khỏi allowlist. Trang mới chỉ
+// dùng token Hướng B + StatusBadge; ngoại lệ duy nhất: tỷ lệ khớp Tầng 1 ở Đối soát (teal,
+// giữ từ Screen3 đã duyệt).
 const ALLOWED_SCREEN_COLOR_CLASSES = {
-  'Screen1.jsx': ['teal-700', 'amber-700', 'amber-50'],
-  'Screen2.jsx': ['red-500', 'amber-400'],
-  'Screen3.jsx': ['teal-700', 'teal-200', 'teal-50', 'amber-700'],
-  'Screen4.jsx': ['teal-700', 'teal-200', 'teal-50', 'amber-50', 'amber-300', 'amber-700'],
-  'Screen5.jsx': ['teal-600', 'red-400', 'red-50', 'red-600', 'teal-50', 'teal-800', 'amber-700'],
-  'Screen6.jsx': ['teal-500', 'teal-600', 'teal-50', 'violet-50', 'violet-600', 'violet-900', 'teal-700', 'teal-800'],
-  'Screen7.jsx': ['teal-100', 'teal-50', 'teal-600', 'teal-700'],
-  'Screen9.jsx': ['red-50', 'red-600', 'red-800', 'red-700'],
+  'DoiSoat.jsx': ['teal-700'],
   'Screen10.jsx': [
     'teal-50', 'teal-600', 'teal-700', 'teal-100',
     'violet-50', 'violet-600', 'violet-900', 'violet-100', 'violet-300', 'violet-700',
@@ -178,7 +177,7 @@ describe('Quy tắc 6 — màu ngữ nghĩa chỉ qua allowlist đã duyệt', (
   it('src/screens không có class red-*/amber-*/teal-*/violet-*/orange-* mới ngoài allowlist', () => {
     const violations = []
     for (const file of screenFiles) {
-      const name = relative(SCREENS_DIR, file)
+      const name = file.split(/[\\/]/).pop()
       const allowed = new Set(ALLOWED_SCREEN_COLOR_CLASSES[name] ?? [])
       const content = readFileSync(file, 'utf-8')
       const found = new Set(content.match(COLOR_CLASS_RE) ?? [])

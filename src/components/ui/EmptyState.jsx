@@ -1,0 +1,24 @@
+import Card from './Card.jsx'
+
+// Trạng thái trống có hướng dẫn (san-pham.md B.1): trang chưa dùng được vẫn mở được, nói
+// rõ vì sao chưa có dữ liệu và có nút dẫn tới bước còn thiếu. gate = availability(…) —
+// lý do và đường dẫn lấy từ đó, không viết riêng ở từng trang.
+export default function EmptyState({ icon: Icon, title, gate, children }) {
+  return (
+    <Card padding="p-8" className="flex flex-col items-start gap-4">
+      {Icon && <Icon size={32} className="text-ink-muted" aria-hidden="true" />}
+      <div>
+        <h2 className="text-section-title font-semibold text-ink">{title ?? gate?.reason}</h2>
+        {children && <div className="mt-2 space-y-2 text-body text-ink-muted">{children}</div>}
+      </div>
+      {gate?.fix && (
+        <a
+          href={gate.fix.href}
+          className="rounded-xl bg-primary px-6 py-3 text-emphasis font-semibold text-white transition duration-fast hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+        >
+          {gate.fix.label}
+        </a>
+      )}
+    </Card>
+  )
+}

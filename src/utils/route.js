@@ -3,7 +3,9 @@ import { flushSync } from 'react-dom'
 import { ROUTES } from '../logic/journey.js'
 
 // Điều hướng bằng URL hash (docs/san-pham.md mục F) — không thư viện router.
-// '#/<khu>/<trang>'; '#/mo-phong/…' là lệnh bảng Mô phỏng (ScenarioPanel xử lý).
+// '#/<khu>/<trang>[?khóa=giá-trị]'; '#/mo-phong/…' là lệnh bảng Mô phỏng (ScenarioPanel xử lý).
+// Tham số (Vòng 22): 'don-vi' (trang Trả nợ), 've' (trang quay về sau trang Techcombank),
+// 'thao-tac=rut' (rút quyền trên trang Techcombank).
 const SPACE_ROLE = { 'nha-ban': 'seller', techcombank: 'seller', 'ngan-hang': 'officer' }
 export const DEFAULT_ROUTE = { seller: ROUTES.tongQuan, officer: ROUTES.traCuu }
 const VALID = new Set(Object.values(ROUTES).filter((href) => !isCommand(href)))
@@ -14,10 +16,19 @@ export function isCommand(hash) {
 
 // Hash không hợp lệ với vai hiện tại → trang mặc định của vai
 export function resolveRoute(hash, role) {
-  const [, space] = hash.split('/')
-  const href = VALID.has(hash) && SPACE_ROLE[space] === role ? hash : DEFAULT_ROUTE[role]
-  const [, s, p] = href.split('/')
-  return { href, space: s, page: p }
+  const [base, query = ''] = hash.split('?')
+  const ok = VALID.has(base) && SPACE_ROLE[base.split('/')[1]] === role
+  const href = ok ? hash : DEFAULT_ROUTE[role]
+  const [, space, page] = href.split('?')[0].split('/')
+  return { href, space, page, params: ok ? Object.fromEntries(new URLSearchParams(query)) : {} }
+}
+
+// Sang hoặc về trang Techcombank: dùng màn chuyển tiếp 700ms (L.2) thay chuyển trang thường
+const isBank = (hash) => hash.split('/')[1] === 'techcombank'
+export const crossesBankSurface = (from, to) => isBank(from) !== isBank(to)
+
+export const go = (href) => {
+  window.location.hash = href
 }
 
 // Chuyển trang bằng View Transitions (L.2 dòng 1): flushSync để trình duyệt chụp đúng
@@ -33,9 +44,12 @@ export function useHashRoute(role) {
   const [hash, setHash] = useState(() => window.location.hash)
 
   useEffect(() => {
-    function onHashChange() {
+    function onHashChange(event) {
       const next = window.location.hash
-      if (!isCommand(next)) withViewTransition(() => setHash(next))
+      if (isCommand(next)) return
+      const prev = event?.oldURL ? new URL(event.oldURL).hash : ''
+      if (crossesBankSurface(prev, next)) setHash(next)
+      else withViewTransition(() => setHash(next))
     }
     window.addEventListener('hashchange', onHashChange)
     return () => window.removeEventListener('hashchange', onHashChange)
@@ -52,3 +66,6 @@ export function useHashRoute(role) {
 
   return route
 }
+
+// Trang quay về sau trang Techcombank: tham số 've' (trang nhà bán) hoặc mặc định của trang
+export const returnHref = (params, fallback) => (params.ve ? `#/nha-ban/${params.ve}` : fallback)

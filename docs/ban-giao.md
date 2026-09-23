@@ -78,6 +78,7 @@ bằng ảnh chụp. Việc đầu tiên trong Antigravity là Vòng 15 — đ�
 | 19 | Chuyển hướng sản phẩm: từ prototype trình chiếu sang **app tự dùng trên laptop**. Chỉ tài liệu: docs/san-pham.md (vai, kiến trúc thông tin, bảng Mô phỏng, hướng dẫn 5 lớp, chuỗi sự kiện E0–E5, mô hình trạng thái, ràng buộc luồng, thuật ngữ, hệ màu, chuyển động), docs/hanh-trinh.md (3 hành trình), docs/palette.html, docs/plans/san-pham-roadmap.md (Vòng 20–26) |
 | 20 | Chốt thiết kế (Hướng B cả 4 mẫu, sửa quy-tac mục 7, chứng thư dùng chung mã, chào giá C khóa 44 + 36, bankOps `#141414`, danh sách nhiệm vụ ở cuối thanh điều hướng trái, `DISPLAY_NAME` = "[TÊN APP]") + lõi logic `src/logic/journey.js` (reducer, E0–E5, 10 selector, `availability`, localStorage) theo TDD, 98 test. Không sửa src/screens, src/components |
 | 21 | Khung app nhà bán (AppShell: thanh trên, điều hướng trái 6 trang theo màu Tầng, khu nhiệm vụ, chân trang), bỏ `Stage` co giãn (px thật, tối thiểu 1280, tối đa 1440 căn giữa), token K.4/K.5/L.1, store `src/state/appState.jsx` bọc reducer journey.js + localStorage, router hash `src/utils/route.js` (Back dùng được, sai vai → trang mặc định), chuyển trang View Transitions + flushSync, bảng Mô phỏng đầy đủ (vai, ngày + Tua, 3 tình huống, Bắt đầu lại có xác nhận, phím tắt dùng chung `availability`, thông báo ngắn). Test quy-tac: Quy tắc 9 (token tcb-* chỉ trong SurfaceFrame, tier*-* chỉ trong file đã duyệt), Quy tắc 7 bỏ miễn trừ. Màn cũ chạy qua adapter tạm (mục 7a). Ảnh: docs/shots/v21/ |
+| 22 | Hành trình 1 nhà bán trọn vẹn: 6 trang mới ở `src/pages/` (Tổng quan trước/sau kết nối + chọn ngân hàng + thẻ "6 tuần sau"; Đối soát, Khoản phải thu đọc selector, trạng thái trống có lý do + nút từ `availability`; Ứng vốn 4 bước A2 → ước tính → A4 → gửi, trượt 12px/250ms, thanh bước tô 300ms, "Techcombank đang thẩm định" 1,2 giây; Khoản vay theo ngày mô phỏng, nút trả theo E2/E3, dư nợ đổi thẳng, dấu tích tự vẽ; Quyền & dữ liệu rút/cấp lại qua trang Techcombank, nhật ký `accessLog`, rút A4 vô hiệu khi còn dư nợ, "Xem hậu trường kỹ thuật" khung `tech`). Trang Techcombank dạng chuyển hướng `src/pages/bank/` (A1, A2, A4, Trả nợ một chạm, Rút quyền) trong khung Hướng B (thanh #141414, vạch đỏ 4px, vàng kim, "Mô phỏng"); màn chuyển tiếp 700ms chặn thao tác, bỏ qua khi reduced-motion. Thẻ Bước tiếp theo + dải tiêu đề theo Tầng vẽ ở AppShell. Gỡ context cũ (permission, settlement, scenario), Screen1–7, 9, ScreenShell, TopBar, ActProgress, flow.js. Router: tham số `?don-vi`, `?ve`, `?thao-tac=rut`. Kiểm tra: đi hết hành trình 1 bằng chuột ở 1366×768 |
 
 ## 5. Quyết định đã chốt — KHÔNG tự ý đảo
 
@@ -162,6 +163,8 @@ Việc tồn sau Vòng 17:
 Từ Vòng 20, danh sách trên được thay bằng lộ trình docs/plans/san-pham-roadmap.md (Vòng 21–26).
 
 ### 7a. Adapter tạm Vòng 21 — gỡ ở Vòng 24
+
+**Vòng 22:** đã gỡ `permissionState`, `settlementState`, `scenarioState`, `TopBar`, `ActProgress`, `flow.js`, `ScreenShell` và Screen1–7, 9. Còn lại: `LegacyScreen` chỉ cho Screen8 (cổng ngân hàng) và Screen10 (Ứng vốn khi bật Giai đoạn 3) — hai màn này đọc thẳng `useApp()`; `[data-legacy-screen] footer` trong index.css. Gỡ ở Vòng 25. Bảng dưới là lịch sử.
 
 Các màn cũ (Screen1–10) chưa viết lại vẫn chạy trong khung app mới qua các lớp dưới đây. Mọi dữ kiện
 đọc từ store journey.js (selector); không còn state miền song song. Gỡ toàn bộ khi Vòng 24 thay xong các trang.

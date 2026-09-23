@@ -1,10 +1,13 @@
-// ConfirmDialog (docs/thiet-ke.md mục 4).
+import { createPortal } from 'react-dom'
+
+// ConfirmDialog (docs/thiet-ke.md mục 4). Vòng 22: portal vào <body> (xem Drawer), mờ +
+// thu từ 98% trong 250ms (L.2).
 export default function ConfirmDialog({ open, title, message, confirmLabel = 'Xác nhận', cancelLabel = 'Hủy', onConfirm, onCancel }) {
   if (!open) return null
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-[150] flex items-center justify-center bg-slate-950/60" onClick={onCancel}>
       <div
-        className="w-[420px] rounded-xl border border-slate-200 bg-white p-6 shadow-sm"
+        className="w-[420px] animate-[dialog-in_250ms_cubic-bezier(0.2,0,0,1)] rounded-xl border border-slate-200 bg-white p-6 shadow-sm"
         onClick={(event) => event.stopPropagation()}
         role="alertdialog"
         aria-modal="true"
@@ -26,6 +29,7 @@ export default function ConfirmDialog({ open, title, message, confirmLabel = 'X�
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
