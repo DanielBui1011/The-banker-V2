@@ -151,3 +151,70 @@ describe('Quy tắc 5 — màn ước tính phải có EstimateDisclaimer', () =
     expect(violations, violations.join('\n')).toHaveLength(0)
   })
 })
+
+// ─── 6. Màu ngữ nghĩa — chỉ qua allowlist đã duyệt (Vòng 12 mục 3) ─────────────
+// Chốt chặn chống tái phạm: class Tailwind red-*/amber-*/teal-*/violet-*/orange-*
+// viết tay trong src/screens phải nằm trong allowlist dưới đây (đúng bảng màu
+// ngữ nghĩa DESIGN.md tại thời điểm Vòng 12 — mỗi mục đã được soát thủ công).
+// Thêm màu mới ở một màn phải sửa allowlist này một cách có ý thức, không phải
+// vô tình sao chép class cũ từ màn khác. StatusBadge/src/ui/status.js và mọi
+// component trong src/components/ui/* không bị quét (được phép tự do).
+const COLOR_CLASS_RE = /\b(?:red|amber|teal|violet|orange)-\d{2,3}\b/g
+const ALLOWED_SCREEN_COLOR_CLASSES = {
+  'Screen1.jsx': ['teal-700', 'amber-700', 'amber-50'],
+  'Screen2.jsx': ['red-500', 'amber-400'],
+  'Screen3.jsx': ['teal-700', 'teal-200', 'teal-50', 'amber-700'],
+  'Screen4.jsx': [
+    'violet-100', 'violet-300', 'teal-700', 'violet-700',
+    'amber-200', 'amber-50', 'teal-200', 'teal-50', 'amber-300', 'amber-700',
+  ],
+  'Screen5.jsx': ['teal-600', 'red-400', 'red-50', 'red-600', 'teal-50', 'teal-800', 'amber-700'],
+  'Screen6.jsx': ['teal-500', 'teal-600', 'teal-50', 'violet-50', 'violet-600', 'violet-900', 'teal-700', 'teal-800'],
+  'Screen7.jsx': ['teal-100', 'teal-50', 'teal-600', 'teal-700'],
+  'Screen9.jsx': ['red-50', 'red-600', 'red-800', 'red-700'],
+  'Screen10.jsx': [
+    'teal-50', 'teal-600', 'teal-700', 'teal-100',
+    'violet-50', 'violet-600', 'violet-900', 'violet-100', 'violet-300', 'violet-700',
+  ],
+}
+describe('Quy tắc 6 — màu ngữ nghĩa chỉ qua allowlist đã duyệt', () => {
+  it('src/screens không có class red-*/amber-*/teal-*/violet-*/orange-* mới ngoài allowlist', () => {
+    const violations = []
+    for (const file of screenFiles) {
+      const name = relative(SCREENS_DIR, file)
+      const allowed = new Set(ALLOWED_SCREEN_COLOR_CLASSES[name] ?? [])
+      const content = readFileSync(file, 'utf-8')
+      const found = new Set(content.match(COLOR_CLASS_RE) ?? [])
+      for (const cls of found) {
+        if (!allowed.has(cls)) {
+          violations.push(`${name}: class "${cls}" chưa duyệt — dùng StatusBadge/src/ui/status.js, hoặc thêm có ý thức vào ALLOWED_SCREEN_COLOR_CLASSES`)
+        }
+      }
+    }
+    expect(violations, violations.join('\n')).toHaveLength(0)
+  })
+})
+
+// ─── 7. Không lộ "Màn X" trong chuỗi hiển thị cho nhà bán/ngân hàng ────────────
+// TopBar, KeyHint, ScenarioPanel là khung trình chiếu, được phép nhắc số màn.
+// Các file khác thuộc src/screens/src/components chỉ được nhắc "Màn N" trong
+// comment (// hoặc /* */), không phải trong chuỗi JSX hiển thị.
+const SCREEN_REF_EXEMPT_FILES = ['TopBar.jsx', 'KeyHint.jsx', 'ScenarioPanel.jsx']
+const SCREEN_REF_RE = /Màn\s*\d+/
+describe('Quy tắc 7 — không lộ "Màn X" ra chuỗi hiển thị', () => {
+  it('src/screens và src/components không hiện "Màn N" ngoài comment (trừ TopBar/KeyHint/ScenarioPanel)', () => {
+    const violations = []
+    for (const file of allFiles) {
+      const base = file.split(/[\\/]/).pop()
+      if (SCREEN_REF_EXEMPT_FILES.includes(base)) continue
+      for (const { text, num, rel } of getLines(file)) {
+        const trimmed = text.trimStart()
+        if (trimmed.startsWith('//') || trimmed.startsWith('*') || trimmed.startsWith('/*')) continue
+        if (SCREEN_REF_RE.test(text)) {
+          violations.push(`${rel}:${num} — "${text.trim().slice(0, 100)}"`)
+        }
+      }
+    }
+    expect(violations, violations.join('\n')).toHaveLength(0)
+  })
+})

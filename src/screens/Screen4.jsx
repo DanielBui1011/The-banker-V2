@@ -8,6 +8,7 @@ import Stepper from '../components/ui/Stepper.jsx'
 import Money from '../components/ui/Money.jsx'
 import Drawer from '../components/ui/Drawer.jsx'
 import Callout from '../components/ui/Callout.jsx'
+import Button from '../components/ui/Button.jsx'
 import { actForScreen } from '../config/flow.js'
 import {
   RECEIVABLE_UNITS,
@@ -104,7 +105,7 @@ export default function Screen4({ onNext }) {
               <ActProgress currentAct={actForScreen(4)} tone="light" />
             </div>
 
-            <main className="flex-1 overflow-y-auto px-12 py-10">
+            <main className="flex-1 overflow-y-auto px-12 pt-10 pb-24">
               <div className="mx-auto max-w-[1536px] space-y-6">
                 <h1 className="text-screen-title font-bold text-slate-900">Khoản phải thu và điểm xác thực</h1>
                 <p className="text-body text-slate-600">
@@ -147,7 +148,7 @@ export default function Screen4({ onNext }) {
                             Thực nhận: {formatNumberVN(actualReceived)} triệu
                           </div>
                         )}
-                        {willLock && <div className="mt-2 text-label font-medium text-violet-700">Sẽ khóa ở Màn 5</div>}
+                        {willLock && <div className="mt-2 text-label font-medium text-violet-700">Đủ điều kiện ứng vốn</div>}
                         {lifecycle.badge === 'insufficient-history' && unit.lots != null && (
                           <div className="mt-2 text-label text-slate-500">
                             Chưa đủ lịch sử ({unit.lots}/{MIN_LOTS_FOR_SCORE} lô)
@@ -229,12 +230,9 @@ export default function Screen4({ onNext }) {
                   </p>
                 </Card>
 
-                <button
-                  onClick={onNext}
-                  className="w-full rounded-xl bg-navy py-4 text-emphasis font-semibold text-white transition hover:opacity-90"
-                >
-                  Xem khả năng ứng vốn →
-                </button>
+                <div className="flex justify-end">
+                  <Button onClick={onNext}>Xem khả năng ứng vốn →</Button>
+                </div>
               </div>
             </main>
 

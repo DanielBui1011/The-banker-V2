@@ -329,6 +329,7 @@ export const A1_CONSENT = {
     'Số dư',
     'Lịch sử giao dịch trong kỳ đối soát hiện hành',
   ],
+  dataRecipient: LEGAL_NAME,
   durationDays: 90,
   renewalNote: 'Tự gia hạn khi bạn xác nhận',
 }
@@ -336,9 +337,13 @@ export const A1_CONSENT = {
 export const A1_TOKEN_TTL_SECONDS = 3600
 
 // Màn 5, bước 5a — Cấp quyền A2 (trang mô phỏng Techcombank, cùng khuôn Bước 2b)
+// Bên nhận dữ liệu ghi rõ Techcombank vì đây là bên đánh giá tín dụng thật sự
+// (docs/quy-tac.md mục 2) — khớp với việc Màn 8 (bankOps) truy cập hồ sơ doanh
+// thu đã xác thực theo đúng quyền A2 này.
 export const A2_CONSENT = {
   purposeLabel: 'Đánh giá tín dụng (A2)',
   dataScopes: ['Lịch sử giao dịch 180 ngày', 'Hồ sơ doanh thu đã xác thực'],
+  dataRecipient: 'Techcombank (bên đánh giá tín dụng)',
   durationDays: 90,
   independenceNote: 'Rút lại quyền này không ảnh hưởng đến đối soát (A1).',
 }

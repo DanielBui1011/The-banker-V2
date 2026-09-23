@@ -5,6 +5,7 @@ import SurfaceFrame from '../components/ui/SurfaceFrame.jsx'
 import Card from '../components/ui/Card.jsx'
 import Money from '../components/ui/Money.jsx'
 import Stat from '../components/ui/Stat.jsx'
+import Button from '../components/ui/Button.jsx'
 import { actForScreen } from '../config/flow.js'
 import { usePermissions } from '../state/permissionState.jsx'
 import {
@@ -74,7 +75,7 @@ export default function Screen1({ onNext }) {
               <ActProgress currentAct={actForScreen(1)} tone="light" />
             </div>
 
-            <main className="flex-1 overflow-y-auto px-12 py-10">
+            <main className="flex-1 overflow-y-auto px-12 pt-10 pb-24">
               <div className="mx-auto max-w-[1536px] space-y-6">
                 <h1 className="text-screen-title font-bold text-slate-900">Trạng thái hiện tại</h1>
 
@@ -101,12 +102,12 @@ export default function Screen1({ onNext }) {
                           key={c.channel}
                           style={{ width: `${(c.monthlyRevenue / TOTAL_MONTHLY_REVENUE) * 100}%` }}
                           className={`flex flex-col items-center justify-center overflow-hidden px-1 text-center leading-tight ${
-                            isMarketplace ? 'bg-teal-600 text-white' : 'bg-slate-300 text-slate-800'
+                            isMarketplace ? 'bg-navy text-white' : 'bg-slate-200 text-slate-700'
                           }`}
                           title={`${c.channel}: ${formatNumberVN(c.monthlyRevenue)} triệu`}
                         >
                           <span className="w-full truncate text-label font-semibold">{c.channel}</span>
-                          <span className={`w-full truncate text-label ${isMarketplace ? 'text-teal-50' : 'text-slate-600'}`}>
+                          <span className={`w-full truncate text-label ${isMarketplace ? 'text-white/80' : 'text-slate-600'}`}>
                             {formatNumberVN(c.monthlyRevenue)} triệu
                           </span>
                         </div>
@@ -114,7 +115,7 @@ export default function Screen1({ onNext }) {
                     })}
                   </div>
 
-                  <div className="mt-4 text-label font-medium text-teal-700">
+                  <div className="mt-4 text-label font-medium text-navy">
                     Qua sàn: {formatNumberVN(TOTAL_MARKETPLACE_REVENUE)} triệu trên tổng {formatNumberVN(TOTAL_MONTHLY_REVENUE)} triệu
                   </div>
                 </Card>
@@ -176,12 +177,9 @@ export default function Screen1({ onNext }) {
                   )}
                 </Card>
 
-                <button
-                  onClick={onNext}
-                  className="w-full rounded-xl bg-navy py-4 text-emphasis font-semibold text-white transition hover:opacity-90"
-                >
-                  Kết nối ngân hàng →
-                </button>
+                <div className="flex justify-end">
+                  <Button onClick={onNext}>Kết nối ngân hàng →</Button>
+                </div>
               </div>
             </main>
 
