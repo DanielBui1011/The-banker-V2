@@ -73,6 +73,7 @@ bằng ảnh chụp. Việc đầu tiên trong Antigravity là Vòng 15 — đ�
 | 12 | Sửa xuyên suốt sau ảnh chụp: tên pháp nhân + mã TPP đủ số; ConsentPage dùng chung A1/A2/A4; A2 bên nhận Techcombank; sửa màu ngữ nghĩa sai (Màn 1, 3, 5) + test quét màu; formatter phần trăm bỏ 0 thừa; 140 nghìn đồng; bỏ "Màn X" khỏi giao diện nhân vật; nút không rộng hết trang; chân trang không che nội dung |
 | 13 | Màn 1 (tách 2 chỉ số), 2a (bỏ CTTC C), 2c (chữ terminal ≥16px, refresh_token), 2d (màn hoàn tất có kết quả), 3 (bảng không cuộn lồng, StatusBadge, Trước/Sau cạnh con số chính, xử lý "Dưới 1 giờ"), 7 (thẻ, nhật ký, khối "Dữ liệu của tôi") |
 | 14 | Màn 4 (chú giải bằng StatusBadge, tổng 100 lên đầu, RU-06 dòng mảnh, nút Đóng Drawer), 5b (một thanh xếp chồng + bảng phép tính + dòng kiểm tra trần), 8 (tiêu đề, lưới, con số chính 85 phơi nhiễm, khối Thấy/Không thấy, cột tiền căn phải) |
+| 17 | Màn 4 tái cấu trúc 4 vùng A–D (câu dẫn, sẵn sàng làm tài sản bảo đảm, vì sao tin được, chưa dùng được); vệt vòng đời 4 chấm trong thẻ (LifecycleTrail); màu trạng thái: Đã xác thực = teal viền, Đã tất toán = teal đặc, Đủ điều kiện ứng vốn dùng navy thay violet; phím M đưa RU-M1/M2 vào vùng B; thêm computeMatchRate (98,3%). Ảnh: docs/shots/v17/ |
 
 ## 5. Quyết định đã chốt — KHÔNG tự ý đảo
 
@@ -89,7 +90,10 @@ bằng ảnh chụp. Việc đầu tiên trong Antigravity là Vòng 15 — đ�
 | Màn 8 không in câu hỏi "Ngân hàng thấy gì…" làm tiêu đề; trả lời bằng khối Thấy/Không thấy | Công cụ nội bộ thật không hiển thị câu hỏi thiết kế |
 | Màn 2a: không có công ty tài chính trong danh sách nguồn AIS; các ngân hàng khác không mờ | CTTC không mở tài khoản thanh toán; demo ở GĐ2 sau mốc TT 64 |
 | A2: bên nhận dữ liệu ghi rõ Techcombank | Khớp Màn 8 (ngân hàng truy cập theo A2) và yêu cầu nêu cụ thể bên nhận của Luật 91/2025 |
-| Chú giải vòng đời Màn 4 là dãy StatusBadge, không phải thanh bước có "bước hiện tại" | Tránh đọc nhầm là "đang ở bước tất toán" |
+| ~~Chú giải vòng đời Màn 4 là dãy StatusBadge, không có "bước hiện tại"~~ — ĐẢO ở Vòng 17: mỗi thẻ RU-03/04 có vệt 4 chấm với chấm hiện tại được tô; khối chú giải rời bị bỏ | Người dùng duyệt: vệt trong thẻ cho biết đơn vị đang ở đâu; không còn khối chú giải chung nên không đọc nhầm |
+| Vòng đời: Dự phóng slate · Đã xác thực teal viền · Đã khóa violet · Đã tất toán teal đặc; violet chỉ nghĩa "đã khóa" | Bốn bước phải phân biệt bằng mắt; "Đủ điều kiện ứng vốn" dùng navy + icon |
+| Màn 4 chỉ hiện % khớp cho RU-01 (98,3%); RU-02 chỉ "35 → 34,6" | 98,9% của RU-02 lệch với điểm chỉ số 97,5% của TikTok Shop, dễ gây hỏi |
+| Bật M: RU-M1/M2 thay RU-03/04 ở vùng B (300 triệu), không cộng dồn vào 100 | mockData ghi "thay RU-03, RU-04"; giữ câu dẫn nhất quán với số đang hiển thị |
 | Màn 5b: một thanh xếp chồng duy nhất 85 + 8 + 7 = 100, kèm bảng phép tính có đơn vị | Các thanh rời khác tỷ lệ từng gây tràn và khó hiểu |
 | Font Be Vietnam Pro tự host | Đủ dấu tiếng Việt, chạy được bản offline |
 | Kiểm tra ở cả 1920×1080 và 1536×864 | Laptop Windows 125% chỉ còn 1536×864 khi nối máy chiếu |
@@ -132,10 +136,13 @@ CHƯA TỪNG ĐƯỢC SOÁT BẰNG ẢNH — đánh giá kỹ:
 
 1. Vòng 15 — Đối chiếu (mục 6).
 2. Vòng 16 — Sửa mọi mục "Không đạt" của Vòng 15, ưu tiên Màn 6, 9, 10, ScenarioPanel.
-3. Vòng 17 — Chế độ trình chiếu: thanh 4 hồi CÓ NHÃN (theo docs/kich-ban.md); ẩn gợi ý phím khi trình chiếu; mọi màn không cần cuộn ở 1536×864 hoặc phần cuộn không chứa nội dung chính; kiểm tra lại toàn bộ phím M/L/3/R/Space.
+3. (Dời sang vòng sau; số Vòng 17 đã dùng cho Màn 4) Chế độ trình chiếu: thanh 4 hồi CÓ NHÃN (theo docs/kich-ban.md); ẩn gợi ý phím khi trình chiếu; mọi màn không cần cuộn ở 1536×864 hoặc phần cuộn không chứa nội dung chính; kiểm tra lại toàn bộ phím M/L/3/R/Space.
 4. Người dùng — kiểm thử với người lạ; diễn tập 3 phút; luyện 3 thao tác trả lời câu hỏi (M, L, 3).
 5. Vòng 18 — Rà soát cuối theo docs/quy-tac.md (câu chữ ngụ ý Nền tảng cho vay/giữ tiền, tên bên khóa, dòng "Ước tính…", cỡ chữ, số viết cứng) + gỡ code/component thừa + critique toàn bộ lần cuối.
 6. Vòng 19 — Đóng gói: đường dẫn Vercel bản chính; `npm run build:offline` (kiểm tra font đã nhúng, không có request mạng khi mở file); video dự phòng quay đủ 3 phút.
+
+Việc tồn sau Vòng 17:
+- Bấm L (rò rỉ) khi đang ở Màn 6 gọi resetProgress làm sổ khóa rỗng (`locksInitialized` = false), nên Màn 4/8 quay về "Đã xác thực" và không còn số khóa trong khi Màn 6 vẫn hiện "Đã khóa". Không phát sinh ở Vòng 17 (cổng cũ giữ nguyên); nên bật L trước khi vào Màn 5 hoặc sửa settlementState.
 
 ## 8. Cập nhật ngược vào bản viết đề án (không phải việc của code, người dùng tự làm)
 

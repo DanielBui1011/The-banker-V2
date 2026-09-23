@@ -5,6 +5,7 @@ const SIZE_CLASS = {
   body: 'text-body',
   emphasis: 'text-emphasis font-semibold',
   'section-title': 'text-section-title font-semibold',
+  'screen-title': 'text-screen-title font-bold',
   hero: 'text-hero font-bold',
 }
 

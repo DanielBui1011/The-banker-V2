@@ -9,6 +9,8 @@ import { STATUS_TABLE } from '../../ui/status.js'
 // Màn 4/6/9 hiện có — sẽ hợp nhất khi các màn đó được migrate ở vòng sau.
 const TONE_STYLE = {
   tier1: 'border-teal-600 bg-teal-50 text-teal-700',
+  tier1Outline: 'border-2 border-teal-600 bg-white text-teal-700',
+  tier1Solid: 'border-teal-700 bg-teal-700 text-white',
   tier2: 'border-violet-600 bg-violet-50 text-violet-700',
   tier3: 'border-orange-600 bg-orange-50 text-orange-700',
   insufficient: 'border-amber-600 bg-amber-50 text-amber-700',

@@ -60,12 +60,16 @@ không phải của Nền tảng. Xử lý tập trung ở `tailwind.config.js` 
 
 | Tone | Màu Tailwind | Ý nghĩa |
 |---|---|---|
-| `tier1` | teal | Tầng 1 / đã xác thực / tất toán |
+| `tier1` | teal nhạt (nền teal-50) | Tầng 1: đã khớp, hoàn tất, quyền đang hoạt động |
+| `tier1Outline` | teal viền, nền trắng | Đã xác thực (Vòng 17) |
+| `tier1Solid` | teal-700 đặc, chữ trắng (≈5,5:1) | Đã tất toán (Vòng 17) |
 | `tier2` | **violet** | Tầng 2 / đã khóa (đóng vai trò "purple" của CLAUDE.md — xem ràng buộc khóa #1) |
 | `tier3` | orange | Tầng 3 |
 | `insufficient` | amber | Tất toán thiếu |
 | `broken` | red | Đứt gãy |
 | `neutral` | slate | Trung tính / dự phóng / hết hiệu lực / đã hoàn |
+
+Bốn bước vòng đời đơn vị khoản phải thu phân biệt được bằng mắt, không bước nào trùng: Dự phóng = slate; Đã xác thực = teal viền; Đã khóa = violet; Đã tất toán = teal đặc. Violet CHỈ nghĩa "đã khóa": nhãn "Đủ điều kiện ứng vốn" và viền thẻ RU-03/RU-04 ở Màn 4 dùng navy/slate đậm kèm icon (`ShieldCheck`), không dùng violet. `LifecycleTrail` (`src/components/ui/`) vẽ vệt 4 chấm trong thẻ, chấm hiện tại được tô bằng màu của bước đó.
 
 Mọi `StatusBadge` (`src/components/ui/StatusBadge.jsx`) đọc từ bảng này —
 KHÔNG map màu trực tiếp trong màn. Mỗi trạng thái LUÔN có icon lucide-react +

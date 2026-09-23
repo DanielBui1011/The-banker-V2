@@ -3,7 +3,9 @@
 // tone (màu ngữ nghĩa theo CLAUDE.md), icon (tên icon lucide-react) và label (chữ).
 //
 // tone → CLAUDE.md "Bảng màu theo ngữ nghĩa":
-//   tier1 = Tầng 1 / đã xác thực / tất toán (teal)
+//   tier1 = Tầng 1 (teal nhạt: đã khớp, hoàn tất, quyền đang hoạt động)
+//   tier1Outline = đã xác thực (teal viền, nền trắng)
+//   tier1Solid = đã tất toán (teal đặc, chữ trắng)
 //   tier2 = Tầng 2 / đã khóa (violet — cùng vai trò "purple" trong CLAUDE.md)
 //   tier3 = Tầng 3 (orange)
 //   insufficient = tất toán thiếu (amber)
@@ -19,9 +21,9 @@ export const STATUS_TABLE = {
   'granted-terminated': { tone: 'neutral', icon: 'CheckCircle2', label: 'Đã chấm dứt — khoản vay đã tất toán' },
   projected: { tone: 'neutral', icon: 'Clock', label: 'Dự phóng' },
   'insufficient-history': { tone: 'neutral', icon: 'FileQuestion', label: 'Chưa đủ lịch sử' },
-  verified: { tone: 'neutral', icon: 'ShieldCheck', label: 'Đã xác thực' },
+  verified: { tone: 'tier1Outline', icon: 'ShieldCheck', label: 'Đã xác thực' },
   locked: { tone: 'tier2', icon: 'Lock', label: 'Đã khóa' },
-  settled: { tone: 'tier1', icon: 'CheckCircle2', label: 'Đã tất toán' },
+  settled: { tone: 'tier1Solid', icon: 'CheckCircle2', label: 'Đã tất toán' },
   'settled-short': { tone: 'insufficient', icon: 'AlertTriangle', label: 'Tất toán thiếu' },
   broken: { tone: 'broken', icon: 'XCircle', label: 'Đứt gãy' },
   reversed: { tone: 'neutral', icon: 'RotateCcw', label: 'Đã hoàn' },
