@@ -55,22 +55,22 @@ export default function ConsentPage({
             <div className="mx-auto w-full max-w-3xl">
               <div className="mb-1 text-section-title font-bold text-slate-900">{bankName}</div>
               <h1 className="mb-1 text-screen-title font-bold text-slate-900">{heading}</h1>
-              {subheading && <p className="mb-6 text-body text-slate-500">{subheading}</p>}
+              {subheading && <p className="mb-6 text-body text-slate-600">{subheading}</p>}
 
               <Card className="space-y-5">
                 <div>
-                  <div className="text-label font-medium text-slate-500">{requesterLabel}</div>
+                  <div className="text-label font-medium text-slate-600">{requesterLabel}</div>
                   <div className="text-body text-slate-900">{requesterName}</div>
-                  {requesterCode && <div className="text-label text-slate-500">Mã TPP đã đăng ký: {requesterCode}</div>}
+                  {requesterCode && <div className="text-label text-slate-600">Mã TPP đã đăng ký: {requesterCode}</div>}
                 </div>
 
                 <div>
-                  <div className="text-label font-medium text-slate-500">{purposeLabel}</div>
+                  <div className="text-label font-medium text-slate-600">{purposeLabel}</div>
                   <div className="text-body text-slate-900">{purpose}</div>
                 </div>
 
                 <div>
-                  <div className="mb-2 text-label font-medium text-slate-500">{scopeLabel}</div>
+                  <div className="mb-2 text-label font-medium text-slate-600">{scopeLabel}</div>
                   <ul className="space-y-2">
                     {scopeItems.map((item) => (
                       <li key={item} className="flex items-start gap-2 text-body text-slate-800">
@@ -82,21 +82,21 @@ export default function ConsentPage({
                 </div>
 
                 <div>
-                  <div className="text-label font-medium text-slate-500">{recipientLabel}</div>
+                  <div className="text-label font-medium text-slate-600">{recipientLabel}</div>
                   <div className="text-body text-slate-900">{recipient}</div>
                 </div>
 
                 <div>
-                  <div className="text-label font-medium text-slate-500">{durationLabel}</div>
+                  <div className="text-label font-medium text-slate-600">{durationLabel}</div>
                   <div className="text-body text-slate-900">{duration}</div>
                 </div>
 
                 <div className="flex items-start gap-3 rounded-lg bg-slate-100 p-4">
-                  <Ban size={20} className="mt-0.5 flex-shrink-0 text-slate-500" aria-hidden="true" />
+                  <Ban size={20} className="mt-0.5 flex-shrink-0 text-slate-600" aria-hidden="true" />
                   <div className="text-label text-slate-600">{notAllowedText}</div>
                 </div>
 
-                <p className="text-label text-slate-500">{withdrawalText}</p>
+                <p className="text-label text-slate-600">{withdrawalText}</p>
 
                 <label className="flex items-start gap-3 text-body text-slate-800">
                   <input
@@ -121,7 +121,7 @@ export default function ConsentPage({
               </Card>
             </div>
           </main>
-          <footer className="border-t border-slate-200 px-8 py-3 text-label text-slate-500">{FOOTER_NOTE}</footer>
+          <footer className="border-t border-slate-200 px-8 py-3 text-label text-slate-600">{FOOTER_NOTE}</footer>
         </div>
       </SurfaceFrame>
     </div>

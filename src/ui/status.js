@@ -28,6 +28,7 @@ export const STATUS_TABLE = {
   expired: { tone: 'neutral', icon: 'CircleSlash', label: 'Hết hiệu lực' },
 
   // Trạng thái giao dịch ngân hàng (Màn 3, docs/du-lieu.md mục 5).
+  complete: { tone: 'tier1', icon: 'CheckCircle2', label: 'Hoàn tất' },
   matched: { tone: 'tier1', icon: 'CheckCircle2', label: 'Đã khớp' },
   exception: { tone: 'insufficient', icon: 'AlertTriangle', label: 'Ngoại lệ — cần tra thủ công' },
   outflow: { tone: 'neutral', icon: 'ArrowUpRight', label: 'Chi ra' },

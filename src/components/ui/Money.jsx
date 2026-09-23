@@ -14,7 +14,7 @@ export default function Money({ value, unit = 'triệu', size = 'body', classNam
   return (
     <span className={`tabular-nums ${SIZE_CLASS[size] ?? SIZE_CLASS.body} ${className}`}>
       {formatNumberVN(value)}
-      {unit && <span className="ml-1 text-label font-normal text-slate-500">{unit}</span>}
+      {unit && <span className="ml-1 text-label font-normal text-slate-600">{unit}</span>}
     </span>
   )
 }

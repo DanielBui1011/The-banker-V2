@@ -185,7 +185,7 @@ function Screen5Chrome({ currentStepNumber, onOpenPeek, children }) {
           <main className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-12 pt-10 pb-24">
             <div className="mx-auto w-full max-w-[1536px] space-y-6">{children}</div>
           </main>
-          <footer className="border-t border-slate-200 px-12 py-3 text-label text-slate-500">{FOOTER_NOTE}</footer>
+          <footer className="border-t border-slate-200 px-12 py-3 text-label text-slate-600">{FOOTER_NOTE}</footer>
         </div>
       </SurfaceFrame>
     </div>
@@ -224,7 +224,7 @@ function StaircaseCard({ staircase }) {
         <LegendDot swatchClass="bg-slate-400" label="Tỷ lệ hoàn" value={returnDeduction} />
         <LegendDot swatchClass="bg-slate-300" label="Biên an toàn" value={safetyDeduction} />
         {verificationDeduction > 0 && <LegendDot swatchClass="bg-slate-200" label="Chiết khấu xác thực" value={verificationDeduction} />}
-        <span className="text-slate-400">= {formatNumberVN(projected)} triệu giá trị ròng dự phóng</span>
+        <span className="text-slate-600">= {formatNumberVN(projected)} triệu giá trị ròng dự phóng</span>
       </div>
 
       <div className="mt-5 divide-y divide-slate-100 rounded-lg border border-slate-200">
@@ -313,7 +313,7 @@ function EstimateStep({ staircase, interestEstimate, onNext }) {
 function CostRow({ label, value }) {
   return (
     <div className="flex items-center justify-between py-2.5 text-body">
-      <span className="text-slate-500">{label}</span>
+      <span className="text-slate-600">{label}</span>
       <span className="font-medium text-slate-900">{value}</span>
     </div>
   )
@@ -324,7 +324,7 @@ function SubmitStep({ staircase, submitPhase, onSubmit, onNext, lockAmounts, dup
   return (
     <div className="space-y-6">
       <Card padding="p-8">
-        <div className="text-label text-slate-500">Sẵn sàng gửi đề nghị ứng vốn</div>
+        <div className="text-label text-slate-600">Sẵn sàng gửi đề nghị ứng vốn</div>
         <Money value={staircase.result} size="hero" className="mt-1 block text-slate-900" />
         <EstimateDisclaimer className="mt-4" />
       </Card>

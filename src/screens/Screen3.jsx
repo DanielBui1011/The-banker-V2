@@ -44,7 +44,7 @@ const COLUMNS = [
     header: 'Số tiền (triệu)',
     align: 'right',
     render: (tx) => (
-      <span className={tx.amount >= 0 ? 'text-slate-900' : 'text-slate-500'}>
+      <span className={tx.amount >= 0 ? 'text-slate-900' : 'text-slate-600'}>
         {tx.amount >= 0 ? '+' : ''}
         {formatNumberVN(tx.amount)}
       </span>
@@ -115,7 +115,7 @@ export default function Screen3({ onNext }) {
                 <Card padding="p-8">
                   <div className="grid grid-cols-3 gap-8 divide-x divide-slate-200">
                     <div>
-                      <div className="text-label font-medium text-slate-500">Tỷ lệ giao dịch khớp tự động</div>
+                      <div className="text-label font-medium text-slate-600">Tỷ lệ giao dịch khớp tự động</div>
                       <span className="mt-2 block text-hero font-bold tabular-nums text-teal-700">
                         {formatPercentVN(autoMatchRate)}
                       </span>
@@ -124,7 +124,7 @@ export default function Screen3({ onNext }) {
                       </div>
                     </div>
                     <div className="pl-8">
-                      <div className="text-label font-medium text-slate-500">Trước — Thủ công</div>
+                      <div className="text-label font-medium text-slate-600">Trước — Thủ công</div>
                       <div className="mt-2 text-section-title font-bold text-slate-700">
                         {RECONCILIATION_COMPARISON.beforeHoursPerMonth} giờ/tháng
                       </div>
@@ -173,7 +173,7 @@ export default function Screen3({ onNext }) {
                       onRowClick={(tx) => setSelectedTx(tx)}
                     />
                     {sortedRows.length === 0 && (
-                      <p className="py-6 text-center text-label text-slate-500">Không có giao dịch nào ở bộ lọc này.</p>
+                      <p className="py-6 text-center text-label text-slate-600">Không có giao dịch nào ở bộ lọc này.</p>
                     )}
                     {!expanded && sortedRows.length > DEFAULT_VISIBLE_ROWS && (
                       <div className="flex justify-center pt-3">
@@ -206,7 +206,7 @@ export default function Screen3({ onNext }) {
                                 Vượt ngưỡng cảnh báo phí
                               </span>
                             ) : (
-                              <span className="text-label font-semibold text-slate-500">Trong ngưỡng</span>
+                              <span className="text-label font-semibold text-slate-600">Trong ngưỡng</span>
                             )}
                           </div>
                           <div className="mt-2 space-y-1 text-label text-slate-600">
@@ -244,7 +244,7 @@ export default function Screen3({ onNext }) {
               </div>
             </main>
 
-            <footer className="border-t border-slate-200 px-12 py-3 text-label text-slate-500">{FOOTER_NOTE}</footer>
+            <footer className="border-t border-slate-200 px-12 py-3 text-label text-slate-600">{FOOTER_NOTE}</footer>
           </div>
         </SurfaceFrame>
       </div>
@@ -290,7 +290,7 @@ export default function Screen3({ onNext }) {
 function Row({ label, value }) {
   return (
     <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-      <span className="text-label text-slate-500">{label}</span>
+      <span className="text-label text-slate-600">{label}</span>
       <span className="text-body font-medium text-slate-900">{value}</span>
     </div>
   )

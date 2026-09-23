@@ -218,3 +218,25 @@ describe('Quy tắc 7 — không lộ "Màn X" ra chuỗi hiển thị', () => {
     expect(violations, violations.join('\n')).toHaveLength(0)
   })
 })
+
+// ─── 8. Tương phản chữ (Vòng 16) ────────────────────────────────────────────────
+// Chữ nội dung phải đạt ≥4,5:1 (WCAG AA): cấm text-slate/gray-100…400 (chữ sáng trên
+// nền tối dùng text-slate-50 hoặc text-white) và opacity-* gắn thẳng lên phần tử (làm
+// mờ chữ). Biến thể trạng thái (disabled:, hover:) được phép — nút disabled cần mờ.
+const LOW_CONTRAST_TEXT_RE = /\btext-(?:slate|gray)-[1-4]00\b/
+const BASE_OPACITY_RE = /(?:^|[\s"'`{])opacity-\d+\b/
+describe('Quy tắc 8 — tương phản chữ', () => {
+  it('không có text-slate/gray-100…400 hay opacity-* trên phần tử', () => {
+    const violations = []
+    for (const file of allFiles) {
+      for (const { text, num, rel } of getLines(file)) {
+        const trimmed = text.trimStart()
+        if (trimmed.startsWith('//') || trimmed.startsWith('*')) continue
+        if (LOW_CONTRAST_TEXT_RE.test(text) || BASE_OPACITY_RE.test(text)) {
+          violations.push(`${rel}:${num} — "${text.trim().slice(0, 100)}"`)
+        }
+      }
+    }
+    expect(violations, violations.join('\n')).toHaveLength(0)
+  })
+})

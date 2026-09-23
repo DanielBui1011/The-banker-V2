@@ -16,7 +16,7 @@ export default function Drawer({ open, onClose, title, children }) {
         <button
           onClick={onClose}
           aria-label="Đóng"
-          className="absolute right-4 top-4 rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-800"
+          className="absolute right-4 top-4 rounded-lg p-2 text-slate-600 transition hover:bg-slate-100 hover:text-slate-800"
         >
           <X size={20} aria-hidden="true" />
         </button>

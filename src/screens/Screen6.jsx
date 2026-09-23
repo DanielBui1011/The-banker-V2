@@ -99,7 +99,7 @@ export default function Screen6({ onNext }) {
             </div>
           </main>
 
-          <footer className="border-t border-slate-200 px-12 py-3 text-label text-slate-500">{FOOTER_NOTE}</footer>
+          <footer className="border-t border-slate-200 px-12 py-3 text-label text-slate-600">{FOOTER_NOTE}</footer>
         </div>
       </SurfaceFrame>
 
@@ -113,7 +113,7 @@ function DebtBlock({ debt, ru03Status, ru04Status, ru03Gen, ru04Gen }) {
     <Card padding="p-8">
       <div className="flex flex-wrap items-center justify-between gap-6">
         <div>
-          <div className="text-label font-medium text-slate-500">Dư nợ còn lại</div>
+          <div className="text-label font-medium text-slate-600">Dư nợ còn lại</div>
           <Money value={debt} size="hero" className="mt-1 block text-slate-900" />
         </div>
         <div className="flex gap-6">
@@ -175,7 +175,7 @@ function MilestoneTimeline({ timeline, stepIndex }) {
           return (
             <div key={m.id} className="flex w-56 flex-col items-center gap-2 px-2 text-center">
               <div className="flex w-full items-center">
-                <div className={`h-0.5 flex-1 ${i === 0 ? 'opacity-0' : reached ? 'bg-teal-500' : 'bg-slate-200'}`} />
+                <div className={`h-0.5 flex-1 ${i === 0 ? 'invisible' : reached ? 'bg-teal-500' : 'bg-slate-200'}`} />
                 <div
                   className={`h-4 w-4 shrink-0 rounded-full border-2 ${
                     reached ? 'border-teal-600 bg-teal-500' : 'border-slate-300 bg-white'
@@ -183,12 +183,12 @@ function MilestoneTimeline({ timeline, stepIndex }) {
                 />
                 <div
                   className={`h-0.5 flex-1 ${
-                    i === timeline.length - 1 ? 'opacity-0' : reached ? 'bg-teal-500' : 'bg-slate-200'
+                    i === timeline.length - 1 ? 'invisible' : reached ? 'bg-teal-500' : 'bg-slate-200'
                   }`}
                 />
               </div>
-              <div className={`text-label font-semibold ${reached ? 'text-slate-900' : 'text-slate-400'}`}>{m.date}</div>
-              <div className={`text-label ${reached ? 'text-slate-600' : 'text-slate-400'}`}>{milestoneShortLabel(m)}</div>
+              <div className={`text-label font-semibold ${reached ? 'text-slate-900' : 'text-slate-600'}`}>{m.date}</div>
+              <div className={`text-label ${reached ? 'text-slate-600' : 'text-slate-600'}`}>{milestoneShortLabel(m)}</div>
             </div>
           )
         })}
@@ -289,7 +289,7 @@ export function TechcombankPageFrame({ heading, subheading, children, confirmLab
               </Card>
             </div>
           </main>
-          <footer className="border-t border-slate-200 px-8 py-3 text-label text-slate-500">{FOOTER_NOTE}</footer>
+          <footer className="border-t border-slate-200 px-8 py-3 text-label text-slate-600">{FOOTER_NOTE}</footer>
         </div>
       </SurfaceFrame>
     </div>
@@ -299,7 +299,7 @@ export function TechcombankPageFrame({ heading, subheading, children, confirmLab
 export function TechRow({ label, value }) {
   return (
     <div>
-      <div className="text-label font-medium text-slate-500">{label}</div>
+      <div className="text-label font-medium text-slate-600">{label}</div>
       <div className="text-slate-900">{value}</div>
     </div>
   )

@@ -3,7 +3,7 @@
 // Đặt trong hàng `justify-end` ở từng màn để nút chính căn phải.
 const VARIANT = {
   primary:
-    'min-w-[280px] rounded-xl bg-navy px-8 py-3 text-emphasis font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500 disabled:hover:bg-slate-300',
+    'min-w-[280px] rounded-xl bg-navy px-8 py-3 text-emphasis font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-600 disabled:hover:bg-slate-300',
   secondary:
     'rounded-xl border border-slate-300 bg-white px-8 py-3 text-emphasis font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60',
 }

@@ -35,8 +35,8 @@ const STATUS_LABEL = {
 const STATUS_STYLE = {
   matched: 'text-teal-700',
   exception: 'text-amber-700 font-semibold',
-  reversed: 'text-slate-400',
-  outflow: 'text-slate-400',
+  reversed: 'text-slate-600',
+  outflow: 'text-slate-600',
 }
 
 // Mẫu dòng cho mô phỏng bảng Excel đối soát thủ công (docs/du-lieu.md mục 5)
@@ -81,7 +81,7 @@ export default function Screen1({ onNext }) {
 
                 {/* Con số chủ đạo — người xem hiểu vấn đề trong 3 giây */}
                 <Card padding="p-8">
-                  <div className="text-label font-medium text-slate-500">Đang kẹt ở sàn</div>
+                  <div className="text-label font-medium text-slate-600">Đang kẹt ở sàn</div>
                   <Money value={escrowStuck} size="hero" className="mt-2 block text-slate-900" />
                   <div className="mt-3 text-body text-slate-600">
                     = doanh thu sàn {formatNumberVN(ESCROW_STUCK.normal.marketplaceRevenue)} triệu / 30 ×{' '}
@@ -91,7 +91,7 @@ export default function Screen1({ onNext }) {
 
                 {/* Thanh ngang cơ cấu doanh thu 4 kênh, một thanh chia đoạn, nhãn ngay trên từng đoạn */}
                 <Card>
-                  <div className="text-label font-medium text-slate-500">Cơ cấu doanh thu tháng</div>
+                  <div className="text-label font-medium text-slate-600">Cơ cấu doanh thu tháng</div>
                   <Money value={TOTAL_MONTHLY_REVENUE} size="emphasis" className="mt-1 block text-slate-900" />
 
                   <div className="mt-4 flex h-16 w-full overflow-hidden rounded-lg" role="img" aria-label="Cơ cấu doanh thu theo kênh">
@@ -140,24 +140,24 @@ export default function Screen1({ onNext }) {
                 {/* Mô phỏng bảng Excel đối soát thủ công — bằng chứng nỗi đau, hạ cấp thị giác so với con số chính */}
                 <Card className="border-slate-100 bg-slate-50/60">
                   <div className="mb-3 flex items-center justify-between">
-                    <span className="text-label font-medium text-slate-500">Cách chị Lan đối soát hiện nay</span>
+                    <span className="text-label font-medium text-slate-600">Cách chị Lan đối soát hiện nay</span>
                     <button
                       onClick={runSimulation}
                       disabled={isSimulating}
-                      className="rounded-lg border border-slate-300 bg-white px-3 py-1 text-label font-medium text-slate-500 transition hover:bg-slate-100 disabled:opacity-60"
+                      className="rounded-lg border border-slate-300 bg-white px-3 py-1 text-label font-medium text-slate-600 transition hover:bg-slate-100 disabled:opacity-60"
                     >
                       {isSimulating ? 'Đang tô màu…' : 'Mô phỏng ▶'}
                     </button>
                   </div>
 
                   {revealedCount === 0 ? (
-                    <p className="text-label italic text-slate-400">
+                    <p className="text-label italic text-slate-600">
                       Bấm "Mô phỏng ▶" để xem từng dòng được đối chiếu và tô màu bằng tay.
                     </p>
                   ) : (
                     <table className="w-full text-label">
                       <thead>
-                        <tr className="border-b border-slate-200 text-left text-slate-500">
+                        <tr className="border-b border-slate-200 text-left text-slate-600">
                           <th className="py-2 pr-3 font-medium">Ngày</th>
                           <th className="py-2 pr-3 font-medium">Bên chuyển / nhận</th>
                           <th className="py-2 pr-3 font-medium">Nội dung</th>
@@ -172,8 +172,8 @@ export default function Screen1({ onNext }) {
                               {tx.date.slice(8, 10)}/{tx.date.slice(5, 7)}
                             </td>
                             <td className="py-2 pr-3 text-slate-700">{tx.counterparty}</td>
-                            <td className="py-2 pr-3 text-slate-500">{tx.reference}</td>
-                            <td className={`py-2 pr-3 text-right tabular-nums ${tx.amount >= 0 ? 'text-teal-700' : 'text-slate-500'}`}>
+                            <td className="py-2 pr-3 text-slate-600">{tx.reference}</td>
+                            <td className={`py-2 pr-3 text-right tabular-nums ${tx.amount >= 0 ? 'text-teal-700' : 'text-slate-600'}`}>
                               {tx.amount >= 0 ? '+' : ''}
                               {formatNumberVN(tx.amount)}
                             </td>
@@ -191,7 +191,7 @@ export default function Screen1({ onNext }) {
               </div>
             </main>
 
-            <footer className="border-t border-slate-200 px-12 py-3 text-label text-slate-500">{FOOTER_NOTE}</footer>
+            <footer className="border-t border-slate-200 px-12 py-3 text-label text-slate-600">{FOOTER_NOTE}</footer>
           </div>
         </SurfaceFrame>
       </div>

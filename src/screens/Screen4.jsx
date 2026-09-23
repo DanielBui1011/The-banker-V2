@@ -115,16 +115,16 @@ export default function Screen4({ onNext }) {
                 </p>
 
                 <Card>
-                  <div className="mb-3 text-label font-medium text-slate-500">Vòng đời một đơn vị khoản phải thu</div>
+                  <div className="mb-3 text-label font-medium text-slate-600">Vòng đời một đơn vị khoản phải thu</div>
                   <div className="flex flex-wrap items-center gap-2">
                     {LIFECYCLE_BADGES.map((status, i) => (
                       <span key={status} className="flex items-center gap-2">
-                        {i > 0 && <span className="text-slate-300">→</span>}
+                        {i > 0 && <span className="text-slate-600">→</span>}
                         <StatusBadge status={status} />
                       </span>
                     ))}
                   </div>
-                  <div className="mt-2 text-label text-slate-500">Nhánh rủi ro: Tất toán thiếu · Đứt gãy</div>
+                  <div className="mt-2 text-label text-slate-600">Nhánh rủi ro: Tất toán thiếu · Đứt gãy</div>
                 </Card>
 
                 <div className="grid grid-cols-3 gap-4">
@@ -145,9 +145,9 @@ export default function Screen4({ onNext }) {
                           <div className="text-emphasis font-semibold text-slate-900">{unit.code}</div>
                           <StatusBadge status={lifecycle.badge} />
                         </div>
-                        <div className="mt-1 text-label text-slate-500">{unit.channel}</div>
+                        <div className="mt-1 text-label text-slate-600">{unit.channel}</div>
                         <Money value={unit.projectedNetValue} size="section-title" className="mt-2 block text-slate-900" />
-                        <div className="mt-1 text-label text-slate-500">Cửa sổ thanh toán: {unit.settlementWindow}</div>
+                        <div className="mt-1 text-label text-slate-600">Cửa sổ thanh toán: {unit.settlementWindow}</div>
                         {actualReceived != null && (
                           <div className="mt-1 text-label font-medium text-teal-700">
                             Thực nhận: {formatNumberVN(actualReceived)} triệu
@@ -155,7 +155,7 @@ export default function Screen4({ onNext }) {
                         )}
                         {willLock && <div className="mt-2 text-label font-medium text-violet-700">Đủ điều kiện ứng vốn</div>}
                         {lifecycle.badge === 'insufficient-history' && unit.lots != null && (
-                          <div className="mt-2 text-label text-slate-500">
+                          <div className="mt-2 text-label text-slate-600">
                             Chưa đủ lịch sử ({unit.lots}/{MIN_LOTS_FOR_SCORE} lô)
                           </div>
                         )}
@@ -184,11 +184,11 @@ export default function Screen4({ onNext }) {
                             <div className="text-emphasis font-semibold text-slate-900">{unit.code}</div>
                             <StatusBadge status="verified" />
                           </div>
-                          <div className="mt-1 text-label text-slate-500">
+                          <div className="mt-1 text-label text-slate-600">
                             {unit.channel} · {unit.group}
                           </div>
                           <Money value={unit.projectedNetValue} size="section-title" className="mt-2 block text-slate-900" />
-                          <div className="mt-1 text-label text-slate-500">Điểm xác thực: {unit.verificationScore}</div>
+                          <div className="mt-1 text-label text-slate-600">Điểm xác thực: {unit.verificationScore}</div>
                         </Card>
                       ))}
                     </div>
@@ -211,7 +211,7 @@ export default function Screen4({ onNext }) {
                       const label = CHANNEL_SHORT_LABEL[channel] ?? channel
                       return (
                         <span key={channel} className="flex items-center gap-2">
-                          {i > 0 && <span className="text-slate-300">·</span>}
+                          {i > 0 && <span className="text-slate-600">·</span>}
                           <button
                             onClick={() => setOpenChannel(channel)}
                             className="font-semibold text-slate-900 underline decoration-dotted underline-offset-4 transition hover:text-navy"
@@ -222,7 +222,7 @@ export default function Screen4({ onNext }) {
                       )
                     })}
                   </div>
-                  <p className="mt-3 text-label text-slate-500">
+                  <p className="mt-3 text-label text-slate-600">
                     Điểm xác thực đo mức độ dự phóng khớp với tiền thật về tài khoản.
                   </p>
                 </Card>
@@ -233,7 +233,7 @@ export default function Screen4({ onNext }) {
               </div>
             </main>
 
-            <footer className="border-t border-slate-200 px-12 py-3 text-label text-slate-500">{FOOTER_NOTE}</footer>
+            <footer className="border-t border-slate-200 px-12 py-3 text-label text-slate-600">{FOOTER_NOTE}</footer>
           </div>
         </SurfaceFrame>
       </div>
@@ -265,13 +265,13 @@ function ReversedUnitCard({ unit }) {
     <Card padding="p-3" className="flex items-center justify-between">
       <div className="flex items-center gap-2 text-label">
         <span className="font-semibold text-slate-700">{unit.code}</span>
-        <span className="text-slate-400">·</span>
-        <span className="text-slate-500">{unit.channel}</span>
-        <span className="text-slate-400">·</span>
-        <span className="text-slate-500">Đơn hoàn</span>
+        <span className="text-slate-600">·</span>
+        <span className="text-slate-600">{unit.channel}</span>
+        <span className="text-slate-600">·</span>
+        <span className="text-slate-600">Đơn hoàn</span>
       </div>
       <div className="flex items-center gap-3">
-        <Money value={unit.actualReceived} size="label" className="text-slate-500" />
+        <Money value={unit.actualReceived} size="label" className="text-slate-600" />
         <StatusBadge status="reversed" size="sm" />
       </div>
     </Card>
@@ -291,9 +291,9 @@ function MegaSaleCalculation() {
   return (
     <div className="flex flex-wrap items-center gap-3 rounded-xl border border-amber-300 bg-white px-5 py-4 text-body">
       <span className="font-semibold text-slate-900">{formatPercentVN(rate)}</span>
-      <span className="text-slate-400">→</span>
+      <span className="text-slate-600">→</span>
       <Money value={pricing.formulaValueTotal} size="emphasis" className="text-slate-900" />
-      <span className="text-slate-400">→</span>
+      <span className="text-slate-600">→</span>
       <span className="font-semibold text-amber-700">
         bị chặn bởi trần dư nợ <Money value={pricing.result} size="emphasis" className="text-amber-700" />
       </span>
@@ -322,12 +322,12 @@ function ScoreBreakdown({ metrics, score }) {
       <div className="rounded-lg border border-slate-200">
         {METRIC_ROWS.map((row) => (
           <div key={row.key} className="flex items-center justify-between border-b border-slate-100 px-4 py-3 last:border-0">
-            <span className="text-label text-slate-500">{row.label}</span>
+            <span className="text-label text-slate-600">{row.label}</span>
             <span className="text-body font-medium text-slate-900">{row.format(metrics[row.key])}</span>
           </div>
         ))}
       </div>
-      <div className="text-label text-slate-500">Cơ sở tính điểm — số lô đã tất toán: {metrics.settledLots}</div>
+      <div className="text-label text-slate-600">Cơ sở tính điểm — số lô đã tất toán: {metrics.settledLots}</div>
     </div>
   )
 }

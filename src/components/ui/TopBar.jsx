@@ -10,19 +10,19 @@ export default function TopBar({ screenNumber, phaseLabel = 'Giai đoạn 2', on
     <header className="flex items-center justify-between bg-navy px-12 py-4 text-slate-50">
       <div className="flex items-center gap-4">
         <span className="text-emphasis font-semibold">{DISPLAY_NAME}</span>
-        <span className="rounded-full border border-white/30 px-3 py-1 text-label text-slate-200">{phaseLabel}</span>
-        <span className="text-label text-slate-300">{formatDateVN(DEMO_DATE)}</span>
+        <span className="rounded-full border border-white/30 px-3 py-1 text-label text-slate-50">{phaseLabel}</span>
+        <span className="text-label text-slate-50">{formatDateVN(DEMO_DATE)}</span>
       </div>
       <div className="flex items-center gap-4">
         {showPeekButton && (
           <button
             onClick={onOpenPeek}
-            className="rounded-lg border border-white/30 bg-white/5 px-3 py-1.5 text-label font-medium text-slate-100 transition hover:bg-white/10"
+            className="rounded-lg border border-white/30 bg-white/5 px-3 py-1.5 text-label font-medium text-slate-50 transition hover:bg-white/10"
           >
             Quyền của tôi
           </button>
         )}
-        {screenNumber != null && <span className="text-label text-slate-300">Màn {screenNumber}</span>}
+        {screenNumber != null && <span className="text-label text-slate-50">Màn {screenNumber}</span>}
       </div>
     </header>
   )

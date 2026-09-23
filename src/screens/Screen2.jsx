@@ -5,6 +5,8 @@ import SurfaceFrame from '../components/ui/SurfaceFrame.jsx'
 import Card from '../components/ui/Card.jsx'
 import Stepper from '../components/ui/Stepper.jsx'
 import Button from '../components/ui/Button.jsx'
+import Stat from '../components/ui/Stat.jsx'
+import StatusBadge from '../components/ui/StatusBadge.jsx'
 import Callout from '../components/ui/Callout.jsx'
 import ConsentPage from '../components/ui/ConsentPage.jsx'
 import { actForScreen } from '../config/flow.js'
@@ -19,6 +21,7 @@ import {
 } from '../data/mockData.js'
 import { summarizeTransactions } from '../logic/reconciliation.js'
 import { LEGAL_NAME, TPP_CODE } from '../config/brand.js'
+import { formatDateVN } from '../utils/format.js'
 
 const OTHER_BANKS = AIS_OTHER_BANKS
 
@@ -153,10 +156,10 @@ export default function Screen2({ onGoToScreen }) {
             </div>
             <main className="flex-1 overflow-y-auto px-12 pt-10 pb-24">
               <div className="mx-auto max-w-[1536px] space-y-6">
-                <h1 className={`text-screen-title font-bold ${step === 'c' ? 'text-slate-100' : 'text-slate-900'}`}>
+                <h1 className={`text-screen-title font-bold ${step === 'c' ? 'text-slate-50' : 'text-slate-900'}`}>
                   Cấp quyền A1
                 </h1>
-                <Stepper steps={FLOW_STEPS} currentStep={FLOW_STEP_NUMBER[step]} tone={step === 'c' ? 'dark' : 'light'} />
+                <Stepper steps={FLOW_STEPS} currentStep={step === 'd' ? FLOW_STEPS.length + 1 : FLOW_STEP_NUMBER[step]} tone={step === 'c' ? 'dark' : 'light'} />
                 {step === 'a' && <BankPicker onSelect={selectBank} />}
                 {step === 'c' && <TerminalFlow lines={TERMINAL_LINES.slice(0, terminalCount)} />}
                 {step === 'd' && (
@@ -164,7 +167,7 @@ export default function Screen2({ onGoToScreen }) {
                 )}
               </div>
             </main>
-            <footer className={`border-t px-12 py-3 text-label ${step === 'c' ? 'border-slate-800 text-slate-500' : 'border-slate-200 text-slate-500'}`}>
+            <footer className={`border-t px-12 py-3 text-label ${step === 'c' ? 'border-slate-800 text-slate-50' : 'border-slate-200 text-slate-600'}`}>
               {FOOTER_NOTE}
             </footer>
           </div>
@@ -189,7 +192,7 @@ function BankPicker({ onSelect }) {
         <button onClick={() => onSelect('Techcombank')} className="block w-full text-left">
           <Card className="border-navy transition hover:bg-slate-50">
             <div className="text-emphasis font-semibold text-slate-900">Techcombank</div>
-            <div className="mt-1 text-label text-slate-500">
+            <div className="mt-1 text-label text-slate-600">
               Tài khoản nhận tiền sàn của {SELLER_PROFILE.ownerName}
             </div>
           </Card>
@@ -202,7 +205,7 @@ function BankPicker({ onSelect }) {
           >
             <Card className="transition hover:bg-slate-50">
               <div className="text-emphasis font-semibold text-slate-900">{name}</div>
-              <div className="mt-1 text-label text-slate-500">Hỗ trợ kết nối qua Open API</div>
+              <div className="mt-1 text-label text-slate-600">Hỗ trợ kết nối qua Open API</div>
             </Card>
           </button>
         ))}
@@ -222,16 +225,16 @@ function BankPicker({ onSelect }) {
 function TerminalFlow({ lines }) {
   return (
     <div className="flex min-h-[60vh] flex-col justify-center space-y-6">
-      <p className="text-body text-slate-400">Techcombank đang xác nhận và cấp quyền truy cập...</p>
+      <p className="text-body text-slate-50">Techcombank đang xác nhận và cấp quyền truy cập...</p>
       <div className="min-h-[360px] rounded-xl border border-slate-800 bg-slate-900 p-6">
         <div className="mb-4 flex items-center gap-2">
           <span className="h-3 w-3 rounded-full bg-red-500" />
           <span className="h-3 w-3 rounded-full bg-amber-400" />
           <span className="h-3 w-3 rounded-full bg-emerald-500" />
-          <span className="ml-2 font-mono text-label text-slate-500">Luồng OAuth — Open API</span>
+          <span className="ml-2 font-mono text-label text-slate-50">Luồng OAuth — Open API</span>
         </div>
         <div className="space-y-2.5 font-mono text-body">
-          {lines.length === 0 && <div className="text-slate-600"># Đang khởi tạo phiên xác thực...</div>}
+          {lines.length === 0 && <div className="text-slate-50"># Đang khởi tạo phiên xác thực...</div>}
           {lines.map((line, i) => (
             <div key={i}>
               <TerminalLine line={line} />
@@ -244,11 +247,11 @@ function TerminalFlow({ lines }) {
 }
 
 // Một dòng terminal — chỉ scope=AIS, thời hạn token và refresh_token được làm nổi
-// (khung màu sáng); các trường còn lại dùng chung một màu mờ text-slate-600.
+// (khung màu sáng); các trường còn lại dùng chung chữ sáng text-slate-50 (Vòng 16: không làm mờ chữ nội dung).
 function TerminalLine({ line }) {
   if (line.kind === 'authorize') {
     return (
-      <div className="text-slate-600">
+      <div className="text-slate-50">
         {'→ GET /authorize?response_type=code&'}
         <span className="rounded border border-sky-400 bg-sky-950/60 px-1.5 py-0.5 font-semibold text-sky-300">
           scope=AIS
@@ -259,7 +262,7 @@ function TerminalLine({ line }) {
   }
   if (line.kind === 'accessToken') {
     return (
-      <div className="text-slate-600">
+      <div className="text-slate-50">
         {`← access_token: ${maskToken(SAMPLE_ACCESS_TOKEN)}  hạn `}
         <span className="rounded border border-emerald-400 bg-emerald-950/60 px-1.5 py-0.5 font-semibold text-emerald-300">
           {`${A1_TOKEN_TTL_SECONDS.toLocaleString('vi-VN')} giây`}
@@ -270,61 +273,64 @@ function TerminalLine({ line }) {
   if (line.kind === 'refreshToken') {
     return (
       <div>
-        <span className="text-slate-600">{'← '}</span>
+        <span className="text-slate-50">{'← '}</span>
         <span className="rounded border border-emerald-400 bg-emerald-950/60 px-1.5 py-0.5 font-semibold text-emerald-300">
           {`refresh_token: ${maskToken(SAMPLE_REFRESH_TOKEN)}`}
         </span>
       </div>
     )
   }
-  return <div className="text-slate-600">{line.text}</div>
+  return <div className="text-slate-50">{line.text}</div>
 }
 
-// Bỏ Stepper lồng bên trong (đã có FLOW_STEPS ở trên cùng màn) — hoàn tất hiện
-// thẳng kết quả tính từ dữ liệu (Vòng 13): số giao dịch 90 ngày đã tải, kết quả
-// khớp thử 7 ngày (BANK_TRANSACTIONS, không viết cứng).
+// Bước 2d — Stepper phía trên đã ở trạng thái xong cả 4 bước. Hai chỉ số lớn tính từ
+// BANK_TRANSACTIONS (lô mẫu 01–10/09, du-lieu.md mục 5; du-lieu.md không có số
+// giao dịch 90 ngày nên nhãn nói đúng là "giao dịch mẫu"), hạn quyền A1 lấy từ
+// permissions (du-lieu.md mục 8).
+const SAMPLE_DATES = BANK_TRANSACTIONS.map((tx) => tx.date).sort()
+const SAMPLE_RANGE = `${formatDateVN(SAMPLE_DATES[0])} – ${formatDateVN(SAMPLE_DATES[SAMPLE_DATES.length - 1])}`
+
 function HistoryLoading({ step, onGoToScreen }) {
+  const { permissions } = usePermissions()
   const done = step >= HISTORY_STEPS.length
   const trialSummary = summarizeTransactions(TRIAL_MATCH_TRANSACTIONS)
+  const a1Expiry = permissions.find((p) => p.code === 'A1')?.expiryDate
 
   return (
     <div className="space-y-6">
-      <Card className="border-slate-800 bg-slate-900/60">
+      <Card>
         {done ? (
-          <div className="space-y-3">
-            <div className="text-body font-semibold text-emerald-400">✓ Hoàn tất</div>
-            <div className="grid grid-cols-2 gap-4 border-t border-slate-800 pt-3 text-label text-slate-300">
-              <div>
-                <span className="text-slate-500">90 ngày giao dịch đã tải: </span>
-                <span className="font-semibold text-slate-100">{BANK_TRANSACTIONS.length} giao dịch</span>
-              </div>
-              <div>
-                <span className="text-slate-500">Khớp thử 7 ngày: </span>
-                <span className="font-semibold text-slate-100">
-                  {trialSummary.matchedCount}/{TRIAL_MATCH_TRANSACTIONS.length} giao dịch khớp tự động
-                </span>
-              </div>
+          <div className="space-y-5">
+            <StatusBadge status="complete" />
+            <div className="grid grid-cols-2 gap-8">
+              <Stat
+                large
+                label="Giao dịch mẫu đã tải"
+                value={`${BANK_TRANSACTIONS.length} giao dịch`}
+                hint={SAMPLE_RANGE}
+              />
+              <Stat
+                large
+                label="Khớp thử 7 ngày"
+                value={`${trialSummary.matchedCount}/${TRIAL_MATCH_TRANSACTIONS.length} tự động`}
+                hint="Đối soát thử trên 7 ngày đầu của lô mẫu"
+              />
             </div>
+            <p className="border-t border-slate-200 pt-4 text-body text-slate-700">
+              Quyền A1 hiệu lực đến {formatDateVN(a1Expiry)} — rút bất cứ lúc nào tại Quyền của tôi
+            </p>
           </div>
         ) : (
-          <span className="text-body text-slate-300">Đang tải {HISTORY_STEPS[step]}...</span>
+          <span className="text-body text-slate-700">Đang tải {HISTORY_STEPS[step]}...</span>
         )}
       </Card>
 
       {done && (
         <div className="flex justify-end gap-3">
-          <button
-            onClick={() => onGoToScreen(3)}
-            className="min-w-[220px] rounded-xl border border-slate-700 bg-slate-800 px-8 py-3 text-body font-semibold text-slate-100 transition hover:bg-slate-700"
-          >
-            Xem đối soát →
-          </button>
-          <button
-            onClick={() => onGoToScreen(7)}
-            className="min-w-[220px] rounded-xl bg-navy px-8 py-3 text-body font-semibold text-white transition hover:opacity-90"
-          >
-            Xem quyền của tôi →
-          </button>
+          <Button variant="secondary" onClick={() => onGoToScreen(3)}>
+            Xem đối soát
+          </Button>
+          <Button onClick={() => onGoToScreen(7)}>Xem quyền của tôi →</Button>
         </div>
       )}
     </div>

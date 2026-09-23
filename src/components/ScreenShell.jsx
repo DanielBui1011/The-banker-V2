@@ -14,7 +14,7 @@ export default function ScreenShell({ screenNumber, title, children, maxWidth = 
   const { openPeek } = usePermissions()
 
   return (
-    <div className="flex h-full flex-col bg-slate-950 text-slate-100">
+    <div className="flex h-full flex-col bg-slate-950 text-slate-50">
       <TopBar screenNumber={screenNumber} onOpenPeek={() => openPeek(screenNumber)} showPeekButton={screenNumber !== 7} />
       <div className="border-b border-slate-800 px-12 pb-3 pt-3">
         <ActProgress currentAct={currentAct} tone="dark" />
@@ -27,7 +27,7 @@ export default function ScreenShell({ screenNumber, title, children, maxWidth = 
         </div>
       </main>
 
-      <footer className="border-t border-slate-800 px-8 py-3 text-base text-slate-500">{FOOTER_NOTE}</footer>
+      <footer className="border-t border-slate-800 px-8 py-3 text-base text-slate-50">{FOOTER_NOTE}</footer>
     </div>
   )
 }
