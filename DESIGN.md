@@ -91,7 +91,7 @@ nhãn chữ, không bao giờ chỉ màu.
 |---|---|---|
 | `platform` | Ứng dụng Nền tảng (nhà bán) | không có dải, nền `bg-slate-50` |
 | `bank` | Trang Techcombank (A1/A2/A4, ký thỏa thuận) | dải tối `bg-slate-800`, icon khóa + "Bạn đang ở trang của {bankName}" |
-| `bankOps` | Cổng nghiệp vụ nội bộ ngân hàng (Màn 8) | thanh điều hướng dọc bên trái `bg-slate-700` (không phải strip ngang) — icon `Landmark`, nhãn "Nội bộ — mô phỏng", 3 mục điều hướng giả kiểu phần mềm nghiệp vụ ("Tra cứu nhà bán" đang chọn, "Danh mục khóa", "Cảnh báo") chỉ để trang trí, không bấm được |
+| `bankOps` | Cổng nghiệp vụ nội bộ ngân hàng (Màn 8) | thanh điều hướng dọc bên trái `bg-slate-700` (không phải strip ngang) — icon `Landmark`, nhãn "Nội bộ — mô phỏng", 3 mục điều hướng bấm được ("Tra cứu nhà bán" mặc định, "Danh mục khóa", "Cảnh báo" có chấm đếm đỏ khi có cảnh báo) — màn truyền qua prop `nav` (Vòng 18) |
 | `tech` | Hậu trường kỹ thuật (terminal OAuth Màn 2, JWS Màn 5) | nền đen `bg-slate-950`, font mono |
 
 ## 6. Số tiền
