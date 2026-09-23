@@ -304,6 +304,13 @@ export const BANK_VIEW = {
   },
 }
 
+// Vòng 18 — chính sách cảnh báo cổng nghiệp vụ ngân hàng (Màn 8, mục "Cảnh báo").
+// Giả định do nhóm đề án chốt trong yêu cầu Vòng 18; chưa có trong docs/du-lieu.md.
+export const BANK_ALERT_POLICY = {
+  checkInterval: 'mỗi giờ',
+  brokenNoticeMinutes: 15,
+}
+
 // Mục 12 — Giai đoạn 3: chào giá cho RU-03 và RU-04
 export const LENDER_QUOTES = [
   { lender: 'Techcombank', value: 85.0, annualRate: 0.12, term: 'Đến khi tất toán, tối đa 20 ngày', estimatedInterest5Days: 0.14 },
