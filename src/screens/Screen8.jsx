@@ -12,9 +12,8 @@ import DataTable from '../components/ui/DataTable.jsx'
 import Drawer from '../components/ui/Drawer.jsx'
 import StatusBadge from '../components/ui/StatusBadge.jsx'
 import LockCertificate from '../components/LockCertificate.jsx'
-import { usePermissions } from '../state/permissionState.jsx'
-import { useScenario } from '../state/scenarioState.jsx'
-import { useSettlement } from '../state/settlementState.jsx'
+import { useApp } from '../state/appState.jsx'
+import { loan, resendLock } from '../logic/journey.js'
 import { isTypingTarget } from '../utils/keyboard.js'
 import {
   FOOTER_NOTE,
@@ -49,9 +48,9 @@ const TIMEPOINTS = [
 // bấm được — Tra cứu nhà bán (mặc định), Danh mục khóa, Cảnh báo.
 // Vòng 21: section/onSection = mục thanh bên theo URL hash; thiếu thì dùng state cục bộ.
 export default function Screen8({ onNext, section: routeSection, onSection }) {
-  const { permissions } = usePermissions()
-  const { leak, phase3, resetSignal } = useScenario()
-  const settlement = useSettlement()
+  // Vòng 22: đọc thẳng store journey.js (context cũ đã gỡ); viết lại ở Vòng 25
+  const { state, resetSignal } = useApp()
+  const { accountChange: leak, phase3 } = state.scenario
   const [localSection, setLocalSection] = useState('lookup')
   const section = routeSection ?? localSection
   const setSection = onSection ?? setLocalSection
@@ -73,19 +72,19 @@ export default function Screen8({ onNext, section: routeSection, onSection }) {
     function handleKeyDown(e) {
       if (isTypingTarget(e.target)) return
       if (e.key.toLowerCase() !== 'd') return
-      if (!settlement.locksInitialized) return
-      const result = settlement.retryLock('RU-03')
+      if (state.registry.length === 0) return
+      const result = resendLock(state)
       if (result?.status === 'DA_GHI_NHAN') {
         const lockedAt = LOCK_CERTIFICATE.lockedAt.slice(11, 16)
-        setDuplicateCallout({ lockedAt, priority: 1, total: settlement.totalLocked })
+        setDuplicateCallout({ lockedAt, priority: 1, total: loan(state).principal })
         setTimeout(() => setDuplicateCallout(null), 6000)
       }
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [settlement])
+  }, [state])
 
-  const a2Revoked = permissions.find((p) => p.code === 'A2')?.status === 'revoked'
+  const a2Revoked = state.consents.A2 === 'revoked'
   const afterSettlement = timepoint === '20-09'
 
   // Tại 20/09, RU-04 đã tất toán; RU-03 cũng vậy trừ khi bật rò rỉ (L) — khi đó tiền
@@ -122,8 +121,10 @@ export default function Screen8({ onNext, section: routeSection, onSection }) {
   const tiktokScore = computeVerificationScore(VERIFICATION_METRICS['TikTok Shop'])
 
   // Danh mục khóa: chỉ khóa của Techcombank; số tiền khóa tính từ src/logic/pricing.js
-  // qua settlementState. Khóa của bên khác chỉ hiện SỐ bên (quy tắc 5).
-  const lockAmounts = { 'RU-03': settlement.ru03LockAmount, 'RU-04': settlement.ru04LockAmount }
+  // (kết quả T1). Khóa của bên khác chỉ hiện SỐ bên (quy tắc 5).
+  const lockAmounts = Object.fromEntries(
+    computeAvailableValue({ units: LOCK_UNITS, params: PRICING_PARAMS.normal }).unitBreakdown.map((u) => [u.code, u.formulaValue])
+  )
   const portfolioRows = Object.entries(lockAmounts).map(([code, amount]) => ({
     code,
     amount,

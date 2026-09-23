@@ -1,6 +1,4 @@
 import { useEffect, useState } from 'react'
-import TopBar from '../components/ui/TopBar.jsx'
-import ActProgress from '../components/ui/ActProgress.jsx'
 import SurfaceFrame from '../components/ui/SurfaceFrame.jsx'
 import Card from '../components/ui/Card.jsx'
 import Money from '../components/ui/Money.jsx'
@@ -8,9 +6,7 @@ import LayerTag from '../components/ui/LayerTag.jsx'
 import DataTable from '../components/ui/DataTable.jsx'
 import { EstimateDisclaimer } from '../components/ui/Callout.jsx'
 import Button from '../components/ui/Button.jsx'
-import { actForScreen } from '../config/flow.js'
-import { usePermissions } from '../state/permissionState.jsx'
-import { useScenario } from '../state/scenarioState.jsx'
+import { useApp } from '../state/appState.jsx'
 import { FOOTER_NOTE, RECEIVABLE_UNITS, LENDER_QUOTES, LOCK_CERTIFICATE, A4_AGREEMENT } from '../data/mockData.js'
 import { computeQuoteComparison } from '../logic/pricing.js'
 import { formatNumberVN, formatPercentVN } from '../utils/format.js'
@@ -26,8 +22,7 @@ const QUOTE_DISCLAIMER = 'Mỗi bên cho vay tự thẩm định và tự giải
 
 // Vòng 7C — Màn 10 (chỉ hiện khi phím 3 bật) dựng bằng component chung.
 export default function Screen10({ onGoToScreen }) {
-  const { openPeek } = usePermissions()
-  const { resetSignal } = useScenario()
+  const { resetSignal } = useApp()
   const [step, setStep] = useState('a') // a | b | sign | cert
   const [recipients, setRecipients] = useState(INITIAL_RECIPIENTS)
   const [confirmed, setConfirmed] = useState(false)
@@ -70,12 +65,8 @@ export default function Screen10({ onGoToScreen }) {
 
   return (
     <div className="flex h-full flex-col">
-      <TopBar screenNumber={10} onOpenPeek={() => openPeek(10)} />
       <SurfaceFrame variant="platform">
         <div className="flex h-full flex-col">
-          <div className="border-b border-slate-200 px-12 pb-3 pt-3">
-            <ActProgress currentAct={actForScreen(10)} tone="light" />
-          </div>
 
           <main className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-12 pt-10 pb-24">
             <div className="mx-auto w-full max-w-[1536px] space-y-6">
