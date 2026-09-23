@@ -99,11 +99,13 @@ export const BANK_TRANSACTIONS = [
   { code: 'GD25', date: '2027-09-10', amount: 0.6, counterparty: 'Tạ Ngọc', reference: 'FB1035', channel: 'Facebook', status: 'matched', matchMethod: 'Nội dung', linkedTo: 'Đơn FB1035' },
 ]
 
-// Khối so sánh trước/sau, tái sử dụng từ bản cũ (docs/man-hinh.md Màn 3):
-// "9 giờ/tháng → dưới 1 giờ/tháng". Giờ "trước" lấy từ hồ sơ nhà bán (mục 2).
+// Khối so sánh trước/sau (docs/man-hinh.md Màn 3). Giờ "trước" lấy từ hồ sơ nhà
+// bán (mục 2). Vòng 13: "dưới 1 giờ/tháng" không có số nguồn trong docs/du-lieu.md
+// (chỉ man-hinh.md nhắc tới như mô tả màn, không phải số liệu có công thức) — bỏ
+// con số ước lượng, giữ mô tả định tính không viết cứng số (xem PR mô tả).
 export const RECONCILIATION_COMPARISON = {
   beforeHoursPerMonth: SELLER_PROFILE.monthlyManualReconciliationHours,
-  afterLabel: 'Dưới 1 giờ/tháng',
+  afterLabel: 'Tự động — không cần thao tác tay',
 }
 
 export const RECONCILIATION_SUMMARY = {
@@ -318,6 +320,12 @@ export const LOCK_CERTIFICATE = {
   registrationId: 'DKBĐ-GIẢ-2027-004512',
   signature: 'JWS, RS256 — kiểm chứng độc lập',
 }
+
+// Màn 2a — Chọn ngân hàng nhận tiền. Chỉ ngân hàng/tổ chức có tài khoản thanh toán
+// mới là nguồn AIS hợp lệ — không dùng danh sách LENDER_QUOTES (mục 12) ở đây vì
+// "Công ty tài chính C" trong đó là bên cho vay, không mở tài khoản thanh toán nên
+// không thể là nguồn Open API. "Ngân hàng D" là tên giả theo quy ước mục 1.
+export const AIS_OTHER_BANKS = ['Ngân hàng B', 'Ngân hàng D']
 
 // Màn 2 — Cấp quyền A1 (docs/man-hinh.md mục Màn 2, docs/du-lieu.md mục 8)
 // Mã TPP hiển thị trên trang cấp quyền lấy từ TPP_CODE (src/config/brand.js), không

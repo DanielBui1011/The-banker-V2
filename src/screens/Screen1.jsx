@@ -120,13 +120,21 @@ export default function Screen1({ onNext }) {
                   </div>
                 </Card>
 
-                {/* Một Stat phụ duy nhất — lựa chọn vốn hiện tại gộp vào làm chú thích, không tách thẻ riêng */}
-                <Card>
-                  <Stat
-                    label="Đối soát thủ công mỗi tháng"
-                    value={`${formatNumberVN(SELLER_PROFILE.monthlyManualReconciliationHours)} giờ`}
-                    hint={`Lựa chọn vốn hiện tại: ${SELLER_PROFILE.currentFundingOption}`}
-                  />
+                {/* Hai Stat ngang hàng (docs/thiet-ke.md mục 5) — không lặp lại số "2%/tháng"
+                    trong component, currentFundingOption đã chứa số này trong dữ liệu. */}
+                <Card padding="p-4">
+                  <div className="grid grid-cols-2 divide-x divide-slate-200">
+                    <Stat
+                      label="Đối soát thủ công"
+                      value={`${formatNumberVN(SELLER_PROFILE.monthlyManualReconciliationHours)} giờ/tháng`}
+                      className="px-4 first:pl-0"
+                    />
+                    <Stat
+                      label="Lựa chọn vốn hiện tại"
+                      value={SELLER_PROFILE.currentFundingOption}
+                      className="px-4"
+                    />
+                  </div>
                 </Card>
 
                 {/* Mô phỏng bảng Excel đối soát thủ công — bằng chứng nỗi đau, hạ cấp thị giác so với con số chính */}

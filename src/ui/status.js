@@ -26,4 +26,9 @@ export const STATUS_TABLE = {
   broken: { tone: 'broken', icon: 'XCircle', label: 'Đứt gãy' },
   reversed: { tone: 'neutral', icon: 'RotateCcw', label: 'Đã hoàn' },
   expired: { tone: 'neutral', icon: 'CircleSlash', label: 'Hết hiệu lực' },
+
+  // Trạng thái giao dịch ngân hàng (Màn 3, docs/du-lieu.md mục 5).
+  matched: { tone: 'tier1', icon: 'CheckCircle2', label: 'Đã khớp' },
+  exception: { tone: 'insufficient', icon: 'AlertTriangle', label: 'Ngoại lệ — cần tra thủ công' },
+  outflow: { tone: 'neutral', icon: 'ArrowUpRight', label: 'Chi ra' },
 }

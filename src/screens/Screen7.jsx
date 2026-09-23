@@ -76,11 +76,17 @@ export default function Screen7({ onBack, onPrev, onGoToScreen }) {
     return null
   }
 
-  const timelineItems = accessLog.map((entry) => ({
-    date: formatLogTimestamp(entry.timestamp),
-    label: `${entry.actor} · ${entry.purpose} — ${entry.data}`,
-    done: true,
-  }))
+  // Nhóm theo bên truy cập liên tiếp (Vòng 13) — nêu tên bên truy cập một lần ở
+  // đầu mỗi nhóm, mỗi dòng bên trong chỉ còn mục đích và dữ liệu.
+  const accessGroups = []
+  for (const entry of accessLog) {
+    const lastGroup = accessGroups[accessGroups.length - 1]
+    if (lastGroup && lastGroup.actor === entry.actor) {
+      lastGroup.items.push(entry)
+    } else {
+      accessGroups.push({ actor: entry.actor, items: [entry] })
+    }
+  }
 
   return (
     <div className="flex h-full flex-col">
@@ -123,11 +129,11 @@ export default function Screen7({ onBack, onPrev, onGoToScreen }) {
 
                         return (
                           <Card key={permission.code} className="flex flex-col gap-3">
-                            <div className="flex items-start justify-between gap-2">
+                            <div className="flex flex-col gap-2">
                               <div className="text-emphasis font-semibold text-slate-900">
                                 {permission.code} — {permission.purpose}
                               </div>
-                              <StatusBadge status={statusKey} className="flex-shrink-0" />
+                              <StatusBadge status={statusKey} className="self-start" />
                             </div>
 
                             <div className="text-label text-slate-600">
@@ -190,25 +196,38 @@ export default function Screen7({ onBack, onPrev, onGoToScreen }) {
 
                 <Card>
                   <div className="mb-4 text-section-title font-semibold text-slate-900">Nhật ký truy cập</div>
-                  {timelineItems.length === 0 ? (
+                  {accessGroups.length === 0 ? (
                     <p className="text-body text-slate-500">Chưa có hoạt động truy cập nào.</p>
                   ) : (
-                    <div className="max-h-[360px] overflow-y-auto pr-1">
-                      <Timeline items={timelineItems} />
+                    <div className="max-h-[360px] space-y-4 overflow-y-auto pr-1">
+                      {accessGroups.map((group, i) => (
+                        <div key={i}>
+                          <div className="mb-1.5 text-label font-semibold text-slate-700">{group.actor}</div>
+                          <Timeline
+                            items={group.items.map((entry) => ({
+                              date: formatLogTimestamp(entry.timestamp),
+                              label: `${entry.purpose} — ${entry.data}`,
+                              done: true,
+                            }))}
+                          />
+                        </div>
+                      ))}
                     </div>
                   )}
+                </Card>
 
-                  <div className="mt-5 flex justify-end">
-                    <div className="text-right">
-                      <button
-                        onClick={handleExport}
-                        className="rounded-xl border border-slate-300 px-5 py-2.5 text-body font-semibold text-slate-700 transition hover:bg-slate-50"
-                      >
-                        Xuất hồ sơ doanh thu đã xác thực của tôi
-                      </button>
-                      {exportMessage && <p className="mt-2 text-label text-teal-700">{exportMessage}</p>}
-                    </div>
+                <Card>
+                  <div className="mb-3 text-section-title font-semibold text-slate-900">Dữ liệu của tôi</div>
+                  <div className="flex items-center justify-between gap-4">
+                    <p className="text-body text-slate-600">Xuất hồ sơ doanh thu đã xác thực để lưu hoặc chia sẻ.</p>
+                    <button
+                      onClick={handleExport}
+                      className="flex-shrink-0 rounded-xl border border-slate-300 px-5 py-2.5 text-body font-semibold text-slate-700 transition hover:bg-slate-50"
+                    >
+                      Xuất hồ sơ doanh thu đã xác thực
+                    </button>
                   </div>
+                  {exportMessage && <p className="mt-2 text-right text-label text-teal-700">{exportMessage}</p>}
                 </Card>
               </div>
             </main>

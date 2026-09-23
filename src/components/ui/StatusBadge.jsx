@@ -16,16 +16,24 @@ const TONE_STYLE = {
   neutral: 'border-slate-400 bg-slate-100 text-slate-700',
 }
 
-export default function StatusBadge({ status, className = '' }) {
+// size 'sm' giữ nguyên text-label (16px, tối thiểu tuyệt đối CLAUDE.md #7) — chỉ
+// giảm khoảng đệm và icon để gọn trong hàng bảng (Màn 3).
+const SIZE_STYLE = {
+  md: 'px-3 py-1',
+  sm: 'px-2 py-0.5',
+}
+const ICON_SIZE = { md: 16, sm: 14 }
+
+export default function StatusBadge({ status, size = 'md', className = '' }) {
   const entry = STATUS_TABLE[status]
   if (!entry) return null
   const Icon = icons[entry.icon]
 
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-label font-medium ${TONE_STYLE[entry.tone]} ${className}`}
+      className={`inline-flex items-center gap-1.5 rounded-full border text-label font-medium ${SIZE_STYLE[size] ?? SIZE_STYLE.md} ${TONE_STYLE[entry.tone]} ${className}`}
     >
-      {Icon && <Icon size={16} aria-hidden="true" />}
+      {Icon && <Icon size={ICON_SIZE[size] ?? ICON_SIZE.md} aria-hidden="true" />}
       {entry.label}
     </span>
   )
