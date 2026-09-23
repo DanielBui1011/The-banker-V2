@@ -1,6 +1,6 @@
 # Hành trình người dùng — app tự dùng (Vòng 19)
 
-Trạng thái: **đề xuất, chờ duyệt**. Đi kèm `docs/san-pham.md` (mục E: chuỗi sự kiện,
+Trạng thái: **đã duyệt ở Vòng 20**. Đi kèm `docs/san-pham.md` (mục E: chuỗi sự kiện,
 mục G: điều kiện nút, mục L: chuyển động). Số liệu lấy từ `docs/du-lieu.md`; mục tham
 chiếu ghi trong ngoặc.
 
@@ -22,7 +22,7 @@ Vai: Nhà bán. Tình huống: tắt hết. Bắt đầu 01/08/2027.
 | 1.3 | 01/08 | Bấm "Kết nối Techcombank" | Drawer chọn ngân hàng nhận tiền: Techcombank nổi bật "Tài khoản nhận tiền sàn của chị Lan"; Ngân hàng B, Ngân hàng D (không có công ty tài chính) | Drawer trượt từ phải 250ms |
 | 1.4 | 01/08 | Chọn Techcombank | "Đang chuyển tới Techcombank…" rồi trang A1: bên yêu cầu (tên pháp nhân + mã TPP), mục đích đối soát, phạm vi dạng danh sách, thời hạn 90 ngày, khối "Quyền này KHÔNG cho phép", một ô xác nhận chưa tích, nút "Đồng ý" vô hiệu | Chuyển tiếp ngân hàng 700ms |
 | 1.5 | 01/08 | Tích ô xác nhận | Nút "Đồng ý" bật | Đổi màu nút 150ms |
-| 1.6 | 01/08 | Bấm "Đồng ý" | "Quay về Đừng Đóng Vai Anh" rồi Đối soát (trạng thái trống): "Đã kết nối tài khoản Techcombank 1903 **** 8826", "Đang tích lũy lịch sử — cần 6 lô tất toán mỗi kênh", số lô 0/6. Nhật ký thêm 01/08 09:12 và 09:13 (mục 9). A1 = Đang hoạt động, hạn 30/10/2027 (mục 8). Nhiệm vụ 1 xong. Bước tiếp theo: "Tua tới 15/09 để xem 6 tuần đối soát." | Chuyển tiếp 700ms; dấu tích tự vẽ 300ms cạnh câu xác nhận và ở nhiệm vụ 1 |
+| 1.6 | 01/08 | Bấm "Đồng ý" | "Quay về {DISPLAY_NAME}" rồi Đối soát (trạng thái trống): "Đã kết nối tài khoản Techcombank 1903 **** 8826", "Đang tích lũy lịch sử — cần 6 lô tất toán mỗi kênh", số lô 0/6. Nhật ký thêm 01/08 09:12 và 09:13 (mục 9). A1 = Đang hoạt động, hạn 30/10/2027 (mục 8). Nhiệm vụ 1 xong. Bước tiếp theo: "Tua tới 15/09 để xem 6 tuần đối soát." | Chuyển tiếp 700ms; dấu tích tự vẽ 300ms cạnh câu xác nhận và ở nhiệm vụ 1 |
 | 1.7 | 01/08 → 15/09 | Tua | Ngày đổi thành 15/09/2027. Thẻ tóm tắt: "6 tuần sau: Shopee 7 lô, TikTok Shop 6 lô, Hãng vận chuyển A 4 lô; 25 giao dịch 01–10/09 đã đối soát". Đối soát: tỷ lệ khớp tự động 76%, 19 khớp / 2 ngoại lệ / 3 hoàn / 1 chi ra (mục 5); cảnh báo sai lệch phí RU-01 1,7%. Nhật ký thêm dòng 10/09 06:00 | Ngày trên thanh mờ dần đổi 200ms; nội dung trang chuyển trang 200ms |
 | 1.8 | 15/09 | *(tùy chọn)* Bấm "Xử lý ngoại lệ" | Drawer 2 ngoại lệ GD14, GD20 | Drawer 250ms |
 | 1.9 | 15/09 | Mở Khoản phải thu | "100 triệu đang ở sàn nay là 2 đơn vị tài sản đã xác thực": RU-03 Shopee 55, RU-04 TikTok Shop 45 — badge "Đã xác thực", vệt vòng đời ở chấm 2. Vùng "Vì sao tin được": RU-01 42 → 41,3 (khớp 98,3%), RU-02 35 → 34,6; điểm Shopee 92, TikTok Shop 90 (mục 7). Vùng "Chưa dùng được": RU-05 chưa đủ lịch sử 4/6 lô, RU-06 đã hoàn −2,3. Nhiệm vụ 2 xong | Chuyển trang 200ms (nền nhạt Tầng 2); dấu tích nhiệm vụ 300ms |
@@ -109,12 +109,12 @@ Techcombank" → "Bắt đầu lại".
 | 3.14 | 15/09 | Tích cả 3, "Gửi yêu cầu chào giá" | Bảng chào giá sắp theo lãi suất (mục 12): Techcombank 12%/năm, Ngân hàng B 13,2%, Công ty tài chính C 15,6%; nhãn chữ "Lãi thấp nhất"; tiền lãi ước tính theo số ngày; "Mỗi bên cho vay tự thẩm định và tự giải ngân; Nền tảng chỉ chuyển yêu cầu và chào giá."; dòng "Ước tính, chưa phải đề nghị cấp tín dụng" | Thanh bước tô tới bước 3; nội dung trượt 12px 250ms |
 | 3.15a | 15/09 | Chọn **Techcombank** | Trang A4 Techcombank → ký → sổ khóa ghi → chứng thư → khoản vay đi tiếp y như 1.16–1.21. Nhiệm vụ 7 xong | Chuyển tiếp ngân hàng 700ms; dấu tích |
 | 3.15b | 15/09 | Chọn **Ngân hàng B** | "Đang chuyển tới Ngân hàng B…" → trang ký khung ngân hàng **trung tính** ("Bạn đang ở trang của Ngân hàng B") → ký → sổ khóa ghi với bên nhận là Ngân hàng B → chứng thư khóa. Thẻ kết: "Dòng tất toán trong mô phỏng chỉ dựng cho Techcombank" + "Chọn lại chào giá" + "Bắt đầu lại". Nhiệm vụ 7 xong | Chuyển tiếp 700ms (nền trung tính, không vạch đỏ) |
-| 3.15c | 15/09 | Chọn **Công ty tài chính C** (80 triệu) | Như 3.15b tới trang ký. Phân bổ khóa 80 triệu giữa RU-03/RU-04 chưa có trong du-lieu.md → chờ nhóm quyết (câu hỏi mở 2). Tạm thời: nút "Ký" vô hiệu, lý do "Mô phỏng chưa có dữ liệu khóa cho chào giá này" + "Chọn lại chào giá" | Chuyển tiếp 700ms |
+| 3.15c | 15/09 | Chọn **Công ty tài chính C** (80 triệu) | Như 3.15b: trang ký khung trung tính → ký → sổ khóa ghi RU-03 **44** và RU-04 **36** (khóa theo tỷ lệ giá trị khả dụng, du-lieu mục 12) → chứng thư khóa (mã dùng chung LOCK-2027-0915-00318) → thẻ kết như 3.15b. Nhiệm vụ 7 xong | Chuyển tiếp 700ms |
 | 3.16 | 15/09 | *(sau 3.15b)* Đổi vai Cán bộ Techcombank → Tra cứu | Phơi nhiễm hợp nhất 85 triệu — trên **1 bên** cho vay; đã khóa 46,75 và 38,25; **không hiện tên bên** (Techcombank không biết đó là Ngân hàng B). Danh mục khóa của Techcombank: trống. Khả dụng còn lại cho Techcombank: 0 | Chuyển trang 200ms |
 
 Bước 3.16 là khoảnh khắc chính của Giai đoạn 3: Techcombank thấy khoản phải thu đã bị
 một bên khác khóa hết mà không biết bên đó là ai — sổ đăng ký chặn vay chồng mà vẫn giữ
 bí mật kinh doanh (quy-tac mục 5).
 
-Câu hỏi mở (xem `docs/san-pham.md` cuối file): mã chứng thư và phân bổ khóa khi chọn
-Ngân hàng B / Công ty tài chính C chưa có trong `docs/du-lieu.md`.
+Đã chốt ở Vòng 20 (`docs/san-pham.md` mục "Quyết định Vòng 20"): chứng thư dùng chung mã
+`LOCK-2027-0915-00318`; chào giá C khóa 44 + 36.

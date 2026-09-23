@@ -188,6 +188,9 @@ Kịch bản bình thường:
 | 20/09 | TikTok Shop thanh toán RU-04: 44,7 về tài khoản; trả 38,25 | 0 |
 | 20/09 | Khoản ứng tất toán; tiền lãi ≈ 0,14; điểm xác thực cập nhật | — |
 
+Sau tất toán giao diện chỉ ghi "Đã cập nhật sau lô tất toán", **không** kèm điểm mới
+(Vòng 20, người dùng quyết — không có số điểm sau tất toán).
+
 Kịch bản rò rỉ (phím L):
 | Ngày | Sự kiện |
 |---|---|
@@ -223,6 +226,21 @@ Chứng thư khóa (khi chọn Techcombank):
 | Thời điểm khóa | 15/09/2027 10:05:12 |
 | Mã đăng ký bảo đảm | DKBĐ-GIẢ-2027-004512 |
 | Ký số | JWS, RS256 — kiểm chứng độc lập |
+
+Mã chứng thư `LOCK-2027-0915-00318` **dùng chung cho mọi bên cho vay** (Techcombank, Ngân
+hàng B, Công ty tài chính C): mã là số thứ tự trong sổ, và mỗi phiên mô phỏng chỉ có một lần
+khóa đầu tiên. Bên nhận bảo đảm trên chứng thư là bên được chọn. *(Vòng 20.)*
+
+Quy tắc phân bổ khóa khi chọn một chào giá (Vòng 20): khóa từng đơn vị **theo tỷ lệ giá trị
+khả dụng** của đơn vị đó trong tổng 85,0.
+```
+khóa đơn vị = giá trị chào × giá trị khả dụng đơn vị / 85,0
+```
+| Bên cho vay | Giá trị | RU-03 | RU-04 |
+|---|---|---|---|
+| Techcombank | 85,0 | 85 × 46,75 / 85 = **46,75** | 85 × 38,25 / 85 = **38,25** |
+| Ngân hàng B | 85,0 | **46,75** | **38,25** |
+| Công ty tài chính C | 80,0 | 80 × 46,75 / 85 = **44,0** | 80 × 38,25 / 85 = **36,0** |
 
 ## 13. Điều chỉnh so với đề án (nhóm cần cập nhật bản viết)
 1. **Chiết khấu xác thực** dùng max(0; (90 − điểm)/90) × 15% thay cho (100 − điểm)/100 × 15%

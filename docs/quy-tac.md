@@ -48,7 +48,10 @@ vi phạm quy tắc nghĩa là prototype nói khác bản viết.
 
 ## 7. Sở hữu trí tuệ
 - Tên Techcombank, Shopee, TikTok Shop, Facebook chỉ dạng chữ.
-- Không dùng logo, bộ nhận diện hay màu thương hiệu riêng của các đơn vị này.
+- Không dùng logo, kiểu chữ hay bộ nhận diện của các đơn vị này. Ngoại lệ duy nhất: khung
+  trang Techcombank được dùng màu xấp xỉ (thanh đen, vạch đỏ 4px, điểm nhấn vàng kim) theo
+  docs/san-pham.md mục K.2–K.3, luôn kèm chữ 'Mô phỏng'. Bên cho vay khác dùng khung trung
+  tính. *(Sửa ở Vòng 20, người dùng duyệt.)*
 - Bên cho vay khác và hãng vận chuyển dùng tên giả ("Ngân hàng B", "Hãng vận chuyển A").
 
 ## 8. Trình chiếu
