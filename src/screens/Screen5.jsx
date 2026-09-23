@@ -192,80 +192,64 @@ function Screen5Chrome({ currentStepNumber, onOpenPeek, children }) {
   )
 }
 
-// Thẻ bậc thang dựng bằng div (không dùng thư viện chart) — docs/du-lieu.md mục 4.2.
+// Bảng tính giá trị khả dụng (Vòng 14) — một thanh xếp chồng duy nhất trên cùng
+// một thang đo (tổng giá trị ròng dự phóng), bảng phép tính từng bước bên dưới,
+// và kiểm tra trần dư nợ là một dòng riêng — docs/du-lieu.md mục 4.2.
 function StaircaseCard({ staircase }) {
-  const cap = staircase.debtCap
-  // Trục hiển thị theo giá trị lớn nhất cần vẽ (tổng dự phóng hoặc trần, tuỳ cái nào lớn hơn).
-  const axisMax = Math.max(staircase.totalProjectedNetValue, cap, staircase.result) * 1.05
-  let running = staircase.totalProjectedNetValue
-
-  const bars = staircase.steps.map((s) => {
-    const startRunning = running
-    running += s.value
-    return { ...s, startRunning, endRunning: running }
-  })
+  const projected = staircase.totalProjectedNetValue
+  const returnDeduction = -staircase.steps.find((s) => s.key === 'weightedReturnRate').value
+  const safetyDeduction = -staircase.steps.find((s) => s.key === 'safetyMargin').value
+  const verificationDeduction = -staircase.steps.find((s) => s.key === 'verificationDiscount').value
+  const formulaValue = staircase.formulaValueTotal
+  const cap = staircase.capAfterLock
+  const capExceeded = staircase.cappedByDebtCap
 
   function pct(v) {
-    return `${Math.max(0, Math.min(100, (v / axisMax) * 100))}%`
+    return `${projected > 0 ? Math.max(0, Math.min(100, (v / projected) * 100)) : 0}%`
   }
-
-  const capExceeded = staircase.cappedByDebtCap
 
   return (
     <Card>
       <div className="mb-4 text-emphasis font-semibold text-slate-900">Bảng tính giá trị khả dụng</div>
 
-      <div className="relative space-y-3">
-        {/* Vạch ngang trần dư nợ */}
-        <div className="pointer-events-none absolute inset-x-0 z-10 border-t-2 border-dashed border-slate-400" style={{ top: `${100 - parseFloat(pct(cap))}%` }}>
-          <span className="absolute -top-3 right-0 bg-white px-1 text-label font-medium text-slate-600">
-            Trần dư nợ {formatNumberVN(cap)} triệu
+      <div className="flex h-10 w-full overflow-hidden rounded-lg" role="img" aria-label="Cơ cấu giá trị ròng dự phóng">
+        <div className="bg-teal-600" style={{ width: pct(formulaValue) }} title={`Khả dụng: ${formatNumberVN(formulaValue)} triệu`} />
+        <div className="bg-slate-400" style={{ width: pct(returnDeduction) }} title={`Tỷ lệ hoàn: ${formatNumberVN(returnDeduction)} triệu`} />
+        <div className="bg-slate-300" style={{ width: pct(safetyDeduction) }} title={`Biên an toàn: ${formatNumberVN(safetyDeduction)} triệu`} />
+        <div className="bg-slate-200" style={{ width: pct(verificationDeduction) }} title={`Chiết khấu xác thực: ${formatNumberVN(verificationDeduction)} triệu`} />
+      </div>
+
+      <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-label text-slate-600">
+        <LegendDot swatchClass="bg-teal-600" label="Khả dụng" value={formulaValue} />
+        <LegendDot swatchClass="bg-slate-400" label="Tỷ lệ hoàn" value={returnDeduction} />
+        <LegendDot swatchClass="bg-slate-300" label="Biên an toàn" value={safetyDeduction} />
+        {verificationDeduction > 0 && <LegendDot swatchClass="bg-slate-200" label="Chiết khấu xác thực" value={verificationDeduction} />}
+        <span className="text-slate-400">= {formatNumberVN(projected)} triệu giá trị ròng dự phóng</span>
+      </div>
+
+      <div className="mt-5 divide-y divide-slate-100 rounded-lg border border-slate-200">
+        <CalcRow label="Giá trị ròng dự phóng" value={`${formatNumberVN(projected)} triệu`} />
+        <CalcRow
+          label={`− Tỷ lệ hoàn gia quyền (${formatPercentVN(returnDeduction / projected)})`}
+          value={`${formatNumberVN(returnDeduction)} triệu`}
+        />
+        <CalcRow
+          label={`− Biên an toàn (${formatPercentVN(safetyDeduction / projected)})`}
+          value={`${formatNumberVN(safetyDeduction)} triệu`}
+        />
+        <CalcRow label="− Chiết khấu xác thực" value={`${formatNumberVN(verificationDeduction)} triệu`} />
+        <CalcRow label="= Giá trị theo công thức" value={`${formatNumberVN(formulaValue)} triệu`} emphasis />
+      </div>
+
+      <div className="mt-3 text-label font-medium">
+        {capExceeded ? (
+          <span className="text-amber-700">
+            {formatNumberVN(formulaValue)} → bị chặn ở trần {formatNumberVN(cap)}
           </span>
-        </div>
-
-        {bars.map((b) => (
-          <div key={b.key} className="flex items-center gap-4">
-            <div className="w-64 flex-shrink-0 text-label text-slate-600">{b.label}</div>
-            <div className="relative h-8 flex-1 rounded bg-slate-100">
-              <div
-                className={`absolute h-8 rounded ${b.value >= 0 ? 'bg-navy' : 'bg-slate-400'}`}
-                style={{
-                  left: pct(Math.min(b.startRunning, b.endRunning)),
-                  width: pct(Math.abs(b.value)),
-                }}
-              />
-            </div>
-            <div className="w-28 flex-shrink-0 text-right text-label tabular-nums text-slate-700">
-              {b.value >= 0 ? '' : '− '}
-              {formatNumberVN(Math.abs(b.value))}
-            </div>
-          </div>
-        ))}
-
-        <div className="flex items-center gap-4 border-t border-slate-200 pt-3">
-          <div className="w-64 flex-shrink-0 text-label font-semibold text-slate-900">Giá trị theo công thức</div>
-          <div className="relative h-8 flex-1 rounded bg-slate-100">
-            <div
-              className={`absolute h-8 rounded ${capExceeded ? 'bg-slate-300' : 'bg-teal-600'}`}
-              style={{ left: 0, width: pct(staircase.formulaValueTotal) }}
-            />
-            {capExceeded && (
-              <div
-                className="absolute h-8 rounded border-2 border-dashed border-red-400 bg-red-50/60"
-                style={{ left: pct(staircase.result), width: pct(staircase.formulaValueTotal - staircase.result) }}
-                title="Vượt trần dư nợ"
-              />
-            )}
-          </div>
-          <div className="w-28 flex-shrink-0 text-right text-label font-semibold tabular-nums text-slate-900">
-            {formatNumberVN(staircase.formulaValueTotal)}
-          </div>
-        </div>
-
-        {capExceeded && (
-          <div className="text-right text-label font-medium text-red-600">
-            Phần vượt trần dư nợ: {formatNumberVN(staircase.formulaValueTotal - staircase.result)} triệu — Vượt trần dư nợ
-          </div>
+        ) : (
+          <span className="text-slate-600">
+            {formatNumberVN(formulaValue)} ≤ trần dư nợ {formatNumberVN(cap)} <span className="text-teal-800">✓</span>
+          </span>
         )}
       </div>
 
@@ -273,13 +257,25 @@ function StaircaseCard({ staircase }) {
         <span className="text-emphasis font-semibold text-teal-800">GIÁ TRỊ KHẢ DỤNG</span>
         <Money value={staircase.result} size="hero" className="text-teal-800" />
       </div>
-
-      {capExceeded && (
-        <div className="mt-3 text-label font-semibold text-amber-700">Bị chặn bởi trần dư nợ</div>
-      )}
-
-      <EstimateDisclaimer className="mt-4" />
     </Card>
+  )
+}
+
+function LegendDot({ swatchClass, label, value }) {
+  return (
+    <span className="inline-flex items-center gap-1.5">
+      <span className={`h-2.5 w-2.5 flex-shrink-0 rounded-sm ${swatchClass}`} aria-hidden="true" />
+      {label} <span className="tabular-nums font-medium text-slate-900">{formatNumberVN(value)}</span>
+    </span>
+  )
+}
+
+function CalcRow({ label, value, emphasis }) {
+  return (
+    <div className={`flex items-center justify-between px-4 py-2.5 text-body ${emphasis ? 'bg-teal-50' : ''}`}>
+      <span className={emphasis ? 'font-semibold text-teal-800' : 'text-slate-600'}>{label}</span>
+      <span className={`tabular-nums ${emphasis ? 'font-semibold text-teal-800' : 'font-medium text-slate-900'}`}>{value}</span>
+    </div>
   )
 }
 
