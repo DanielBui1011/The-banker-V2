@@ -6,6 +6,7 @@ import LayerTag from '../components/ui/LayerTag.jsx'
 import SegmentedControl from '../components/ui/SegmentedControl.jsx'
 import ToggleSwitch from '../components/ui/ToggleSwitch.jsx'
 import Callout from '../components/ui/Callout.jsx'
+import Button from '../components/ui/Button.jsx'
 import { usePermissions } from '../state/permissionState.jsx'
 import { useScenario } from '../state/scenarioState.jsx'
 import { useSettlement } from '../state/settlementState.jsx'
@@ -204,12 +205,9 @@ export default function Screen8({ onNext }) {
               </Card>
 
               {phase3 && (
-                <button
-                  onClick={onNext}
-                  className="w-full rounded-xl bg-navy py-3 text-emphasis font-semibold text-white transition hover:opacity-90"
-                >
-                  Tiếp: Giai đoạn 3 — nhiều bên chào giá →
-                </button>
+                <div className="flex justify-end">
+                  <Button onClick={onNext}>Tiếp: Giai đoạn 3 — nhiều bên chào giá →</Button>
+                </div>
               )}
             </div>
           )}

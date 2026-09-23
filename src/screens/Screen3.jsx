@@ -7,6 +7,8 @@ import DataTable from '../components/ui/DataTable.jsx'
 import Drawer from '../components/ui/Drawer.jsx'
 import Callout from '../components/ui/Callout.jsx'
 import Stat from '../components/ui/Stat.jsx'
+import Button from '../components/ui/Button.jsx'
+import { AlertTriangle } from 'lucide-react'
 import { actForScreen } from '../config/flow.js'
 import { BANK_TRANSACTIONS, FEE_DEVIATIONS, RECONCILIATION_COMPARISON, FOOTER_NOTE } from '../data/mockData.js'
 import { summarizeTransactions, isFeeDeviationFlagged } from '../logic/reconciliation.js'
@@ -94,7 +96,7 @@ export default function Screen3({ onNext }) {
               <ActProgress currentAct={actForScreen(3)} tone="light" />
             </div>
 
-            <main className="flex-1 overflow-y-auto px-12 py-10">
+            <main className="flex-1 overflow-y-auto px-12 pt-10 pb-24">
               <div className="mx-auto max-w-[1536px] space-y-6">
                 <h1 className="text-screen-title font-bold text-slate-900">Đối soát tự động</h1>
                 <p className="text-body text-slate-600">
@@ -164,9 +166,14 @@ export default function Screen3({ onNext }) {
                             <div className="text-emphasis font-semibold text-slate-900">
                               {fd.unit} — {fd.channel}
                             </div>
-                            <span className={`text-label font-semibold ${flagged ? 'text-amber-700' : 'text-slate-500'}`}>
-                              {flagged ? 'Cảnh báo' : 'Trong ngưỡng'}
-                            </span>
+                            {flagged ? (
+                              <span className="flex items-center gap-1.5 text-label font-semibold text-slate-700">
+                                <AlertTriangle size={16} className="flex-shrink-0" aria-hidden="true" />
+                                Vượt ngưỡng cảnh báo phí
+                              </span>
+                            ) : (
+                              <span className="text-label font-semibold text-slate-500">Trong ngưỡng</span>
+                            )}
                           </div>
                           <div className="mt-2 space-y-1 text-label text-slate-600">
                             <div className="flex justify-between">
@@ -179,8 +186,8 @@ export default function Screen3({ onNext }) {
                             </div>
                             <div className="flex justify-between">
                               <span>Chênh lệch</span>
-                              <span className={`tabular-nums ${flagged ? 'text-amber-700 font-semibold' : 'text-slate-700'}`}>
-                                {formatNumberVN(fd.deviation)} triệu ({formatNumberVN(fd.deviationRate * 100)}%)
+                              <span className={`tabular-nums ${flagged ? 'text-slate-900 font-semibold' : 'text-slate-700'}`}>
+                                {formatNumberVN(fd.deviation)} triệu ({formatPercentVN(fd.deviationRate)})
                               </span>
                             </div>
                           </div>
@@ -188,9 +195,7 @@ export default function Screen3({ onNext }) {
                       )
                       return flagged ? (
                         <button key={fd.unit} onClick={() => setFeeDrawerUnit(fd)} className="text-left">
-                          <Callout variant="warn" className="flex-col items-stretch">
-                            {content}
-                          </Callout>
+                          <Card className="border-slate-300 bg-slate-50">{content}</Card>
                         </button>
                       ) : (
                         <Card key={fd.unit}>{content}</Card>
@@ -212,12 +217,9 @@ export default function Screen3({ onNext }) {
                   </Card>
                 </div>
 
-                <button
-                  onClick={onNext}
-                  className="w-full rounded-xl bg-navy py-4 text-emphasis font-semibold text-white transition hover:opacity-90"
-                >
-                  Tiếp →
-                </button>
+                <div className="flex justify-end">
+                  <Button onClick={onNext}>Tiếp →</Button>
+                </div>
               </div>
             </main>
 
@@ -254,7 +256,7 @@ export default function Screen3({ onNext }) {
               <Row label="Thực nhận" value={`${formatNumberVN(feeDrawerUnit.actual)} triệu`} />
               <Row
                 label="Chênh lệch"
-                value={`${formatNumberVN(feeDrawerUnit.deviation)} triệu (${formatNumberVN(feeDrawerUnit.deviationRate * 100)}%)`}
+                value={`${formatNumberVN(feeDrawerUnit.deviation)} triệu (${formatPercentVN(feeDrawerUnit.deviationRate)})`}
               />
             </div>
           </div>

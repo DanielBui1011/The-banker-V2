@@ -6,6 +6,7 @@ import Card from '../components/ui/Card.jsx'
 import Money from '../components/ui/Money.jsx'
 import StatusBadge from '../components/ui/StatusBadge.jsx'
 import Callout from '../components/ui/Callout.jsx'
+import Button from '../components/ui/Button.jsx'
 import { actForScreen } from '../config/flow.js'
 import { usePermissions } from '../state/permissionState.jsx'
 import { useScenario } from '../state/scenarioState.jsx'
@@ -58,7 +59,7 @@ export default function Screen6({ onNext }) {
             <ActProgress currentAct={actForScreen(6)} tone="light" />
           </div>
 
-          <main className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-12 py-10">
+          <main className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-12 pt-10 pb-24">
             <div className="mx-auto w-full max-w-[1536px] space-y-6">
               <h1 className="text-screen-title font-bold text-slate-900">Tất toán</h1>
 
@@ -91,12 +92,9 @@ export default function Screen6({ onNext }) {
               )}
 
               {settlement.atLastStep && (
-                <button
-                  onClick={onNext}
-                  className="w-full rounded-xl border border-slate-300 bg-white py-3 text-emphasis font-semibold text-slate-800 transition hover:bg-slate-50"
-                >
-                  Tiếp →
-                </button>
+                <div className="flex justify-end">
+                  <Button onClick={onNext}>Tiếp →</Button>
+                </div>
               )}
             </div>
           </main>
@@ -285,12 +283,9 @@ export function TechcombankPageFrame({ heading, subheading, children, confirmLab
 
                 <div className="space-y-4 text-body">{children}</div>
 
-                <button
-                  onClick={onConfirm}
-                  className="mt-8 w-full rounded-xl bg-slate-900 py-3 text-emphasis font-semibold text-white transition hover:bg-slate-800"
-                >
-                  {confirmLabel}
-                </button>
+                <div className="mt-8 flex justify-end">
+                  <Button onClick={onConfirm}>{confirmLabel}</Button>
+                </div>
               </Card>
             </div>
           </main>

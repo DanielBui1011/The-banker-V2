@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import TopBar from '../components/ui/TopBar.jsx'
 import ActProgress from '../components/ui/ActProgress.jsx'
 import SurfaceFrame from '../components/ui/SurfaceFrame.jsx'
@@ -6,7 +6,9 @@ import Stepper from '../components/ui/Stepper.jsx'
 import Card from '../components/ui/Card.jsx'
 import Money from '../components/ui/Money.jsx'
 import Callout, { EstimateDisclaimer } from '../components/ui/Callout.jsx'
+import Button from '../components/ui/Button.jsx'
 import LockCertificate from '../components/LockCertificate.jsx'
+import ConsentPage from '../components/ui/ConsentPage.jsx'
 import { actForScreen } from '../config/flow.js'
 import { usePermissions } from '../state/permissionState.jsx'
 import { useScenario } from '../state/scenarioState.jsx'
@@ -40,8 +42,6 @@ export default function Screen5({ onNext, onPrev }) {
   const settlement = useSettlement()
 
   const [step, setStep] = useState('a') // a | b | c | d
-  const [a2Confirmed, setA2Confirmed] = useState(false)
-  const [a4Confirmed, setA4Confirmed] = useState(false)
   const [submitPhase, setSubmitPhase] = useState('idle') // idle | reviewing | approved
   const [duplicateCallout, setDuplicateCallout] = useState(null)
 
@@ -103,70 +103,57 @@ export default function Screen5({ onNext, onPrev }) {
 
   const currentStepNumber = { a: 1, b: 2, c: 3, d: 4 }[step]
 
+  if (step === 'a') {
+    return (
+      <ConsentPage
+        steps={STEPS}
+        currentStep={currentStepNumber}
+        heading="Yêu cầu cấp quyền đánh giá tín dụng"
+        subheading="Vui lòng xem lại phạm vi trước khi quyết định."
+        requesterName={LEGAL_NAME}
+        requesterCode={TPP_CODE}
+        purpose={A2_CONSENT.purposeLabel}
+        scopeItems={A2_CONSENT.dataScopes}
+        recipient={A2_CONSENT.dataRecipient}
+        duration={`${A2_CONSENT.durationDays} ngày`}
+        notAllowedText="Quyền này KHÔNG cho phép: chuyển tiền, thay đổi thông tin tài khoản, xem mật khẩu hoặc mã OTP."
+        withdrawalText={A2_CONSENT.independenceNote}
+        confirmLabel="Tôi đã đọc và đồng ý cấp quyền cho mục đích trên"
+        approveLabel="Đồng ý cấp quyền"
+        onApprove={approveA2}
+        onReject={rejectA2}
+      />
+    )
+  }
+
+  if (step === 'c') {
+    return (
+      <ConsentPage
+        steps={STEPS}
+        currentStep={currentStepNumber}
+        heading="Thỏa thuận chuyển giao quyền đòi nợ"
+        subheading="Vui lòng đọc kỹ nội dung trước khi ký."
+        requesterLabel="Bên nhận bảo đảm"
+        requesterName="Techcombank"
+        purpose="Bảo đảm khoản ứng vốn bằng khoản phải thu, đăng ký theo Nghị định 99/2022/NĐ-CP."
+        scopeLabel="Tài sản bảo đảm"
+        scopeItems={units.map((u) => `${u.code} — khoản phải thu ghi nhận khóa cho Techcombank tại sổ đăng ký`)}
+        recipientLabel="Đăng ký biện pháp bảo đảm"
+        recipient={`${A4_AGREEMENT.registrationNote} Mã đăng ký giả định: ${LOCK_CERTIFICATE.registrationId}.`}
+        durationLabel="Dòng tiền"
+        duration={A4_AGREEMENT.settlementNote}
+        notAllowedText="Thỏa thuận này KHÔNG cho phép Techcombank truy cập hay xử lý dữ liệu ngoài phạm vi tài sản bảo đảm nêu trên."
+        withdrawalText="Không thể rút khi còn dư nợ — thỏa thuận tự động chấm dứt sau khi tất toán."
+        confirmLabel="Tôi đã đọc và đồng ý ký thỏa thuận chuyển giao quyền đòi nợ nêu trên"
+        approveLabel="Ký thỏa thuận"
+        onApprove={signA4}
+      />
+    )
+  }
+
   return (
-    <Screen5Chrome variant={step === 'a' || step === 'c' ? 'bank' : 'platform'} currentStepNumber={currentStepNumber} onOpenPeek={openPeek}>
-      {step === 'a' && (
-        <BankConsent
-          heading="Yêu cầu cấp quyền đánh giá tín dụng"
-          subheading="Vui lòng xem lại phạm vi trước khi quyết định."
-          confirmed={a2Confirmed}
-          setConfirmed={setA2Confirmed}
-          confirmLabel="Tôi đã đọc và đồng ý cấp quyền cho mục đích trên"
-          approveLabel="Đồng ý"
-          onApprove={approveA2}
-          onReject={rejectA2}
-        >
-          <ConsentRow label="Bên yêu cầu" value={`${LEGAL_NAME} (mã TPP: ${TPP_CODE})`} />
-          <ConsentRow label="Mục đích" value={A2_CONSENT.purposeLabel} />
-          <div>
-            <div className="mb-2 text-label font-medium text-slate-500">Phạm vi dữ liệu</div>
-            <ul className="list-disc space-y-1 pl-5">
-              {A2_CONSENT.dataScopes.map((scope) => (
-                <li key={scope} className="text-slate-800">
-                  {scope}
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div className="rounded-lg bg-slate-100 p-4 text-label text-slate-600">
-            Quyền này KHÔNG cho phép: chuyển tiền, thay đổi thông tin tài khoản, xem mật khẩu hoặc mã OTP.
-          </div>
-          <ConsentRow label="Thời hạn" value={`${A2_CONSENT.durationDays} ngày`} />
-          <p className="text-label text-slate-500">{A2_CONSENT.independenceNote}</p>
-        </BankConsent>
-      )}
-
+    <Screen5Chrome currentStepNumber={currentStepNumber} onOpenPeek={openPeek}>
       {step === 'b' && <EstimateStep staircase={staircase} interestEstimate={interestEstimate} onNext={() => setStep('c')} />}
-
-      {step === 'c' && (
-        <BankConsent
-          heading="Thỏa thuận chuyển giao quyền đòi nợ"
-          subheading="Vui lòng đọc kỹ nội dung trước khi ký."
-          confirmed={a4Confirmed}
-          setConfirmed={setA4Confirmed}
-          confirmLabel="Tôi đã đọc và đồng ý ký thỏa thuận chuyển giao quyền đòi nợ nêu trên"
-          approveLabel="Ký thỏa thuận"
-          onApprove={signA4}
-        >
-          <ConsentRow label="Bên nhận bảo đảm" value="Techcombank" />
-          <div>
-            <div className="text-label font-medium text-slate-500">Tài sản bảo đảm</div>
-            <div className="text-slate-900">
-              Các đơn vị khoản phải thu được ghi nhận khóa cho Techcombank tại sổ đăng ký:{' '}
-              {units.map((u, i) => (
-                <span key={u.code}>
-                  {i > 0 && (i === units.length - 1 ? ' và ' : ', ')}
-                  {u.code}
-                </span>
-              ))}
-              .
-            </div>
-          </div>
-          <ConsentRow label="Đăng ký biện pháp bảo đảm" value={`${A4_AGREEMENT.registrationNote} Mã đăng ký giả định: ${LOCK_CERTIFICATE.registrationId}.`} />
-          <ConsentRow label="Dòng tiền" value={A4_AGREEMENT.settlementNote} />
-        </BankConsent>
-      )}
-
       {step === 'd' && (
         <SubmitStep
           staircase={staircase}
@@ -181,79 +168,27 @@ export default function Screen5({ onNext, onPrev }) {
   )
 }
 
-// Khung dùng chung cho Màn 5 — Stepper hiện suốt màn, đặt trên SurfaceFrame để phân
-// biệt bề mặt (platform/bank) mà không phá cấu trúc "chỉ 1 vùng cuộn" của SurfaceFrame.
-function Screen5Chrome({ variant, currentStepNumber, onOpenPeek, children }) {
+// Khung dùng chung cho bước 5b/5d (bề mặt Nền tảng). Bước 5a/5c dùng ConsentPage
+// riêng (khung ngân hàng, Stepper Nền tảng nằm ngoài SurfaceFrame).
+function Screen5Chrome({ currentStepNumber, onOpenPeek, children }) {
   return (
     <div className="flex h-full flex-col">
-      {variant === 'platform' && <TopBar screenNumber={5} onOpenPeek={() => onOpenPeek?.(5)} />}
-      <SurfaceFrame variant={variant} bankName="Techcombank">
+      <TopBar screenNumber={5} onOpenPeek={() => onOpenPeek?.(5)} />
+      <SurfaceFrame variant="platform">
         <div className="flex h-full flex-col">
-          <div className={`border-b px-12 pb-3 pt-3 ${variant === 'platform' ? 'border-slate-200' : 'border-slate-200'}`}>
+          <div className="border-b border-slate-200 px-12 pb-3 pt-3">
             <ActProgress currentAct={actForScreen(5)} tone="light" />
           </div>
           <div className="border-b border-slate-200 bg-slate-50 px-12 py-4">
             <Stepper steps={STEPS} currentStep={currentStepNumber} />
           </div>
-          <main className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-12 py-10">
+          <main className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-12 pt-10 pb-24">
             <div className="mx-auto w-full max-w-[1536px] space-y-6">{children}</div>
           </main>
           <footer className="border-t border-slate-200 px-12 py-3 text-label text-slate-500">{FOOTER_NOTE}</footer>
         </div>
       </SurfaceFrame>
     </div>
-  )
-}
-
-function ConsentRow({ label, value }) {
-  return (
-    <div>
-      <div className="text-label font-medium text-slate-500">{label}</div>
-      <div className="text-slate-900">{value}</div>
-    </div>
-  )
-}
-
-// Bước 5a / 5c — trang mô phỏng Techcombank, tách biệt hẳn với Nền tảng, một ô
-// xác nhận không tích sẵn (CLAUDE.md #3, quy-tac.md mục 3).
-function BankConsent({ heading, subheading, children, confirmed, setConfirmed, confirmLabel, approveLabel, onApprove, onReject }) {
-  return (
-    <Card padding="p-8" className="mx-auto max-w-3xl">
-      <h1 className="mb-1 text-section-title font-bold text-slate-900">{heading}</h1>
-      {subheading && <p className="mb-6 text-body text-slate-600">{subheading}</p>}
-
-      <div className="space-y-4 text-body">
-        {children}
-
-        <label className="flex items-start gap-3 text-label text-slate-800">
-          <input
-            type="checkbox"
-            checked={confirmed}
-            onChange={(e) => setConfirmed(e.target.checked)}
-            className="mt-1 h-5 w-5 rounded border-slate-300"
-          />
-          <span>{confirmLabel}</span>
-        </label>
-      </div>
-
-      <div className="mt-8 flex gap-3">
-        {onReject && (
-          <button
-            onClick={onReject}
-            className="flex-1 rounded-xl border border-slate-300 py-3 text-emphasis font-semibold text-slate-700 transition hover:bg-slate-50"
-          >
-            Từ chối
-          </button>
-        )}
-        <button
-          onClick={onApprove}
-          disabled={!confirmed}
-          className="flex-1 rounded-xl bg-slate-900 py-3 text-emphasis font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500 disabled:hover:bg-slate-300"
-        >
-          {approveLabel}
-        </button>
-      </div>
-    </Card>
   )
 }
 
@@ -282,8 +217,8 @@ function StaircaseCard({ staircase }) {
 
       <div className="relative space-y-3">
         {/* Vạch ngang trần dư nợ */}
-        <div className="pointer-events-none absolute inset-x-0 z-10 border-t-2 border-dashed border-red-500" style={{ top: `${100 - parseFloat(pct(cap))}%` }}>
-          <span className="absolute -top-3 right-0 bg-white px-1 text-label font-medium text-red-600">
+        <div className="pointer-events-none absolute inset-x-0 z-10 border-t-2 border-dashed border-slate-400" style={{ top: `${100 - parseFloat(pct(cap))}%` }}>
+          <span className="absolute -top-3 right-0 bg-white px-1 text-label font-medium text-slate-600">
             Trần dư nợ {formatNumberVN(cap)} triệu
           </span>
         </div>
@@ -365,19 +300,16 @@ function EstimateStep({ staircase, interestEstimate, onNext }) {
           <CostRow label="Lãi suất" value={`${formatPercentVN(TECHCOMBANK_QUOTE.annualRate)}/năm`} />
           <CostRow
             label={`Tiền lãi ước tính nếu tất toán sau ${INTEREST_DAYS} ngày`}
-            value={`≈ ${formatNumberVN(interestEstimate)} triệu`}
+            value={<Money value={Math.round(interestEstimate * 1000)} unit="nghìn đồng" size="body" className="text-slate-900" />}
           />
         </div>
       </Card>
 
       <EstimateDisclaimer />
 
-      <button
-        onClick={onNext}
-        className="w-full rounded-xl bg-navy py-4 text-emphasis font-semibold text-white transition hover:opacity-90"
-      >
-        Tiếp: Ký thỏa thuận A4 →
-      </button>
+      <div className="flex justify-end">
+        <Button onClick={onNext}>Tiếp: Ký thỏa thuận A4 →</Button>
+      </div>
     </div>
   )
 }
@@ -402,12 +334,9 @@ function SubmitStep({ staircase, submitPhase, onSubmit, onNext, lockAmounts, dup
       </Card>
 
       {submitPhase === 'idle' && (
-        <button
-          onClick={onSubmit}
-          className="w-full rounded-xl bg-navy py-4 text-emphasis font-semibold text-white transition hover:opacity-90"
-        >
-          Gửi đề nghị tới Techcombank
-        </button>
+        <div className="flex justify-end">
+          <Button onClick={onSubmit}>Gửi đề nghị tới Techcombank</Button>
+        </div>
       )}
 
       {submitPhase === 'reviewing' && (
@@ -433,12 +362,9 @@ function SubmitStep({ staircase, submitPhase, onSubmit, onNext, lockAmounts, dup
             </Callout>
           )}
 
-          <button
-            onClick={onNext}
-            className="w-full rounded-xl bg-navy py-4 text-emphasis font-semibold text-white transition hover:opacity-90"
-          >
-            Tiếp →
-          </button>
+          <div className="flex justify-end">
+            <Button onClick={onNext}>Tiếp →</Button>
+          </div>
         </>
       )}
     </div>

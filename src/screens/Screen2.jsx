@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
-import { Ban, ShieldCheck } from 'lucide-react'
 import TopBar from '../components/ui/TopBar.jsx'
 import ActProgress from '../components/ui/ActProgress.jsx'
 import SurfaceFrame from '../components/ui/SurfaceFrame.jsx'
 import Card from '../components/ui/Card.jsx'
 import Stepper from '../components/ui/Stepper.jsx'
+import Button from '../components/ui/Button.jsx'
 import Callout from '../components/ui/Callout.jsx'
+import ConsentPage from '../components/ui/ConsentPage.jsx'
 import { actForScreen } from '../config/flow.js'
 import { usePermissions } from '../state/permissionState.jsx'
 import { FOOTER_NOTE, LENDER_QUOTES, A1_CONSENT, A1_TOKEN_TTL_SECONDS } from '../data/mockData.js'
@@ -106,7 +107,26 @@ export default function Screen2({ onGoToScreen }) {
   }, [step])
 
   if (step === 'b') {
-    return <TechcombankConsentPage onApprove={approve} onReject={reject} />
+    return (
+      <ConsentPage
+        steps={FLOW_STEPS}
+        currentStep={FLOW_STEP_NUMBER.b}
+        heading="Yêu cầu cấp quyền truy cập dữ liệu"
+        subheading="Vui lòng xem lại phạm vi trước khi quyết định."
+        requesterName={LEGAL_NAME}
+        requesterCode={TPP_CODE}
+        purpose={A1_CONSENT.purposeLabel}
+        scopeItems={A1_CONSENT.dataScopes}
+        recipient={A1_CONSENT.dataRecipient}
+        duration={`${A1_CONSENT.durationDays} ngày — ${A1_CONSENT.renewalNote}`}
+        notAllowedText="Quyền này KHÔNG cho phép: chuyển tiền, thay đổi thông tin tài khoản, xem mật khẩu hoặc mã OTP."
+        withdrawalText="Bạn có thể rút lại quyền này bất cứ lúc nào trong ứng dụng Techcombank hoặc tại mục Quyền của tôi."
+        confirmLabel="Tôi đã đọc và đồng ý cấp quyền cho mục đích trên"
+        approveLabel="Đồng ý cấp quyền"
+        onApprove={approve}
+        onReject={reject}
+      />
+    )
   }
 
   return (
@@ -118,7 +138,7 @@ export default function Screen2({ onGoToScreen }) {
             <div className="border-b border-slate-200/20 px-12 pb-3 pt-3">
               <ActProgress currentAct={actForScreen(2)} tone={step === 'c' ? 'dark' : 'light'} />
             </div>
-            <main className="flex-1 overflow-y-auto px-12 py-10">
+            <main className="flex-1 overflow-y-auto px-12 pt-10 pb-24">
               <div className="mx-auto max-w-[1536px] space-y-6">
                 <h1 className={`text-screen-title font-bold ${step === 'c' ? 'text-slate-100' : 'text-slate-900'}`}>
                   Cấp quyền A1
@@ -178,101 +198,6 @@ function BankPicker({ onSelect }) {
         </Callout>
       )}
     </div>
-  )
-}
-
-// Bước 2b — trang mô phỏng Techcombank: SurfaceFrame variant="bank" tách biệt hẳn
-// với giao diện Nền tảng (docs/quy-tac.md mục 3). Thứ tự đọc bắt buộc: bên yêu cầu →
-// mục đích → phạm vi (kèm thời hạn) → "KHÔNG cho phép" → ô xác nhận không tích sẵn.
-function TechcombankConsentPage({ onApprove, onReject }) {
-  const [confirmed, setConfirmed] = useState(false)
-
-  return (
-    <SurfaceFrame variant="bank" bankName="Techcombank">
-      <div className="flex h-full flex-col">
-        <main className="flex-1 overflow-y-auto px-8 pt-8 pb-24">
-          <div className="mx-auto w-full max-w-3xl">
-            <div className="mb-1 text-section-title font-bold text-slate-900">Techcombank</div>
-            <h1 className="mb-1 text-screen-title font-bold text-slate-900">Yêu cầu cấp quyền truy cập dữ liệu</h1>
-            <p className="mb-4 text-body text-slate-500">Vui lòng xem lại phạm vi trước khi quyết định.</p>
-            <div className="mb-6">
-              <Stepper steps={FLOW_STEPS} currentStep={FLOW_STEP_NUMBER.b} />
-            </div>
-
-            <Card className="space-y-5">
-              {/* 1. Bên yêu cầu */}
-              <div>
-                <div className="text-label font-medium text-slate-500">Bên yêu cầu</div>
-                <div className="text-body text-slate-900">{LEGAL_NAME}</div>
-                <div className="text-label text-slate-500">Mã TPP đã đăng ký: {TPP_CODE}</div>
-              </div>
-
-              {/* 2. Mục đích */}
-              <div>
-                <div className="text-label font-medium text-slate-500">Mục đích</div>
-                <div className="text-body text-slate-900">{A1_CONSENT.purposeLabel}</div>
-              </div>
-
-              {/* 3. Phạm vi, kèm thời hạn */}
-              <div>
-                <div className="mb-2 text-label font-medium text-slate-500">Phạm vi dữ liệu</div>
-                <ul className="space-y-2">
-                  {A1_CONSENT.dataScopes.map((scope) => (
-                    <li key={scope} className="flex items-start gap-2 text-body text-slate-800">
-                      <ShieldCheck size={18} className="mt-0.5 flex-shrink-0 text-teal-600" aria-hidden="true" />
-                      {scope}
-                    </li>
-                  ))}
-                </ul>
-                <div className="mt-3 text-label text-slate-600">
-                  Thời hạn: {A1_CONSENT.durationDays} ngày — {A1_CONSENT.renewalNote}
-                </div>
-              </div>
-
-              {/* 4. Quyền này KHÔNG cho phép */}
-              <div className="flex items-start gap-3 rounded-lg bg-slate-100 p-4">
-                <Ban size={20} className="mt-0.5 flex-shrink-0 text-slate-500" aria-hidden="true" />
-                <div className="text-label text-slate-600">
-                  Quyền này KHÔNG cho phép: chuyển tiền, thay đổi thông tin tài khoản, xem mật khẩu hoặc mã OTP.
-                </div>
-              </div>
-
-              <p className="text-label text-slate-500">
-                Bạn có thể rút lại quyền này bất cứ lúc nào trong ứng dụng Techcombank hoặc tại mục Quyền của tôi.
-              </p>
-
-              {/* 5. MỘT ô xác nhận, không tích sẵn */}
-              <label className="flex items-start gap-3 text-body text-slate-800">
-                <input
-                  type="checkbox"
-                  checked={confirmed}
-                  onChange={(e) => setConfirmed(e.target.checked)}
-                  className="mt-1 h-5 w-5 rounded border-slate-300"
-                />
-                <span>Tôi đã đọc và đồng ý cấp quyền cho mục đích trên</span>
-              </label>
-
-              <div className="flex gap-3">
-                <button
-                  onClick={onReject}
-                  className="flex-1 rounded-xl border border-slate-300 py-3 text-body font-semibold text-slate-700 transition hover:bg-slate-50"
-                >
-                  Từ chối
-                </button>
-                <button
-                  onClick={onApprove}
-                  disabled={!confirmed}
-                  className="flex-1 rounded-xl bg-navy py-3 text-body font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500 disabled:hover:bg-slate-300"
-                >
-                  Đồng ý cấp quyền xem thông tin tài khoản
-                </button>
-              </div>
-            </Card>
-          </div>
-        </main>
-        <footer className="border-t border-slate-200 px-8 py-3 text-label text-slate-400">{FOOTER_NOTE}</footer>
-      </div>
-    </SurfaceFrame>
   )
 }
 
@@ -353,16 +278,16 @@ function HistoryLoading({ step, onGoToScreen }) {
       </Card>
 
       {done && (
-        <div className="grid grid-cols-2 gap-4">
+        <div className="flex justify-end gap-3">
           <button
             onClick={() => onGoToScreen(7)}
-            className="rounded-xl border border-slate-700 bg-slate-800 py-3 text-body font-semibold text-slate-100 transition hover:bg-slate-700"
+            className="min-w-[220px] rounded-xl border border-slate-700 bg-slate-800 px-8 py-3 text-body font-semibold text-slate-100 transition hover:bg-slate-700"
           >
             Xem quyền của tôi →
           </button>
           <button
             onClick={() => onGoToScreen(3)}
-            className="rounded-xl bg-navy py-3 text-body font-semibold text-white transition hover:opacity-90"
+            className="min-w-[220px] rounded-xl bg-navy px-8 py-3 text-body font-semibold text-white transition hover:opacity-90"
           >
             Xem đối soát →
           </button>

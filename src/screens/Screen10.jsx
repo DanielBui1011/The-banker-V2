@@ -7,6 +7,7 @@ import Money from '../components/ui/Money.jsx'
 import LayerTag from '../components/ui/LayerTag.jsx'
 import DataTable from '../components/ui/DataTable.jsx'
 import { EstimateDisclaimer } from '../components/ui/Callout.jsx'
+import Button from '../components/ui/Button.jsx'
 import { actForScreen } from '../config/flow.js'
 import { usePermissions } from '../state/permissionState.jsx'
 import { useScenario } from '../state/scenarioState.jsx'
@@ -76,7 +77,7 @@ export default function Screen10({ onGoToScreen }) {
             <ActProgress currentAct={actForScreen(10)} tone="light" />
           </div>
 
-          <main className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-12 py-10">
+          <main className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-12 pt-10 pb-24">
             <div className="mx-auto w-full max-w-[1536px] space-y-6">
               <div className="flex items-center gap-3">
                 <h1 className="text-screen-title font-bold text-slate-900">Giai đoạn 3 — Nhiều bên chào giá</h1>
@@ -129,13 +130,11 @@ function RequestStep({ recipients, toggleRecipient, canSubmit, onSubmit }) {
 
       <p className="text-label text-slate-500">Chỉ các bên bạn chọn nhận được dữ liệu cho yêu cầu này.</p>
 
-      <button
-        onClick={onSubmit}
-        disabled={!canSubmit}
-        className="w-full rounded-xl bg-navy py-4 text-emphasis font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:bg-slate-300"
-      >
-        Gửi yêu cầu báo giá
-      </button>
+      <div className="flex justify-end">
+        <Button onClick={onSubmit} disabled={!canSubmit}>
+          Gửi yêu cầu báo giá
+        </Button>
+      </div>
     </div>
   )
 }
@@ -242,13 +241,11 @@ function LenderSignPage({ quote, confirmed, setConfirmed, onConfirm }) {
               </label>
             </div>
 
-            <button
-              onClick={onConfirm}
-              disabled={!confirmed}
-              className="mt-8 w-full rounded-xl bg-slate-900 py-3 text-emphasis font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500"
-            >
-              Ký thỏa thuận
-            </button>
+            <div className="mt-8 flex justify-end">
+              <Button onClick={onConfirm} disabled={!confirmed}>
+                Ký thỏa thuận
+              </Button>
+            </div>
           </Card>
         </main>
         <footer className="border-t border-slate-200 px-8 py-3 text-label text-slate-500">{FOOTER_NOTE}</footer>
@@ -298,7 +295,7 @@ function CertificateStep({ quote, onBack }) {
         onClick={onBack}
         className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-label font-medium text-slate-700 transition hover:bg-slate-50"
       >
-        ← Quay lại Màn 8
+        ← Quay lại
       </button>
     </div>
   )

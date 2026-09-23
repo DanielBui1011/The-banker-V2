@@ -25,13 +25,19 @@ const NATURE_LABEL = {
 // (docs/man-hinh.md Màn 7) — không dùng "OK"/"Xác nhận" chung chung.
 const REVOKE_INFO = {
   A1: {
-    message: 'Techcombank sẽ ngừng đọc dòng tiền phục vụ đối soát. Đối soát tự động (Màn 3) sẽ dừng cập nhật.',
+    message: 'Techcombank sẽ ngừng đọc dòng tiền phục vụ đối soát. Đối soát tự động sẽ dừng cập nhật.',
     confirmLabel: 'Rút quyền A1',
   },
   A2: {
     message: 'Techcombank sẽ không còn xem dữ liệu phục vụ đánh giá tín dụng. Đối soát (A1) vẫn hoạt động.',
     confirmLabel: 'Rút quyền A2',
   },
+}
+
+// Bên nhận hiển thị ở thẻ quyền — A2 ghi rõ Techcombank là bên đánh giá tín dụng
+// (Vòng 12 mục 2), khớp với "Bên nhận dữ liệu" trên trang cấp quyền A2 (Màn 5a).
+const RECIPIENT_LABEL = {
+  A2: 'Techcombank (bên đánh giá tín dụng)',
 }
 
 function formatLogTimestamp(value) {
@@ -86,7 +92,7 @@ export default function Screen7({ onBack, onPrev, onGoToScreen }) {
               <ActProgress currentAct={actForScreen(7)} tone="light" />
             </div>
 
-            <main className="flex-1 overflow-y-auto px-12 py-10">
+            <main className="flex-1 overflow-y-auto px-12 pt-10 pb-24">
               <div className="mx-auto max-w-[1536px] space-y-6">
                 <div className="flex items-center justify-between">
                   <h1 className="text-screen-title font-bold text-slate-900">Trung tâm quyền riêng tư</h1>
@@ -128,7 +134,7 @@ export default function Screen7({ onBack, onPrev, onGoToScreen }) {
                               Bản chất: {NATURE_LABEL[permission.code]}
                             </div>
                             <div className="text-label text-slate-600">
-                              Bên nhận: {permission.to}
+                              Bên nhận: {RECIPIENT_LABEL[permission.code] ?? permission.to}
                             </div>
 
                             {permission.status === 'not-granted' ? (

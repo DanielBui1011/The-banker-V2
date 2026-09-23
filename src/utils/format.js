@@ -9,12 +9,13 @@ export function formatNumberVN(value) {
   })
 }
 
-// Định dạng tỷ lệ phần trăm — luôn hiện đúng 1 chữ số thập phân (85,0%),
-// khác quy tắc số tiền ở trên. value là số thập phân (0,85 → "85,0%").
+// Định dạng tỷ lệ phần trăm — tối đa 1 chữ số thập phân, bỏ ".0" thừa khi tròn
+// (0,76 → "76%", 0,12 → "12%") nhưng giữ chữ số thập phân có nghĩa (0,017 →
+// "1,7%"). value là số thập phân (0,85 → "85%").
 export function formatPercentVN(value) {
   const rounded = Math.round(value * 1000) / 10
   return `${rounded.toLocaleString('vi-VN', {
-    minimumFractionDigits: 1,
+    minimumFractionDigits: Number.isInteger(rounded) ? 0 : 1,
     maximumFractionDigits: 1,
   })}%`
 }
