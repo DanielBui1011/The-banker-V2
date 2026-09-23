@@ -13,10 +13,39 @@
 @layer base {
   body {
     font-family: 'Be Vietnam Pro', system-ui, sans-serif;
+    background: var(--color-app-bg);
+    color: var(--color-ink);
   }
 
+  /* Token Hướng B (docs/san-pham.md K.2, K.4) và chuyển động (L.1). */
   :root {
-    --color-navy: #0b2545;
+    --color-app-bg: #fbf8f2;
+    --color-app-surface: #ffffff;
+    --color-ink: #1a1d24;
+    --color-ink-muted: #545b69;
+    --color-line: #e4ded2;
+    --color-primary: #1e47c8;
+    --color-primary-soft: #eef2fc;
+    --color-tier1-bg: #e6f4f1;
+    --color-tier1-fg: #0f766e;
+    --color-tier2-bg: #f1ecfd;
+    --color-tier2-fg: #6d28d9;
+    --color-tier3-bg: #fff1e6;
+    --color-tier3-fg: #9a3412;
+    --color-tcb-bar: #141414;
+    --color-tcb-on-bar: #f4f1ea;
+    --color-tcb-stripe: #e3262b;
+    --color-tcb-gold: #d4af37;
+    /* Bí danh cho các màn cũ (bg-navy, text-navy…) — sẽ gỡ khi mọi màn dùng primary. */
+    --color-navy: var(--color-primary);
+
+    --dur-fast: 150ms;
+    --dur-standard: 200ms;
+    --dur-slow: 300ms;
+    --dur-handoff: 700ms;
+    --ease-out: cubic-bezier(0.2, 0, 0, 1);
+    --ease-in: cubic-bezier(0.4, 0, 1, 1);
+    --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   /* Vòng 8 mục 4: trang/cổng Techcombank không mang màu thương hiệu Nền tảng
@@ -28,7 +57,44 @@
   }
 }
 
-/* docs/thiet-ke.md mục 2: chuyển động ≤ 200ms, tôn trọng prefers-reduced-motion. */
+/* Chuyển trang (san-pham.md L.2 dòng 1): chỉ vùng nội dung (view-transition-name: page)
+   mờ dần vào + trượt lên 8px; thanh trên, điều hướng đổi ngay. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+}
+::view-transition-old(page) {
+  animation: page-out var(--dur-standard) var(--ease-in) both;
+}
+::view-transition-new(page) {
+  animation: page-in var(--dur-standard) var(--ease-out) both;
+}
+@keyframes page-out {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+/* Ngăn kéo Mô phỏng trượt vào từ cạnh phải (L.2: drawer 250ms). */
+@keyframes drawer-in {
+  from {
+    transform: translateX(100%);
+  }
+}
+
+/* Màn cũ bọc trong khung app (adapter tạm Vòng 21, gỡ ở Vòng 24): chân trang riêng của
+   màn cũ bị ẩn vì khung app đã có chân trang chung. */
+[data-legacy-screen] footer {
+  display: none;
+}
+
+/* Tôn trọng prefers-reduced-motion: mọi thứ hiện ngay (L.3). */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -37,6 +103,11 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
   }
 }
 
@@ -68,5 +139,5 @@
 }
 
 .animate-ru-card-glow {
-  animation: ru-card-glow 800ms ease-out;
+  animation: ru-card-glow 400ms var(--ease-out);
 }

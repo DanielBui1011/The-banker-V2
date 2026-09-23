@@ -193,17 +193,14 @@ describe('Quy tắc 6 — màu ngữ nghĩa chỉ qua allowlist đã duyệt', (
 })
 
 // ─── 7. Không lộ "Màn X" trong chuỗi hiển thị cho nhà bán/ngân hàng ────────────
-// TopBar, KeyHint, ScenarioPanel là khung trình chiếu, được phép nhắc số màn.
-// Các file khác thuộc src/screens/src/components chỉ được nhắc "Màn N" trong
+// Vòng 21: không còn "màn" (san-pham.md mục J) — bỏ miễn trừ cũ cho TopBar/KeyHint/
+// ScenarioPanel. Mọi file thuộc src/screens/src/components chỉ được nhắc "Màn N" trong
 // comment (// hoặc /* */), không phải trong chuỗi JSX hiển thị.
-const SCREEN_REF_EXEMPT_FILES = ['TopBar.jsx', 'KeyHint.jsx', 'ScenarioPanel.jsx']
 const SCREEN_REF_RE = /Màn\s*\d+/
 describe('Quy tắc 7 — không lộ "Màn X" ra chuỗi hiển thị', () => {
-  it('src/screens và src/components không hiện "Màn N" ngoài comment (trừ TopBar/KeyHint/ScenarioPanel)', () => {
+  it('src/screens và src/components không hiện "Màn N" ngoài comment', () => {
     const violations = []
     for (const file of allFiles) {
-      const base = file.split(/[\\/]/).pop()
-      if (SCREEN_REF_EXEMPT_FILES.includes(base)) continue
       for (const { text, num, rel } of getLines(file)) {
         const trimmed = text.trimStart()
         if (trimmed.startsWith('//') || trimmed.startsWith('*') || trimmed.startsWith('/*')) continue
@@ -235,5 +232,40 @@ describe('Quy tắc 8 — tương phản chữ', () => {
       }
     }
     expect(violations, violations.join('\n')).toHaveLength(0)
+  })
+})
+
+// ─── 9. Token tầng và token Techcombank đúng chỗ (docs/san-pham.md K.2, K.3 — Vòng 21) ──
+// K.3 mục 1: đỏ thương hiệu Techcombank chỉ ở vạch khung trang Techcombank → mọi token
+// tcb-* (và mã màu gốc của chúng) chỉ được dùng trong SurfaceFrame (variant bank).
+// K.2: nền tầng chỉ ở dải tiêu đề trang và mục điều hướng đang chọn — không dùng cho thẻ
+// đơn vị (trạng thái chỉ qua StatusBadge) → token tier*-* chỉ trong các file đã duyệt.
+// Mở rộng allowlist có ý thức khi dựng dải tiêu đề trang (Vòng 22+), không nới luật.
+const TCB_TOKEN_RE = /\btcb-(?:bar|on-bar|stripe|gold)\b|--color-tcb-|#(?:E3262B|D4AF37|141414)\b/i
+const TCB_ALLOWED_FILES = ['SurfaceFrame.jsx']
+const TIER_TOKEN_RE = /\btier[123]-(?:bg|fg)\b/
+const TIER_ALLOWED_FILES = ['AppShell.jsx']
+describe('Quy tắc 9 — token Techcombank và token tầng đúng chỗ', () => {
+  it('token tcb-* chỉ trong SurfaceFrame; token tier*-* chỉ trong file đã duyệt', () => {
+    const violations = []
+    for (const file of allFiles) {
+      const base = file.split(/[\\/]/).pop()
+      for (const { text, num, rel } of getLines(file)) {
+        const trimmed = text.trimStart()
+        if (trimmed.startsWith('//') || trimmed.startsWith('*')) continue
+        if (TCB_TOKEN_RE.test(text) && !TCB_ALLOWED_FILES.includes(base))
+          violations.push(`${rel}:${num} — token Techcombank ngoài SurfaceFrame: "${text.trim().slice(0, 100)}"`)
+        if (TIER_TOKEN_RE.test(text) && !TIER_ALLOWED_FILES.includes(base))
+          violations.push(`${rel}:${num} — token tầng ngoài file đã duyệt: "${text.trim().slice(0, 100)}"`)
+      }
+    }
+    expect(violations, violations.join('\n')).toHaveLength(0)
+  })
+
+  it('SurfaceFrame chỉ dùng token tcb-* trong nhánh variant bank', () => {
+    const content = readFileSync(join(COMPONENTS_DIR, 'ui', 'SurfaceFrame.jsx'), 'utf-8')
+    const bankOps = content.slice(content.indexOf("variant === 'bankOps'"), content.indexOf('return (', content.indexOf("variant === 'bankOps'") + 1) + 1)
+    const [platform, tech] = [/platform:\s*{[^}]*}/.exec(content)?.[0] ?? '', /tech:\s*{[^}]*}/.exec(content)?.[0] ?? '']
+    for (const part of [platform, tech, bankOps]) expect(TCB_TOKEN_RE.test(part)).toBe(false)
   })
 })

@@ -1,112 +1,48 @@
-import { useEffect } from 'react'
-import { useJourneyState } from './state/journeyState.js'
-import { PermissionProvider, usePermissions } from './state/permissionState.jsx'
-import { ScenarioProvider, useScenario } from './state/scenarioState.jsx'
-import { SettlementProvider, useSettlement } from './state/settlementState.jsx'
-import { isTypingTarget } from './utils/keyboard.js'
-import Stage from './components/ui/Stage.jsx'
+import { useEffect, useState } from 'react'
+import { AppStateProvider, useApp } from './state/appState.jsx'
+import { PermissionProvider } from './state/permissionState.jsx'
+import { SettlementProvider } from './state/settlementState.jsx'
+import { useHashRoute } from './utils/route.js'
+import AppShell from './components/ui/AppShell.jsx'
+import KeyHint from './components/ui/KeyHint.jsx'
 import ScenarioPanel from './components/ScenarioPanel.jsx'
-import Screen1 from './screens/Screen1.jsx'
-import Screen2 from './screens/Screen2.jsx'
-import Screen3 from './screens/Screen3.jsx'
-import Screen4 from './screens/Screen4.jsx'
-import Screen5 from './screens/Screen5.jsx'
-import Screen6 from './screens/Screen6.jsx'
-import Screen7 from './screens/Screen7.jsx'
-import Screen8 from './screens/Screen8.jsx'
-import Screen10 from './screens/Screen10.jsx'
-
-const SCREEN_COMPONENTS = {
-  1: Screen1,
-  2: Screen2,
-  3: Screen3,
-  4: Screen4,
-  5: Screen5,
-  6: Screen6,
-  7: Screen7,
-  8: Screen8,
-  10: Screen10,
-}
+import LegacyScreen from './components/LegacyScreen.jsx'
 
 export default function App() {
   return (
-    <ScenarioProvider>
-      <SettlementProvider>
-        <AppWithPermissions />
-      </SettlementProvider>
-    </ScenarioProvider>
+    <AppStateProvider>
+      <PermissionProvider>
+        <SettlementProvider>
+          <AppRoutes />
+        </SettlementProvider>
+      </PermissionProvider>
+    </AppStateProvider>
   )
 }
 
-// Quyền A4 và nhật ký truy cập (Màn 7) phản ánh tiến trình tất toán (Màn 6) —
-// PermissionProvider cần đọc settlementState nên lồng bên trong SettlementProvider.
-function AppWithPermissions() {
-  const settlement = useSettlement()
-  return (
-    <PermissionProvider debtFullyRepaid={settlement.debtFullyRepaid} visibleLogDates={settlement.visibleLogDates}>
-      <AppScreens />
-    </PermissionProvider>
-  )
-}
+function AppRoutes() {
+  const { state, dispatch, resetSignal } = useApp()
+  const route = useHashRoute(state.role)
+  const [helpOpen, setHelpOpen] = useState(false)
 
-function AppScreens() {
-  const { isPeeking, closePeek, reset } = usePermissions()
-  const { phase3, toggleMegaSale, toggleLeak, togglePhase3, resetScenario } = useScenario()
-  const journey = useJourneyState(phase3)
-  const { currentScreen, goNext, goPrev, goToScreen } = journey
-  const settlement = useSettlement()
-
-  function handleReset() {
-    reset()
-    resetScenario()
-    settlement.reset()
-    journey.reset()
-  }
-
+  // Ghi nhận trang đã mở tại ngày mô phỏng hiện tại (nhiệm vụ 2 và 5, san-pham.md D.2)
   useEffect(() => {
-    function handleKeyDown(event) {
-      if (isTypingTarget(event.target)) return
-      const key = event.key.toLowerCase()
-      if (key === 'r') {
-        handleReset()
-        return
-      }
-      if (key === 'm') {
-        toggleMegaSale()
-        return
-      }
-      if (key === 'l') {
-        toggleLeak()
-        return
-      }
-      if (event.key === '3') {
-        togglePhase3()
-        return
-      }
-      if (event.key === ' ' && currentScreen === 6) {
-        event.preventDefault()
-        settlement.advance()
-        return
-      }
-      if (isPeeking) return
-      if (event.key === 'ArrowRight') goNext()
-      if (event.key === 'ArrowLeft') goPrev()
-    }
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [goNext, goPrev, isPeeking, currentScreen, settlement, toggleMegaSale, toggleLeak, togglePhase3])
+    dispatch({ type: 'visit', key: `${state.role}:${route.page}` })
+  }, [dispatch, state.role, route.page, state.eventIndex])
 
-  const CurrentScreen = SCREEN_COMPONENTS[currentScreen]
+  const openHelp = () => setHelpOpen((v) => !v)
+  // Ba mục cổng ngân hàng dùng chung một màn cũ → không remount khi đổi mục
+  const screenKey = route.space === 'ngan-hang' ? 'ngan-hang' : route.href
+
   return (
-    <Stage>
-      <CurrentScreen onNext={goNext} onPrev={goPrev} onGoToScreen={goToScreen} />
-      <ScenarioPanel onReset={handleReset} />
-      {isPeeking && (
-        <div className="fixed inset-0 z-50">
-          <Screen7 onBack={closePeek} onGoToScreen={goToScreen} />
+    <>
+      <AppShell route={route} onHelp={openHelp}>
+        <div data-legacy-screen className="h-full" key={`${screenKey}:${resetSignal}`}>
+          <LegacyScreen route={route} phase3={state.scenario.phase3} />
         </div>
-      )}
-    </Stage>
+      </AppShell>
+      <ScenarioPanel route={route} onHelp={openHelp} />
+      {helpOpen && <KeyHint onClose={() => setHelpOpen(false)} />}
+    </>
   )
 }
