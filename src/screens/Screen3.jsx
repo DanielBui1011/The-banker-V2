@@ -8,6 +8,7 @@ import Drawer from '../components/ui/Drawer.jsx'
 import Callout from '../components/ui/Callout.jsx'
 import Stat from '../components/ui/Stat.jsx'
 import Button from '../components/ui/Button.jsx'
+import StatusBadge from '../components/ui/StatusBadge.jsx'
 import { AlertTriangle } from 'lucide-react'
 import { actForScreen } from '../config/flow.js'
 import { BANK_TRANSACTIONS, FEE_DEVIATIONS, RECONCILIATION_COMPARISON, FOOTER_NOTE } from '../data/mockData.js'
@@ -21,13 +22,10 @@ const STATUS_LABEL = {
   outflow: 'Chi ra',
 }
 
-// Màu trạng thái theo docs/man-hinh.md Màn 3, bảng màu CLAUDE.md.
-const STATUS_STYLE = {
-  matched: 'text-teal-700',
-  exception: 'text-amber-700 font-semibold',
-  reversed: 'text-slate-500',
-  outflow: 'text-slate-400',
-}
+// Ngoại lệ và hoàn lên đầu bảng theo mặc định (Vòng 13) — sort ổn định, giữ
+// nguyên thứ tự tương đối trong từng nhóm.
+const ROW_PRIORITY = { exception: 0, reversed: 1, matched: 2, outflow: 2 }
+const DEFAULT_VISIBLE_ROWS = 8
 
 function formatDateDisplay(isoDate) {
   return `${isoDate.slice(8, 10)}/${isoDate.slice(5, 7)}`
@@ -43,7 +41,7 @@ const COLUMNS = [
   { key: 'date', header: 'Ngày', render: (tx) => formatDateDisplay(tx.date) },
   {
     key: 'amount',
-    header: 'Số tiền',
+    header: 'Số tiền (triệu)',
     align: 'right',
     render: (tx) => (
       <span className={tx.amount >= 0 ? 'text-slate-900' : 'text-slate-500'}>
@@ -58,7 +56,7 @@ const COLUMNS = [
   {
     key: 'status',
     header: 'Trạng thái',
-    render: (tx) => <span className={STATUS_STYLE[tx.status]}>{STATUS_LABEL[tx.status]}</span>,
+    render: (tx) => <StatusBadge status={tx.status} size="sm" />,
   },
   { key: 'matchMethod', header: 'Phương pháp khớp', render: (tx) => tx.matchMethod },
 ]
@@ -67,6 +65,7 @@ export default function Screen3({ onNext }) {
   const [filter, setFilter] = useState('all')
   const [selectedTx, setSelectedTx] = useState(null)
   const [feeDrawerUnit, setFeeDrawerUnit] = useState(null)
+  const [expanded, setExpanded] = useState(false)
 
   const summary = summarizeTransactions(BANK_TRANSACTIONS)
   const total = BANK_TRANSACTIONS.length
@@ -85,6 +84,14 @@ export default function Screen3({ onNext }) {
   ]
 
   const filteredRows = filter === 'all' ? BANK_TRANSACTIONS : BANK_TRANSACTIONS.filter((tx) => tx.status === filter)
+  // Ngoại lệ và hoàn lên đầu, tối đa 8 dòng cho tới khi bấm "Xem tất cả" (Vòng 13).
+  const sortedRows = [...filteredRows].sort((a, b) => ROW_PRIORITY[a.status] - ROW_PRIORITY[b.status])
+  const visibleRows = expanded ? sortedRows : sortedRows.slice(0, DEFAULT_VISIBLE_ROWS)
+
+  function selectFilter(key) {
+    setFilter(key)
+    setExpanded(false)
+  }
 
   return (
     <div className="flex h-full flex-col">
@@ -103,14 +110,31 @@ export default function Screen3({ onNext }) {
                   Giao dịch tài khoản Techcombank được đọc qua quyền A1 và tự động khớp với đơn hàng.
                 </p>
 
-                {/* Con số chủ đạo — trả lời "Đối soát có tự động không?" */}
+                {/* Con số chủ đạo đặt cạnh cặp Trước/Sau (Vòng 13) — trả lời "Đối soát có tự
+                    động không?" và mức tiết kiệm thời gian trong cùng một khối. */}
                 <Card padding="p-8">
-                  <div className="text-label font-medium text-slate-500">Tỷ lệ giao dịch khớp tự động</div>
-                  <span className="mt-2 block text-hero font-bold tabular-nums text-teal-700">
-                    {formatPercentVN(autoMatchRate)}
-                  </span>
-                  <div className="mt-3 text-body text-slate-600">
-                    {summary.matchedCount}/{total} giao dịch tự khớp — không cần tra thủ công
+                  <div className="grid grid-cols-3 gap-8 divide-x divide-slate-200">
+                    <div>
+                      <div className="text-label font-medium text-slate-500">Tỷ lệ giao dịch khớp tự động</div>
+                      <span className="mt-2 block text-hero font-bold tabular-nums text-teal-700">
+                        {formatPercentVN(autoMatchRate)}
+                      </span>
+                      <div className="mt-3 text-label text-slate-600">
+                        {summary.matchedCount}/{total} giao dịch tự khớp
+                      </div>
+                    </div>
+                    <div className="pl-8">
+                      <div className="text-label font-medium text-slate-500">Trước — Thủ công</div>
+                      <div className="mt-2 text-section-title font-bold text-slate-700">
+                        {RECONCILIATION_COMPARISON.beforeHoursPerMonth} giờ/tháng
+                      </div>
+                    </div>
+                    <div className="pl-8">
+                      <div className="text-label font-medium text-teal-700">Sau — Tự động</div>
+                      <div className="mt-2 text-section-title font-bold text-teal-700">
+                        {RECONCILIATION_COMPARISON.afterLabel}
+                      </div>
+                    </div>
                   </div>
                 </Card>
 
@@ -129,7 +153,7 @@ export default function Screen3({ onNext }) {
                     {filters.map((f) => (
                       <button
                         key={f.key}
-                        onClick={() => setFilter(f.key)}
+                        onClick={() => selectFilter(f.key)}
                         className={`rounded-full border px-3 py-1.5 text-label font-medium transition ${
                           filter === f.key
                             ? 'border-navy bg-navy text-white'
@@ -141,15 +165,25 @@ export default function Screen3({ onNext }) {
                     ))}
                   </div>
 
-                  <div className="max-h-[440px] overflow-y-auto p-4">
+                  <div className="p-4">
                     <DataTable
                       columns={COLUMNS}
-                      rows={filteredRows}
+                      rows={visibleRows}
                       rowKey={(tx) => tx.code}
                       onRowClick={(tx) => setSelectedTx(tx)}
                     />
-                    {filteredRows.length === 0 && (
+                    {sortedRows.length === 0 && (
                       <p className="py-6 text-center text-label text-slate-500">Không có giao dịch nào ở bộ lọc này.</p>
+                    )}
+                    {!expanded && sortedRows.length > DEFAULT_VISIBLE_ROWS && (
+                      <div className="flex justify-center pt-3">
+                        <button
+                          onClick={() => setExpanded(true)}
+                          className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-label font-medium text-slate-700 hover:bg-slate-50"
+                        >
+                          Xem tất cả {sortedRows.length}
+                        </button>
+                      </div>
                     )}
                   </div>
                 </Card>
@@ -202,19 +236,6 @@ export default function Screen3({ onNext }) {
                       )
                     })}
                   </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <Card>
-                    <div className="mb-2 text-label font-medium text-slate-500">Trước — Thủ công</div>
-                    <div className="text-section-title font-bold text-slate-700">
-                      {RECONCILIATION_COMPARISON.beforeHoursPerMonth} giờ/tháng
-                    </div>
-                  </Card>
-                  <Card className="border-teal-200 bg-teal-50">
-                    <div className="mb-2 text-label font-medium text-teal-700">Sau — Tự động</div>
-                    <div className="text-section-title font-bold text-teal-700">{RECONCILIATION_COMPARISON.afterLabel}</div>
-                  </Card>
                 </div>
 
                 <div className="flex justify-end">
