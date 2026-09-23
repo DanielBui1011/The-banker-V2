@@ -82,6 +82,7 @@ export default function Screen8({ onNext }) {
   const lockedTierUnits = units.filter((u) => u.lockerCount > 0)
   const availableTierUnits = units.filter((u) => u.lockerCount === 0 && u.availableValue != null)
   const insufficientUnits = units.filter((u) => u.availableValue == null)
+  const availableToLock = availableTierUnits.reduce((sum, u) => sum + u.availableValue, 0)
 
   const totalExposure = units.reduce((sum, u) => sum + u.lockedAmount, 0)
   const baseLenderCount = Math.max(0, ...units.map((u) => u.lockerCount))
@@ -127,6 +128,14 @@ export default function Screen8({ onNext }) {
             </Card>
           ) : (
             <div className="mx-auto max-w-5xl space-y-6">
+              <div>
+                <div className="text-emphasis font-semibold text-slate-900">Ngân hàng thấy gì, và KHÔNG thấy gì?</div>
+                <div className="mt-2 flex items-baseline gap-3">
+                  <Money value={availableToLock} size="hero" className="text-slate-900" />
+                  <span className="text-label text-slate-500">giá trị khả dụng còn lại để khóa</span>
+                </div>
+              </div>
+
               <div className="text-label text-slate-500">
                 Truy cập theo quyền A2 của nhà bán — hiệu lực đến {formatDateVN(A2_PERMISSION.expiryDate)}
               </div>
@@ -182,6 +191,9 @@ export default function Screen8({ onNext }) {
                     <div className="text-emphasis font-semibold tabular-nums text-slate-900">{crossExposureLenderCount}</div>
                   </div>
                 </div>
+                <p className="mt-2 text-label italic text-slate-500">
+                  Danh tính bên khóa được ẩn theo quy chế thành viên.
+                </p>
 
                 {crossExposureOn && (
                   <Callout variant="warn" className="mt-4">
@@ -217,14 +229,14 @@ function LayerGroup({ layer, title, units }) {
         <LayerTag layer={layer} />
         <span className="text-emphasis font-semibold text-slate-900">{title}</span>
       </div>
-      <table className="w-full text-label">
+      <table className="w-full table-fixed text-label">
         <thead>
           <tr className="border-b border-slate-200 text-left text-slate-500">
-            <th className="px-3 py-2 font-medium">Đơn vị</th>
-            <th className="px-3 py-2 font-medium">Giá trị ròng dự phóng</th>
-            <th className="px-3 py-2 font-medium">Giá trị khả dụng</th>
-            <th className="px-3 py-2 font-medium">Đã bị khóa</th>
-            <th className="px-3 py-2 font-medium">Số bên đang khóa</th>
+            <th className="w-24 px-3 py-2 font-medium">Đơn vị</th>
+            <th className="w-48 px-3 py-2 font-medium">Giá trị ròng dự phóng</th>
+            <th className="w-48 px-3 py-2 font-medium">Giá trị khả dụng</th>
+            <th className="w-40 px-3 py-2 font-medium">Đã bị khóa</th>
+            <th className="w-40 px-3 py-2 font-medium">Số bên đang khóa</th>
           </tr>
         </thead>
         <tbody>

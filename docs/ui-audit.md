@@ -79,3 +79,50 @@ vấn đề dưới đây là phần còn lại, không phải toàn bộ hệ t
 - Thấp: 6 (Màn 2 nhãn "Đang kết nối"; Màn 3 không có con số chính — chỉ ghi
   nhận; Màn 10 xác nhận tên giả; ScenarioPanel thang chữ không nhất quán;
   ScenarioPanel màu cam trùng nghĩa Tầng 3; Màn 3 theo dõi)
+
+## Sau Vòng 11
+
+Vòng 11 hoàn tất Màn 8, Màn 10, ScenarioPanel theo `docs/plans/ui-roadmap.md`
+mục 11.1–11.4 và prompt thực thi Vòng 11 (mở rộng hơn roadmap gốc):
+
+- **Màn 8**: thêm con số chính "Giá trị khả dụng còn lại để khóa" (cỡ `hero`)
+  ngay đầu màn, trả lời câu hỏi "Ngân hàng thấy gì, và KHÔNG thấy gì?"; bảng
+  đơn vị trong `LayerGroup` đổi sang `table-fixed` với cột số có bề rộng cố
+  định (đổi mốc 15/09 ↔ 20/09 không còn làm bố cục nhảy); thêm chú thích
+  "Danh tính bên khóa được ẩn theo quy chế thành viên" cạnh khối minh họa
+  phơi nhiễm chéo. Trạng thái trống khi rút A2 đã đạt yêu cầu từ trước, không
+  cần sửa.
+- **Màn 10**: chào giá thấp nhất giờ có nhãn chữ "Lãi thấp nhất" (không chỉ
+  dựa màu — quy tắc bắt buộc mọi trạng thái có nhãn + màu); Chứng thư khóa
+  thêm dòng "Giá trị" (lấy đúng theo chào giá đã chọn, không còn cố định theo
+  Techcombank), "Thứ tự ưu tiên" trình bày nổi bật nhất bằng cỡ chữ lớn hơn
+  hẳn các dòng khác, và thêm "Chuỗi JWS (rút gọn)" hiện trực tiếp (không cần
+  bấm mở) — có ghi chú minh họa, không phải chữ ký thật. Đã xác nhận
+  `LENDER_QUOTES` trong `mockData.js` chỉ dùng tên giả cho bên ngoài
+  Techcombank (Ngân hàng B, Công ty tài chính C) — không có vi phạm.
+- **ScenarioPanel**: mọi gợi ý phím tắt (trong từng công tắc kịch bản và mục
+  "Phím tắt khác") giờ hiện qua component `KeyHint` dùng chung (thêm prop
+  `className` tuỳ chọn để dùng được trên nền tối của panel, mặc định giữ
+  nguyên style sáng cho mọi nơi khác) thay vì chữ/`<span>` viết tay. Đã kiểm
+  tra ở 1920×1080: nút mở panel (góc dưới phải) và nhãn kịch bản đang bật
+  (góc trên phải) không che nội dung chính ở trạng thái mặc định (đóng); khi
+  mở panel, panel che một phần góc phải màn — chấp nhận được vì đây là công
+  cụ của người trình bày, chỉ mở khi chủ động bấm, không phải nội dung trình
+  chiếu chính.
+
+### Rà lại Màn 2–7, 9 (chưa rà từ Vòng 7)
+
+Theo yêu cầu "/impeccable critique toàn bộ 10 màn — chỉ báo cáo, không sửa"
+cuối Vòng 11. Không lặp lại các mục đã "Đã xử lý" ở Vòng 8–10.
+
+| Màn | Vấn đề | Mức | Nguyên tắc vi phạm | Đề xuất |
+|---|---|---|---|---|
+| Màn 4 | `Screen4.jsx:137` — viền thẻ RU-03/RU-04 tô tím (`border-violet-300 ring-1 ring-violet-100`) chỉ dựa vào **mã đơn vị tĩnh** (`isRU0304`), không theo `lifecycle.badge` thực tế. Khi đơn vị đã "Đã tất toán" (teal) hoặc "Đứt gãy" (đỏ, kịch bản rò rỉ phím L) thì viền thẻ vẫn hiện tím, mâu thuẫn trực tiếp với `StatusBadge` màu khác ngay trong cùng thẻ | Cao | DESIGN.md "Ràng buộc khóa #1" — màu ngữ nghĩa cố định, không được gây hiểu nhầm; rủi ro lộ ngay trong demo vì Hồi 4 bấm L để minh họa Màn 9 | Đổi điều kiện viền theo `lifecycle.badge` (chỉ tím khi badge đang ở trạng thái "đã khóa"/"sẽ khóa"), không theo mã đơn vị |
+| Màn 2 | `Screen2.jsx` bước 2d (`HistoryLoading`) dùng `Card`/nút tông tối (`slate-800/900`) ngay sau khi `SurfaceFrame` đã chuyển về `platform` (nền sáng) — ranh giới khung platform/tech hơi mờ trong vài giây chuyển tiếp | Thấp | Nhận diện khung vai trò trong ≤10 giây (tinh thần DESIGN.md mục 5) | Đổi tông khối bước 2d sang sáng khớp nền `platform`, giữ hiệu ứng chuyển tiếp bằng cách khác |
+| Màn 9 | Hai nút "Giải trình tài khoản nhận tiền" và "Trả nợ từ nguồn khác" đều mở cùng một modal `settlement.openLeakExplain` — có chủ đích nhưng dễ bị hiểu là lỗi khi trình chiếu trực tiếp | Thấp | Không phải quy tắc cứng — rủi ro khi trình diễn | Nếu còn thời gian: đổi tiêu đề/nội dung modal theo lựa chọn đã bấm, giữ chung logic xác nhận |
+| Màn 3, 5, 6, 7 | Ổn — không phát hiện vấn đề mới so với Vòng 7 | — | — | — |
+
+**Chuyển tiếp**: mục Cao ở Màn 4 nên xử lý sớm ở **Vòng 12** (trước khi vào
+chế độ trình chiếu, vì va chạm trực tiếp với kịch bản rò rỉ dùng trong Hồi 4).
+Hai mục Thấp (Màn 2, Màn 9) chuyển cho **Vòng 13** (rà soát) nếu còn thời
+gian — không chặn tiến độ trình chiếu.

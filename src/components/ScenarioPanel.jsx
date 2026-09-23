@@ -1,4 +1,7 @@
 import { useScenario } from '../state/scenarioState.jsx'
+import KeyHint from './ui/KeyHint.jsx'
+
+const DARK_KEY_HINT = 'border-slate-600 bg-slate-800 text-slate-200'
 
 // Bảng điều khiển kịch bản — nút tròn góc dưới phải, mặc định ẩn; bấm để mở/đóng.
 // Nhãn kịch bản đang bật hiện ở góc trên phải, trên mọi màn (mount một lần ở App).
@@ -41,16 +44,16 @@ export default function ScenarioPanel({ onReset }) {
           </div>
 
           <div className="space-y-3">
-            <ScenarioToggle label="Mega Sale" hint="Phím M" active={megaSale} onToggle={toggleMegaSale} />
-            <ScenarioToggle label="Rò rỉ" hint="Phím L" active={leak} onToggle={toggleLeak} />
-            <ScenarioToggle label="Giai đoạn 3" hint="Phím 3" active={phase3} onToggle={togglePhase3} />
+            <ScenarioToggle label="Mega Sale" hintKey="M" active={megaSale} onToggle={toggleMegaSale} />
+            <ScenarioToggle label="Rò rỉ" hintKey="L" active={leak} onToggle={toggleLeak} />
+            <ScenarioToggle label="Giai đoạn 3" hintKey="3" active={phase3} onToggle={togglePhase3} />
           </div>
 
           <div className="mt-4 rounded-lg border border-slate-700 bg-slate-800/50 px-4 py-3 text-body text-slate-400">
             <div className="font-semibold text-slate-300 mb-1">Phím tắt khác</div>
-            <div className="flex justify-between"><span>Tiến dòng thời gian (Màn 6)</span><span className="font-mono text-slate-200">Space</span></div>
-            <div className="flex justify-between mt-1"><span>Gửi lại lệnh khóa (Màn 5/8)</span><span className="font-mono text-slate-200">D</span></div>
-            <div className="flex justify-between mt-1"><span>Xem bảng phím đầy đủ</span><span className="font-mono text-slate-200">?</span></div>
+            <div className="flex items-center justify-between"><span>Tiến dòng thời gian (Màn 6)</span><KeyHint label="Space" className={DARK_KEY_HINT} /></div>
+            <div className="mt-1 flex items-center justify-between"><span>Gửi lại lệnh khóa (Màn 5/8)</span><KeyHint label="D" className={DARK_KEY_HINT} /></div>
+            <div className="mt-1 flex items-center justify-between"><span>Xem bảng phím đầy đủ</span><KeyHint label="?" className={DARK_KEY_HINT} /></div>
           </div>
 
           <button
@@ -65,12 +68,12 @@ export default function ScenarioPanel({ onReset }) {
   )
 }
 
-function ScenarioToggle({ label, hint, active, onToggle, locked = false }) {
+function ScenarioToggle({ label, hintKey, active, onToggle, locked = false }) {
   return (
     <div className="flex items-center justify-between rounded-lg border border-slate-800 bg-slate-950/40 px-3 py-2.5">
-      <div>
+      <div className="flex items-center gap-2">
         <div className={`text-body font-medium ${locked ? 'text-slate-500' : 'text-slate-200'}`}>{label}</div>
-        <div className="text-label text-slate-500">{hint}</div>
+        <KeyHint label={hintKey} className={DARK_KEY_HINT} />
       </div>
       {locked ? (
         <span className="text-emphasis text-slate-600" aria-label="Đã khóa">
