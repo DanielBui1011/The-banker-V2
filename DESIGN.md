@@ -1,5 +1,53 @@
 # DESIGN.md — Hệ thống thiết kế (rút ra từ code, Vòng 7)
 
+> **Vòng 20 — đã duyệt, áp dụng từ Vòng 21.** Phần "Vòng 20" ngay dưới đây thay các mục
+> tương ứng ở bản Vòng 7 (đánh dấu ~~gạch ngang~~ ở phần Ràng buộc khóa). Chi tiết: 
+> `docs/san-pham.md` mục K (màu), K.5 (chữ, bố cục), L (chuyển động); xem trực quan ở
+> `docs/palette.html`. Phần còn lại của file vẫn là ảnh chụp code hiện có cho tới khi Vòng 21
+> chuyển xong.
+
+## Vòng 20 — Hệ màu Hướng B, laptop, chuyển động
+
+**Bối cảnh:** giám khảo tự dùng app trên laptop (1366×768, 1536×864, 1920×1080), không còn
+máy chiếu 1920×1080 co giãn.
+
+**Màu — Hướng B cho cả 4 mẫu trong `palette.html`** (thẻ Tổng quan, đầu trang A1, dãy
+StatusBadge, nút):
+| Vai trò | Màu |
+|---|---|
+| Nền app nhà bán (ngà) | `#FBF8F2`; thẻ `#FFFFFF`, viền `#E4DED2` |
+| Chữ chính / phụ | `#1A1D24` / `#545B69` |
+| Màu chính Nền tảng — cobalt (nút chính, liên kết, trang đang chọn) | `#1E47C8`; nền nhấn `#EEF2FC` |
+| Nút vô hiệu | nền `#ECE8E0`, chữ `#545B69` (5,58:1), luôn kèm dòng lý do + đường dẫn |
+| Nền Tầng 1 / 2 / 3 (dải tiêu đề trang + mục điều hướng đang chọn) | `#E6F4F1`/`#0F766E` · `#F1ECFD`/`#6D28D9` · `#FFF1E6`/`#9A3412` |
+| Khung trang Techcombank (xấp xỉ, luôn có chữ "Mô phỏng") | thanh `#141414` + chữ `#F4F1EA`; "Mô phỏng" `#B8BEC9`; vạch đỏ 4px `#E3262B` (không mang chữ); vàng kim `#D4AF37` (vạch 48×3px + chữ "Techcombank" trên nền đen, không làm chữ trên nền trắng); nút chính `#141414` |
+| Bên cho vay khác (Ngân hàng B, CTTC C) | khung `bank` trung tính, không mượn màu ngân hàng thật |
+| Cổng nội bộ ngân hàng (`bankOps`) | thanh bên trái `#141414` (thay `slate-700`); không đỏ, không vàng kim |
+| Đứt gãy | badge đỏ đặc `#B91C1C` + chữ trắng + icon X — khác vạch thương hiệu về hình, độ đậm, sắc |
+
+Luật: đỏ `#E3262B` chỉ ở vạch khung Techcombank; nền Tầng không dùng cho thẻ đơn vị (trạng
+thái chỉ qua `StatusBadge`); mọi cặp chữ/nền ≥ 4,5:1; ý nghĩa màu trạng thái giữ nguyên
+(quy-tac, `src/ui/status.js`). Token (Vòng 21): `--color-app-bg`, `--color-app-surface`,
+`--color-ink`, `--color-ink-muted`, `--color-line`, `--color-primary`, `--color-primary-soft`,
+`--color-tier{1,2,3}-bg/fg`, `--color-tcb-bar`, `--color-tcb-on-bar`, `--color-tcb-stripe`,
+`--color-tcb-gold`; `navy` thành bí danh `--color-primary`.
+
+**Chữ và bố cục (thay thang máy chiếu):** bỏ `Stage` co giãn; px thật, rộng tối thiểu 1280,
+không cuộn ngang ở 1366×768; nhãn 16px (sàn), thân 18px, nhấn 20px, tiêu đề trang 28px, con
+số chính 48px; 1920×1080 giới hạn nội dung 1440px, căn giữa.
+
+**Điều hướng:** thanh điều hướng trái 6 trang; **danh sách nhiệm vụ ở cuối thanh điều hướng
+trái** (không nổi đè); thanh trên: `DISPLAY_NAME` ("[TÊN APP]"), "Đối tác: Techcombank", ngày
+mô phỏng, nút "?".
+
+**Chuyển động (thay ràng buộc khóa #5):** token `--dur-fast` 150ms, `--dur-standard` 200ms,
+`--dur-slow` 300ms, `--dur-handoff` 700ms (chỉ màn chuyển tiếp sang/về trang Techcombank);
+`--ease-out`, `--ease-in`, `--ease-standard`. Không hiệu ứng nào > 400ms trừ handoff; không
+bounce/elastic; không chạy số. CSS + View Transitions API, không thư viện;
+`prefers-reduced-motion` → hiện ngay, bỏ màn chuyển tiếp.
+
+---
+
 Tài liệu này mô tả ĐÚNG những gì đang tồn tại trong code tại thời điểm Vòng 7
 (nhánh `vong-7-ui-audit`). Không phải đề xuất — là ảnh chụp thực tế của
 `tailwind.config.js`, `src/components/ui/*`, `src/ui/status.js`, `src/config/brand.js`
@@ -128,16 +176,18 @@ chiếu 1920×1080 > ít code (CLAUDE.md mục "Quy ước plugin").
 2. **Ba khung vai trò phải phân biệt rõ bằng thị giác**:
    (a) ứng dụng Nền tảng (nhà bán) — nền `slate-50`, không dải nhận diện;
    (b) trang Techcombank — nền sáng riêng, LUÔN có dải "Bạn đang ở trang của
-   Techcombank"; KHÔNG dùng đỏ làm màu thương hiệu Techcombank (đỏ đã có nghĩa
+   Techcombank"; ~~KHÔNG dùng đỏ làm màu thương hiệu Techcombank (đỏ đã có nghĩa
    "đứt gãy" trong hệ thống — `SurfaceFrame variant="bank"` hiện dùng
-   `slate-800`, đúng quy tắc, phải giữ nguyên);
+   `slate-800`, đúng quy tắc, phải giữ nguyên)~~ — **thay bởi Vòng 19/20**: thanh
+   `#141414` + vạch đỏ 4px + vàng kim + chữ "Mô phỏng" (xem mục Vòng 20 ở đầu file);
    (c) bảng điều khiển nội bộ ngân hàng (Màn 8, `variant="bankOps"`) — giao
    diện khác hẳn hai khung kia (Vòng 8: thanh điều hướng dọc bên trái
-   `bg-slate-700` + icon `Landmark`, không phải strip ngang như `bank`, không
-   dùng đỏ/navy/`slate-800`). Chỉ thay đổi 3 khung này qua `SurfaceFrame`,
+   ~~`bg-slate-700`~~ `#141414` (Vòng 20) + icon `Landmark`, không phải strip ngang như `bank`, không
+   dùng đỏ/vàng kim/màu chính Nền tảng). Chỉ thay đổi 3 khung này qua `SurfaceFrame`,
    không tạo khung rời trong từng màn.
 
-3. **Thang chữ cho máy chiếu 1920×1080**: thân chữ khuyến nghị 20px
+3. **Thang chữ** — ~~cho máy chiếu 1920×1080~~ **thay bởi Vòng 19/20** (thang laptop ở mục
+   Vòng 20 đầu file; đoạn dưới giữ làm lịch sử): thân chữ khuyến nghị 20px
    (`text-body`), tối thiểu 16px (`text-label`, theo CLAUDE.md). Tiêu đề màn
    tối thiểu 32px (`text-section-title`) — cao hơn mức tối thiểu 24px của
    CLAUDE.md vì đây là khuyến nghị mới cho trình chiếu; `text-screen-title`
@@ -157,7 +207,9 @@ chiếu 1920×1080 > ít code (CLAUDE.md mục "Quy ước plugin").
      mặc định không đảm bảo phủ đủ dấu) và tốn công đóng gói thêm; không có lý
      do để đổi trong phạm vi vòng 7-11.
 
-5. **Chuyển động**: CHỈ dùng để thể hiện đổi trạng thái đơn vị khoản phải thu
+5. **Chuyển động** — ~~chỉ để thể hiện đổi trạng thái đơn vị, ≤300ms, viền ≤800ms~~
+   **thay bởi Vòng 19/20** (token và luật ở mục Vòng 20 đầu file; giữ: tôn trọng
+   `prefers-reduced-motion`, không bounce/elastic). Đoạn cũ giữ làm lịch sử: CHỈ dùng để thể hiện đổi trạng thái đơn vị khoản phải thu
    (vd. Đã khóa → Đã tất toán, hay hiệu ứng luồng OAuth ở Màn 2/terminal). Phải
    tôn trọng `prefers-reduced-motion` — đã có `@media (prefers-reduced-motion:
    reduce)` toàn cục trong `src/index.css` (rút animation/transition về 0.01ms),

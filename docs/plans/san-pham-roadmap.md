@@ -4,10 +4,11 @@ Dựa trên `docs/san-pham.md` và `docs/hanh-trinh.md` (Vòng 19). Thay
 `docs/plans/ui-roadmap.md` (Vòng 8–11, đã xong) làm kế hoạch chính thức sau khi người
 dùng duyệt Vòng 19.
 
-Điều kiện trước Vòng 20: người dùng duyệt các đề xuất sửa `AGENTS.md`, `DESIGN.md`,
-`docs/ban-giao.md`, `PRODUCT.md`, `CLAUDE.md` và trả lời 4 câu hỏi mở cuối
-`docs/san-pham.md` — đặc biệt câu 1 (quy-tac mục 7), vì nó chặn phần khung Techcombank
-ở Vòng 21.
+Điều kiện trước Vòng 20: **đã xong** — người dùng trả lời 4 câu hỏi mở và duyệt các quyết định ở
+Vòng 20 (`docs/san-pham.md` mục "Quyết định Vòng 20"; quy-tac mục 7 đã sửa).
+
+Cập nhật ở Vòng 20 theo prompt người dùng: Vòng 20 chỉ chốt tài liệu + lõi logic, **không** sửa
+`src/screens`, `src/components`; phần nối reducer vào giao diện dời sang Vòng 21.
 
 Luật chung mọi vòng: một vòng = một nhánh `vong-NN-…` từ main mới nhất = một PR;
 `npm run build` và `npm test` pass, dán kết quả thật; test T1–T10 và
@@ -20,55 +21,54 @@ khung mới, không để nhánh gãy giữa chừng.
 
 ---
 
-## Vòng 20 — Trạng thái miền và logic hành trình (không đổi giao diện)
+## Vòng 20 — Chốt thiết kế + lõi logic sản phẩm (không đổi giao diện) — **xong**
 
 **Phạm vi**
-- Hàm thuần mới: `simDate`, `unitStatus`, `activeUnits`, `loan`, `fundingFrozen`,
-  `accessLog`, `bankView`, `tasks`, `availability`, `nextStep`, chuỗi sự kiện E0–E5
-  (`docs/san-pham.md` mục E.1, F, G, D.2, D.3).
-- Reducer duy nhất + lưu `localStorage` (khóa `ddva-app-v1`, `try/catch`, sai phiên bản →
-  khởi đầu).
-- Nối các màn hiện có vào reducer mới qua lớp tương thích (context cũ đọc từ reducer),
-  sửa 3 lỗi ngầm định: L không xóa sổ khóa (0.4.6), Mega Sale không giải ngân lệch
-  (0.4.5), dư nợ tính từ sổ khóa (0.4.2).
+- Tài liệu: AGENTS.md, DESIGN.md, docs/ban-giao.md, docs/quy-tac.md (mục 7), docs/du-lieu.md
+  (mục 10, 12), docs/san-pham.md, docs/hanh-trinh.md theo walkthrough Vòng 19 + quyết định
+  người dùng (Hướng B cả 4 mẫu, chứng thư dùng chung mã, C khóa 44 + 36, bankOps `#141414`,
+  danh sách nhiệm vụ ở cuối thanh điều hướng trái, `DISPLAY_NAME` = "[TÊN APP]").
+- `src/logic/journey.js` (TDD): reducer + action, chuỗi sự kiện E0–E5, selector `simDate`,
+  `unitStatus`, `activeUnits`, `loan`, `fundingFrozen`, `accessLog`, `bankView`, `tasks`,
+  `availability`, `nextStep`; `loadState`/`saveState` (khóa `ddva-app-v1`, try/catch, sai
+  phiên bản → khởi đầu). Dùng lại pricing.js, verification.js, registry.js — không đổi công thức.
 
-**File dự kiến**
-- Mới: `src/logic/journey.js`, `src/logic/journey.test.js`, `src/state/appState.jsx`.
-- Sửa: `src/state/permissionState.jsx`, `src/state/settlementState.jsx`,
-  `src/state/scenarioState.jsx` (thành lớp mỏng đọc `appState`), `src/App.jsx`.
-- Không đụng: `src/logic/pricing.js`, `verification.js`, `registry.js`,
-  `src/data/mockData.js` (chỉ thêm chuỗi sự kiện nếu cần, số lấy từ du-lieu).
+**File**: mới `src/logic/journey.js`, `src/logic/journey.test.js`; sửa `src/config/brand.js`
+(`DISPLAY_NAME`) và tài liệu. Không đụng `src/screens`, `src/components`, `src/state`.
 
 **Tiêu chí chấp nhận**
-- Test cho từng selector: 01/08 chưa A1 → không tua được; A1 → tua tới 15/09; 15/09 chưa
-  giải ngân → không tua được, lý do đúng câu mục G; giải ngân → dư nợ 85; trả RU-03 →
-  38,25; trả RU-04 → 0, A4 chấm dứt; Đổi tài khoản → 24/09 RU-03 đứt gãy, điểm Shopee 58;
-  Mùa cao điểm → Ký A4 vô hiệu; mọi `availability` trả `reason` + `fix` khi `ok = false`.
-- Test "không ngõ cụt": duyệt mọi trạng thái đạt được bằng các hành động hợp lệ (BFS trên
-  reducer, giới hạn độ sâu) → mỗi trạng thái có ≥ 1 hành động `ok` ngoài "Bắt đầu lại".
-- Tải lại trang giữ nguyên tiến trình; `localStorage` bị chặn → app vẫn chạy.
-- T1–T10 pass; build pass.
+- Mỗi selector có test; mỗi dòng G.1, G.2, G.3 có trường hợp vô hiệu kiểm cả `reason` và `fix`.
+- Hành trình 1: dư nợ 85 → 38,25 → 0. Hành trình 2: RU-03 đứt gãy 24/09, `fundingFrozen`, sổ
+  khóa không bị xóa. Giai đoạn 3 chọn C: khóa 44 + 36.
+- Không ngõ cụt: BFS trên reducer (độ sâu 14) — mọi đường dẫn sửa lỗi trỏ tới hành động bấm được.
+- localStorage hỏng / sai phiên bản / bị chặn → khởi đầu. T1–T10 pass; build pass.
 
 ---
 
-## Vòng 21 — Khung app, điều hướng, hệ màu Hướng B, token chuyển động
+## Vòng 21 — Nối reducer, khung app, điều hướng, hệ màu Hướng B, token chuyển động
 
 **Phạm vi**
+- (Dời từ Vòng 20) Nối các màn hiện có vào reducer `journey.js` qua `src/state/appState.jsx`
+  (context cũ thành lớp mỏng đọc `appState`), lưu `localStorage`; sửa 3 lỗi ngầm định trên giao
+  diện: L không xóa sổ khóa (0.4.6), Mùa cao điểm không giải ngân lệch (0.4.5), dư nợ tính từ
+  sổ khóa (0.4.2). Tải lại trang giữ nguyên tiến trình; `localStorage` bị chặn → app vẫn chạy.
 - Bỏ `Stage` co giãn; bố cục theo px thật, rộng tối thiểu 1280 (`san-pham.md` K.5).
 - Khung app nhà bán: thanh điều hướng trái 6 trang, thanh trên (tên, "Đối tác:
   Techcombank", ngày mô phỏng, nút "?"), chân trang. Điều hướng bằng URL hash.
 - Token màu Hướng B và token chuyển động (K.4, L.1) vào `tailwind.config.js` +
   `src/index.css`; `navy` thành bí danh `--color-primary`.
-- `SurfaceFrame variant="bank"`: thanh đen + vạch đỏ + vàng kim **chỉ khi** quy-tac mục 7
-  đã được sửa; nếu chưa, giữ `slate-800`.
+- `SurfaceFrame variant="bank"`: thanh `#141414` + vạch đỏ 4px + vàng kim + chữ "Mô phỏng"
+  (quy-tac mục 7 đã sửa ở Vòng 20); biến thể trung tính cho Ngân hàng B / CTTC C. `bankOps`:
+  thanh bên `#141414`.
 - Màn chuyển tiếp ngân hàng 700ms; chuyển trang View Transitions 200ms;
   `prefers-reduced-motion`.
 - Bỏ `ActProgress`, `flow.js`, `journeyState.js`, nhãn "Màn X", mũi tên ← / →.
 
 **File dự kiến**
-- Mới: `src/components/ui/AppShell.jsx`, `src/components/ui/BankHandoff.jsx`,
+- Mới: `src/state/appState.jsx`, `src/components/ui/AppShell.jsx`, `src/components/ui/BankHandoff.jsx`,
   `src/utils/route.js`.
-- Sửa: `tailwind.config.js`, `src/index.css`, `src/components/ui/SurfaceFrame.jsx`,
+- Sửa: `src/state/permissionState.jsx`, `settlementState.jsx`, `scenarioState.jsx`,
+  `tailwind.config.js`, `src/index.css`, `src/components/ui/SurfaceFrame.jsx`,
   `src/components/ui/TopBar.jsx`, `src/App.jsx`, `src/ui/status.js` (chỉ `broken` →
   nền đặc), `src/components/ui/StatusBadge.jsx`, `tests/quy-tac.test.js` (cập nhật quét
   cho token mới, **không nới** luật màu ngữ nghĩa).
@@ -164,8 +164,8 @@ khung mới, không để nhánh gãy giữa chừng.
   khác, đóng băng/mở lại.
 - Mùa cao điểm: RU-M1/RU-M2, 73% → 219 → 150, Ký A4 vô hiệu có lý do.
 - Giai đoạn 3 (thay Màn 10): chọn bên nhận, 3 chào giá, ký với bên được chọn, ghi sổ khóa;
-  khung `bank` trung tính cho Ngân hàng B / Công ty tài chính C; xử lý theo câu trả lời
-  câu hỏi mở 2.
+  khung `bank` trung tính cho Ngân hàng B / Công ty tài chính C; chứng thư dùng chung mã
+  `LOCK-2027-0915-00318`; chọn C khóa RU-03 44 + RU-04 36 (đã có trong `journey.js`).
 - Cổng nội bộ: Danh mục khóa, Cảnh báo, phím D, phơi nhiễm chéo T3 — đọc sổ khóa theo
   ngày.
 
@@ -185,7 +185,7 @@ khung mới, không để nhánh gãy giữa chừng.
 ## Vòng 26 — Hướng dẫn 5 lớp, kiểm thử người lạ, đóng gói
 
 **Phạm vi**
-- Màn chào, danh sách nhiệm vụ (5 + 2), thẻ Bước tiếp theo trên mọi trang, chú giải thuật
+- Màn chào, danh sách nhiệm vụ (5 + 2) ở cuối thanh điều hướng trái (không nổi đè), thẻ Bước tiếp theo trên mọi trang, chú giải thuật
   ngữ tại chỗ (popover, bàn phím dùng được), nút "?" và ngăn Hướng dẫn.
 - Kiểm thử với 3 người chưa từng xem: tự làm 5 nhiệm vụ không được giúp, ghi thời gian và
   chỗ vấp; sửa những chỗ vấp nằm trong phạm vi.

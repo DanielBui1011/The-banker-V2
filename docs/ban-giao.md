@@ -74,6 +74,9 @@ bằng ảnh chụp. Việc đầu tiên trong Antigravity là Vòng 15 — đ�
 | 13 | Màn 1 (tách 2 chỉ số), 2a (bỏ CTTC C), 2c (chữ terminal ≥16px, refresh_token), 2d (màn hoàn tất có kết quả), 3 (bảng không cuộn lồng, StatusBadge, Trước/Sau cạnh con số chính, xử lý "Dưới 1 giờ"), 7 (thẻ, nhật ký, khối "Dữ liệu của tôi") |
 | 14 | Màn 4 (chú giải bằng StatusBadge, tổng 100 lên đầu, RU-06 dòng mảnh, nút Đóng Drawer), 5b (một thanh xếp chồng + bảng phép tính + dòng kiểm tra trần), 8 (tiêu đề, lưới, con số chính 85 phơi nhiễm, khối Thấy/Không thấy, cột tiền căn phải) |
 | 17 | Màn 4 tái cấu trúc 4 vùng A–D (câu dẫn, sẵn sàng làm tài sản bảo đảm, vì sao tin được, chưa dùng được); vệt vòng đời 4 chấm trong thẻ (LifecycleTrail); màu trạng thái: Đã xác thực = teal viền, Đã tất toán = teal đặc, Đủ điều kiện ứng vốn dùng navy thay violet; phím M đưa RU-M1/M2 vào vùng B; thêm computeMatchRate (98,3%). Ảnh: docs/shots/v17/ |
+| 18 | Màn 8: thanh bên bấm được (Tra cứu / Danh mục khóa / Cảnh báo), sửa hiển thị Tra cứu |
+| 19 | Chuyển hướng sản phẩm: từ prototype trình chiếu sang **app tự dùng trên laptop**. Chỉ tài liệu: docs/san-pham.md (vai, kiến trúc thông tin, bảng Mô phỏng, hướng dẫn 5 lớp, chuỗi sự kiện E0–E5, mô hình trạng thái, ràng buộc luồng, thuật ngữ, hệ màu, chuyển động), docs/hanh-trinh.md (3 hành trình), docs/palette.html, docs/plans/san-pham-roadmap.md (Vòng 20–26) |
+| 20 | Chốt thiết kế (Hướng B cả 4 mẫu, sửa quy-tac mục 7, chứng thư dùng chung mã, chào giá C khóa 44 + 36, bankOps `#141414`, danh sách nhiệm vụ ở cuối thanh điều hướng trái, `DISPLAY_NAME` = "[TÊN APP]") + lõi logic `src/logic/journey.js` (reducer, E0–E5, 10 selector, `availability`, localStorage) theo TDD, 98 test. Không sửa src/screens, src/components |
 
 ## 5. Quyết định đã chốt — KHÔNG tự ý đảo
 
@@ -81,10 +84,13 @@ bằng ảnh chụp. Việc đầu tiên trong Antigravity là Vòng 15 — đ�
 |---|---|
 | Tiền lãi hiển thị "140 nghìn đồng", không "0,14 triệu" | Dễ đọc hơn và giữ thông điệp "rẻ" |
 | Không tween (chạy số) khi dư nợ đổi 85 → 38,25 → 0 | Số trung gian nhấp nháy trên màn tài chính dễ bị đọc nhầm |
-| Đỏ chỉ dùng cho "đứt gãy" (Màn 9) | Là cú sốc thị giác duy nhất; trần dư nợ vẽ slate nét đứt |
+| Đỏ chỉ dùng cho "đứt gãy" (Màn 9) — Vòng 20 bổ sung: ngoại lệ duy nhất là vạch đỏ 4px không mang chữ trên khung trang Techcombank; đứt gãy dùng badge đỏ đặc `#B91C1C` | Là cú sốc thị giác duy nhất; trần dư nợ vẽ slate nét đứt |
 | Thanh doanh thu Màn 1: sàn navy/slate đậm, ngoài sàn slate nhạt | Teal là màu của Tầng 1/tất toán |
 | Thẻ sai lệch phí RU-01 (Màn 3) màu trung tính + icon cảnh báo | Amber = tất toán thiếu; RU-01 thực tế đã tất toán |
-| Trang Techcombank không dùng đỏ làm màu thương hiệu, dải nhận diện slate-800 | Đỏ đã có nghĩa đứt gãy |
+| ~~Trang Techcombank không dùng đỏ làm màu thương hiệu, dải nhận diện slate-800~~ — **thay bởi Vòng 19** (duyệt Vòng 20): thanh `#141414` + vạch đỏ 4px + vàng kim, luôn kèm "Mô phỏng"; quy-tac mục 7 đã sửa | ~~Đỏ đã có nghĩa đứt gãy~~ → vạch khác badge đứt gãy về hình, độ đậm, sắc (san-pham.md K.3) |
+| ~~Chuyển động chỉ để thể hiện đổi trạng thái đơn vị khoản phải thu; transition ≤300ms, viền nổi ≤800ms~~ — **thay bởi Vòng 19**: chuyển động báo "vừa đi đâu, việc gì vừa xong"; token 150/200/300ms, trần 400ms, riêng màn chuyển tiếp ngân hàng 700ms (san-pham.md mục L) | ~~Trình chiếu có người dẫn~~ → người dùng tự thao tác cần biết mình vừa chuyển bề mặt |
+| ~~Thang chữ máy chiếu: thân 20px, tiêu đề màn 44px, con số chính 64px; `Stage` co giãn 1920×1080~~ — **thay bởi Vòng 19**: px thật cho laptop, thân 18px, tiêu đề trang 28px, con số chính 48px, sàn 16px (san-pham.md K.5) | ~~Đọc từ cuối phòng~~ → ở 1366×768 sân khấu co giãn làm chữ 16px còn 11px |
+| ~~Điều hướng tuyến tính 1 → 2 → 7 → 3 → 4 → 5 → 6 → 8 (→ 10), mũi tên ← / →~~ — **thay bởi Vòng 19**: thanh điều hướng trái 6 trang + URL hash + ràng buộc luồng `availability` (san-pham.md mục B, F, G) | ~~Kịch bản 3 phút cố định~~ → người dùng tự khám phá theo thứ tự bất kỳ |
 | Khung bankOps phân biệt bằng BỐ CỤC (thanh bên trái), không chỉ màu | Nhận ra từ cuối phòng mà không cần đọc chữ |
 | Màn 8: con số chính = tổng phơi nhiễm 85 triệu; "khả dụng còn lại" là chỉ số phụ | Ngày 15/09 khả dụng còn lại = 0, không thể làm con số chính |
 | Màn 8 không in câu hỏi "Ngân hàng thấy gì…" làm tiêu đề; trả lời bằng khối Thấy/Không thấy | Công cụ nội bộ thật không hiển thị câu hỏi thiết kế |
@@ -96,7 +102,15 @@ bằng ảnh chụp. Việc đầu tiên trong Antigravity là Vòng 15 — đ�
 | Bật M: RU-M1/M2 thay RU-03/04 ở vùng B (300 triệu), không cộng dồn vào 100 | mockData ghi "thay RU-03, RU-04"; giữ câu dẫn nhất quán với số đang hiển thị |
 | Màn 5b: một thanh xếp chồng duy nhất 85 + 8 + 7 = 100, kèm bảng phép tính có đơn vị | Các thanh rời khác tỷ lệ từng gây tràn và khó hiểu |
 | Font Be Vietnam Pro tự host | Đủ dấu tiếng Việt, chạy được bản offline |
-| Kiểm tra ở cả 1920×1080 và 1536×864 | Laptop Windows 125% chỉ còn 1536×864 khi nối máy chiếu |
+| ~~Kiểm tra ở cả 1920×1080 và 1536×864~~ — **thay bởi Vòng 19**: kiểm tra ở 1366×768, 1536×864, 1920×1080 | ~~Laptop Windows 125% chỉ còn 1536×864 khi nối máy chiếu~~ → giám khảo tự mở trên laptop |
+| Hệ màu Hướng B cho cả 4 mẫu trong docs/palette.html (Vòng 20) | App có nhận diện riêng, không trùng trang Techcombank (quy-tac mục 2, 3) |
+| Chứng thư khóa dùng chung mã `LOCK-2027-0915-00318` cho mọi bên cho vay (Vòng 20) | Mã là số thứ tự trong sổ; mỗi phiên chỉ có một lần khóa đầu tiên |
+| Chào giá CTTC C 80 triệu khóa theo tỷ lệ giá trị khả dụng: RU-03 44, RU-04 36 (Vòng 20, du-lieu mục 12) | Giữ tỷ lệ 46,75 : 38,25 của T1 |
+| Thanh bên cổng nội bộ ngân hàng `#141414` (Vòng 20) | Nhận ra "phía Techcombank" mà không mang đỏ/vàng kim |
+| Sau tất toán: "Đã cập nhật sau lô tất toán", không kèm điểm mới (Vòng 20) | du-lieu.md không có điểm sau tất toán |
+| Danh sách nhiệm vụ ở cuối thanh điều hướng trái, không nổi đè (Vòng 20) | Không che nội dung ở 1366×768 |
+| `DISPLAY_NAME` = "[TÊN APP]" (Vòng 20) | Tên sản phẩm chưa chốt |
+| Bật "Đổi tài khoản nhận tiền" không xóa sổ khóa; Mùa cao điểm chỉ minh họa ước tính (không ký A4); tua qua 15/09 cần giải ngân (Vòng 19–20, `src/logic/journey.js`) | Sửa lỗi ngầm định 0.4.5, 0.4.6 trong san-pham.md; không có số cho nhánh không vay |
 
 ## 6. Vòng 15 — Đối chiếu (việc đầu tiên trong Antigravity, CHỈ ĐỌC + CHỤP, không sửa)
 
@@ -142,7 +156,9 @@ CHƯA TỪNG ĐƯỢC SOÁT BẰNG ẢNH — đánh giá kỹ:
 6. Vòng 19 — Đóng gói: đường dẫn Vercel bản chính; `npm run build:offline` (kiểm tra font đã nhúng, không có request mạng khi mở file); video dự phòng quay đủ 3 phút.
 
 Việc tồn sau Vòng 17:
-- Bấm L (rò rỉ) khi đang ở Màn 6 gọi resetProgress làm sổ khóa rỗng (`locksInitialized` = false), nên Màn 4/8 quay về "Đã xác thực" và không còn số khóa trong khi Màn 6 vẫn hiện "Đã khóa". Không phát sinh ở Vòng 17 (cổng cũ giữ nguyên); nên bật L trước khi vào Màn 5 hoặc sửa settlementState.
+- Bấm L (rò rỉ) khi đang ở Màn 6 gọi resetProgress làm sổ khóa rỗng (`locksInitialized` = false), nên Màn 4/8 quay về "Đã xác thực" và không còn số khóa trong khi Màn 6 vẫn hiện "Đã khóa". Không phát sinh ở Vòng 17 (cổng cũ giữ nguyên); nên bật L trước khi vào Màn 5 hoặc sửa settlementState. **Vòng 20:** đã sửa trong logic mới (`journey.js`: bật Đổi tài khoản không đụng sổ khóa, có test); giao diện cũ vẫn lỗi cho tới khi Vòng 21 nối reducer.
+
+Từ Vòng 20, danh sách trên được thay bằng lộ trình docs/plans/san-pham-roadmap.md (Vòng 21–26).
 
 ## 8. Cập nhật ngược vào bản viết đề án (không phải việc của code, người dùng tự làm)
 

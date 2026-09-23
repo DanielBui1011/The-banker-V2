@@ -1,6 +1,7 @@
 # Đặc tả sản phẩm — từ prototype trình chiếu sang app tự dùng (Vòng 19)
 
-Trạng thái: **đề xuất, chờ duyệt**. Vòng 19 chỉ viết tài liệu; chưa sửa `src/`.
+Trạng thái: **đã duyệt ở Vòng 20** (quyết định của người dùng ghi ở mục "Quyết định Vòng 20" cuối file).
+Lõi logic mục E.1, F, G, D.2, D.3 nằm ở `src/logic/journey.js` (có test); giao diện chưa nối.
 
 Bối cảnh mới: giám khảo tự mở app trên **laptop**, không ai giải thích. App phải tự
 dẫn đường, có hướng dẫn tích hợp, màu sắc phong phú hơn và gắn với Techcombank đúng
@@ -111,7 +112,7 @@ chị Lan, và có thể đổi vai bất cứ lúc nào.
 | **Khoản vay** | "Còn nợ bao nhiêu, trả khi nào?" | Dư nợ (85 → 38,25 → 0) | Tầng 2 (khóa) |
 | **Quyền & dữ liệu** | "Ai được xem dữ liệu của tôi?" | Số quyền đang hiệu lực | — |
 
-Thanh trên cùng app: tên hiển thị (`DISPLAY_NAME`), dòng chữ "Đối tác: Techcombank",
+Thanh trên cùng app: tên hiển thị (`DISPLAY_NAME` = "[TÊN APP]", Vòng 20), dòng chữ "Đối tác: Techcombank",
 ngày mô phỏng, nút "?" (hướng dẫn). Chân trang mọi trang: "Giao diện mô phỏng — dữ liệu
 giả định".
 
@@ -193,7 +194,8 @@ Hộp thoại giữa màn, nền app mờ phía sau:
 sách nhiệm vụ thu gọn, thẻ Bước tiếp theo vẫn bật (chúng là một phần sản phẩm).
 
 ### D.2 Danh sách nhiệm vụ
-Ngăn nổi góc dưới trái, thu gọn được thành một nút "Nhiệm vụ 2/5". Tự đánh dấu khi điều
+Đặt ở **cuối thanh điều hướng trái** (không nổi đè lên nội dung — Vòng 20), thu gọn được thành
+một dòng "Nhiệm vụ 2/5". Tự đánh dấu khi điều
 kiện thỏa (suy ra từ state, không phải người dùng tự tích).
 
 | # | Nhiệm vụ | Tự đánh dấu khi |
@@ -281,8 +283,8 @@ mất trải nghiệm tự cấp quyền A1, nên **không đề xuất**.
 Khoản vay tất toán **không** là sự kiện tua: nó xảy ra khi người dùng trả phần cuối
 (trả nợ là hành động của chị Lan trên trang Techcombank, quy-tac mục 2).
 
-Ghi chú dữ liệu: du-lieu mục 10 nói sau tất toán "điểm xác thực cập nhật" nhưng không
-cho số mới → app hiện "Đã cập nhật sau lô tất toán" không kèm số (giống hiện tại).
+Ghi chú dữ liệu (đã chốt Vòng 20): sau tất toán app hiện "Đã cập nhật sau lô tất toán",
+**không** kèm điểm mới (du-lieu mục 10).
 
 ---
 
@@ -314,7 +316,7 @@ mọi đọc/ghi bọc `try/catch`; hỏng hoặc thiếu → trạng thái kh�
   repaid: { 'RU-03': false, 'RU-04': false },
   accountChangeResolved: false,   // đã giải trình + trả từ nguồn khác
   userLog: [/* dòng nhật ký do người dùng tạo: { eventIndex, seq, actor, purpose, data } */],
-  visited: { /* 'seller:khoan-phai-thu': true, 'officer:tra-cuu': true, ... */ },
+  visited: { /* 'seller:khoan-phai-thu': 1, 'officer:tra-cuu': 3 — eventIndex của lần mở gần nhất */ },
   guide: { welcomeDone: false, mode: 'guided' | 'free', checklistOpen: true },
 }
 ```
@@ -405,11 +407,11 @@ Quyết định đi kèm:
   đi tiếp y như Giai đoạn 2 (cùng 85 triệu, 12%/năm). Chọn **Ngân hàng B** (cùng 85 triệu
   nên khóa theo đúng T1: 46,75 + 38,25): dừng ở chứng thư khóa, thẻ kết nêu "Dòng tất toán
   trong mô phỏng chỉ dựng cho Techcombank" + [Chọn lại chào giá] + [Bắt đầu lại]. Chọn
-  **Công ty tài chính C** (80 triệu): du-lieu không cho cách chia 80 giữa RU-03/RU-04 →
-  nút "Ký" vô hiệu, lý do "Mô phỏng chưa có dữ liệu khóa cho chào giá này" + [Chọn lại
-  chào giá], chờ nhóm quyết. Câu hỏi mở: du-lieu mục 12 chỉ cho chứng thư "khi chọn
-  Techcombank"; chứng thư cho B hiện (Màn 10) dùng chung mã và thời điểm — cần nhóm xác
-  nhận hoặc bổ sung.
+  **Công ty tài chính C** (80 triệu): khóa theo tỷ lệ giá trị khả dụng (du-lieu mục 12) —
+  RU-03 = 80 × 46,75 / 85 = 44; RU-04 = 80 × 38,25 / 85 = 36; dừng ở chứng thư như Ngân hàng B.
+  Chứng thư mọi bên dùng chung mã `LOCK-2027-0915-00318` (Vòng 20). "Chọn lại chào giá" sau
+  khi đã ký với B/C gỡ khóa mô phỏng khỏi sổ (tua ngược của mô phỏng, không phải thao tác sổ
+  thật).
 - **Tua cần A1 đang hoạt động**: rút A1 thì Nền tảng không còn dữ liệu để cập nhật; đường
   dẫn "Cấp lại A1" mở trang Techcombank A1.
 - **Bấm Đổi tài khoản nhận tiền không còn xóa sổ khóa** (sửa điểm 0.4.6): tình huống chỉ
@@ -508,7 +510,13 @@ Quyết định đi kèm:
 Xem trực quan: `docs/palette.html` (mở bằng trình duyệt, không cần mạng). Tỷ lệ tương phản
 trên trang đó do script **đo** từ màu tính toán, không gõ tay.
 
-### K.0 Xung đột cần người dùng quyết trước (quan trọng)
+### K.0 Xung đột với quy-tac mục 7 — **đã giải quyết ở Vòng 20**
+Người dùng chọn **Hướng B cho cả 4 mẫu** trong `palette.html` (thẻ Tổng quan, đầu trang A1,
+dãy StatusBadge, nút) và sửa quy-tac mục 7: khung trang Techcombank được dùng màu xấp xỉ
+(thanh đen, vạch đỏ 4px, vàng kim) theo K.2–K.3, luôn kèm chữ "Mô phỏng"; bên cho vay khác
+dùng khung trung tính. Đoạn dưới giữ làm lịch sử.
+
+Nội dung cũ (lịch sử):
 `docs/quy-tac.md` mục 7 viết: "Không dùng logo, bộ nhận diện **hay màu thương hiệu riêng**
 của các đơn vị này." Cả hai hướng dưới đây đều dùng màu Techcombank (dù xấp xỉ) → **trái
 mục 7 nguyên văn**. Vòng 19 dựng cả hai theo yêu cầu, nhưng **không áp vào `src/` cho tới
@@ -524,7 +532,7 @@ vẫn đứng được vì phần nhận diện riêng của app không phụ th
   chỉ là hạ tầng") và mục 3 ("giao diện tách biệt hẳn với Nền tảng"). Ngoài ra đặt thương
   hiệu ngân hàng lên toàn app làm tăng rủi ro mục 7.
 
-### K.2 Hướng B — app có nhận diện riêng (**đề xuất**)
+### K.2 Hướng B — app có nhận diện riêng (**đã chọn, Vòng 20**)
 App nhà bán:
 | Vai trò | Màu | Tương phản đo được |
 |---|---|---|
@@ -571,7 +579,7 @@ Trang Techcombank (xấp xỉ, ghi "Mô phỏng" trên thanh):
    bất kỳ ngân hàng nào.
 7. Cổng nội bộ ngân hàng (`bankOps`) **không** mang đỏ/vàng kim: đó là công cụ nội bộ,
    phân biệt bằng bố cục thanh bên trái (giữ quyết định Vòng 8). Điểm nhấn: thanh bên
-   `#141414` thay `slate-700` để nhận ra là "phía Techcombank" — tùy nhóm duyệt.
+   `#141414` thay `slate-700` để nhận ra là "phía Techcombank" — **đã duyệt Vòng 20**.
 
 ### K.4 Token đề xuất (Vòng 21 đưa vào `tailwind.config.js` + `src/index.css`)
 `--color-app-bg`, `--color-app-surface`, `--color-ink`, `--color-ink-muted`,
@@ -614,7 +622,7 @@ chạy số tiền (giữ quyết định đã chốt "không tween dư nợ").
 | Chuyển trang trong app | Trang cũ mờ đi; trang mới mờ dần vào + trượt lên 8px | 200ms, `--ease-out` |
 | Chuyển bước trong một luồng (vd. Ứng vốn: A2 → ước tính → A4 → gửi) | Nội dung bước trượt ngang 12px (tiến: từ phải; lùi: từ trái) + mờ dần; thanh bước tô đầy dần tới bước mới | 250ms nội dung, 300ms thanh bước |
 | Sang trang Techcombank | Màn chuyển tiếp: nền `#141414`, chữ "Đang chuyển tới Techcombank…", vạch đỏ chạy từ trái sang phải một lần | 700ms |
-| Về app | Màn chuyển tiếp nền app: "Quay về Đừng Đóng Vai Anh", vạch cobalt chạy một lần | 700ms |
+| Về app | Màn chuyển tiếp nền app: "Quay về {DISPLAY_NAME}", vạch cobalt chạy một lần | 700ms |
 | Hoàn tất hành động (cấp quyền, giải ngân, trả nợ) | Dấu tích tự vẽ (`stroke-dashoffset`) cạnh câu xác nhận | 300ms |
 | Đơn vị đổi trạng thái | Badge mới mờ dần vào; viền thẻ nổi nhẹ rồi tắt | badge 300–400ms; viền ≤ 400ms (giảm từ 800ms cũ) |
 | Drawer, hộp thoại | Trượt vào từ cạnh (drawer) / mờ + thu từ 98% (hộp thoại) | 250ms vào, 200ms ra |
@@ -634,7 +642,17 @@ chạy số tiền (giữ quyết định đã chốt "không tween dư nợ").
 
 ---
 
-## Câu hỏi mở cho nhóm
+## Quyết định Vòng 20 (trả lời câu hỏi mở)
+1. quy-tac mục 7 đã sửa (xem K.0); Hướng B cho cả 4 mẫu.
+2. Chứng thư dùng chung mã `LOCK-2027-0915-00318` cho mọi bên cho vay (mã là số thứ tự trong
+   sổ; mỗi phiên chỉ có một lần khóa đầu tiên). Chào giá C 80 triệu khóa theo tỷ lệ giá trị
+   khả dụng: RU-03 44, RU-04 36 (du-lieu mục 12).
+3. Thanh bên cổng nội bộ ngân hàng: `#141414`.
+4. Sau tất toán: "Đã cập nhật sau lô tất toán", không kèm điểm mới.
+5. Danh sách nhiệm vụ đặt ở cuối thanh điều hướng trái (không nổi đè).
+6. `DISPLAY_NAME` = "[TÊN APP]".
+
+### Câu hỏi mở cũ (Vòng 19)
 1. Sửa `docs/quy-tac.md` mục 7 để cho phép màu Techcombank xấp xỉ **chỉ** trên khung trang
    Techcombank? (K.0) — chặn Vòng 21 phần khung ngân hàng.
 2. Chứng thư khóa khi chọn Ngân hàng B / Công ty tài chính C ở Giai đoạn 3: dùng chung mã
