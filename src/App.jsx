@@ -60,6 +60,7 @@ function AppScreens() {
     reset()
     resetScenario()
     settlement.reset()
+    journey.reset()
   }
 
   useEffect(() => {
