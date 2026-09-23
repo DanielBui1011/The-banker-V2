@@ -20,7 +20,7 @@ export default function LockCertificate({ amounts, secured = LOCK_CERTIFICATE.se
     <Card className={className} padding="p-6">
       <div className="flex items-center justify-between">
         <span className="text-emphasis font-semibold text-slate-900">Chứng thư khóa</span>
-        <span className="text-label text-slate-500">Mã {LOCK_CERTIFICATE.certificateId}</span>
+        <span className="text-label text-slate-600">Mã {LOCK_CERTIFICATE.certificateId}</span>
       </div>
 
       <div className="mt-4 divide-y divide-slate-100">
@@ -43,7 +43,7 @@ export default function LockCertificate({ amounts, secured = LOCK_CERTIFICATE.se
         <CertRow label="Thuật toán chữ ký" value="RS256 (JWS) — kiểm chứng độc lập" />
       </div>
 
-      <p className="mt-4 text-label italic text-slate-500">Chữ ký minh họa trong prototype.</p>
+      <p className="mt-4 text-label italic text-slate-600">Chữ ký minh họa trong prototype.</p>
 
       <button
         onClick={() => setShowTech((v) => !v)}
@@ -60,7 +60,7 @@ export default function LockCertificate({ amounts, secured = LOCK_CERTIFICATE.se
 function CertRow({ label, value }) {
   return (
     <div className="flex items-start justify-between gap-4 py-2.5 text-label">
-      <span className="text-slate-500">{label}</span>
+      <span className="text-slate-600">{label}</span>
       <span className="text-right font-medium text-slate-900">{value}</span>
     </div>
   )
@@ -82,14 +82,14 @@ function TechJwsView({ amounts, secured }) {
       <SurfaceFrame variant="tech">
         <div className="space-y-4 px-6 py-6 text-label">
           <div>
-            <div className="mb-1 text-slate-400">header</div>
+            <div className="mb-1 text-slate-50">header</div>
             <pre className="overflow-x-auto rounded-lg bg-black/30 p-3">{JSON.stringify(header, null, 2)}</pre>
           </div>
           <div>
-            <div className="mb-1 text-slate-400">payload</div>
+            <div className="mb-1 text-slate-50">payload</div>
             <pre className="overflow-x-auto rounded-lg bg-black/30 p-3">{JSON.stringify(payload, null, 2)}</pre>
           </div>
-          <div className="text-slate-400">signature: (minh họa — không phải chữ ký thật)</div>
+          <div className="text-slate-50">signature: (minh họa — không phải chữ ký thật)</div>
         </div>
       </SurfaceFrame>
     </div>

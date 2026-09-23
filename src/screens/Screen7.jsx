@@ -7,6 +7,7 @@ import StatusBadge from '../components/ui/StatusBadge.jsx'
 import ConfirmDialog from '../components/ui/ConfirmDialog.jsx'
 import Timeline from '../components/ui/Timeline.jsx'
 import Callout from '../components/ui/Callout.jsx'
+import Button from '../components/ui/Button.jsx'
 import { actForScreen } from '../config/flow.js'
 import { usePermissions } from '../state/permissionState.jsx'
 import { FOOTER_NOTE } from '../data/mockData.js'
@@ -116,7 +117,7 @@ export default function Screen7({ onBack, onPrev, onGoToScreen }) {
                   <div className="mb-3 text-section-title font-semibold text-slate-900">Danh sách quyền</div>
                   {permissions.length === 0 ? (
                     <Card>
-                      <p className="text-body text-slate-500">Chưa có quyền nào được cấp.</p>
+                      <p className="text-body text-slate-600">Chưa có quyền nào được cấp.</p>
                     </Card>
                   ) : (
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
@@ -144,9 +145,9 @@ export default function Screen7({ onBack, onPrev, onGoToScreen }) {
                             </div>
 
                             {permission.status === 'not-granted' ? (
-                              <div className="text-label text-slate-500">{permission.pendingNote}</div>
+                              <div className="text-label text-slate-600">{permission.pendingNote}</div>
                             ) : (
-                              <div className="text-label text-slate-500">
+                              <div className="text-label text-slate-600">
                                 Cấp ngày {formatDateVN(permission.grantedDate)} · Hạn{' '}
                                 {/^\d{4}-\d{2}-\d{2}$/.test(permission.expiryDate)
                                   ? formatDateVN(permission.expiryDate)
@@ -177,7 +178,7 @@ export default function Screen7({ onBack, onPrev, onGoToScreen }) {
                                 <div className="space-y-1.5">
                                   <button
                                     disabled
-                                    className="w-full cursor-not-allowed rounded-lg border border-slate-200 bg-slate-100 px-3 py-2 text-label font-medium text-slate-400"
+                                    className="w-full cursor-not-allowed rounded-lg border border-slate-200 bg-slate-100 px-3 py-2 text-label font-medium text-slate-600"
                                   >
                                     Không thể rút quyền {permission.code}
                                   </button>
@@ -197,7 +198,7 @@ export default function Screen7({ onBack, onPrev, onGoToScreen }) {
                 <Card>
                   <div className="mb-4 text-section-title font-semibold text-slate-900">Nhật ký truy cập</div>
                   {accessGroups.length === 0 ? (
-                    <p className="text-body text-slate-500">Chưa có hoạt động truy cập nào.</p>
+                    <p className="text-body text-slate-600">Chưa có hoạt động truy cập nào.</p>
                   ) : (
                     <div className="max-h-[360px] space-y-4 overflow-y-auto pr-1">
                       {accessGroups.map((group, i) => (
@@ -229,10 +230,16 @@ export default function Screen7({ onBack, onPrev, onGoToScreen }) {
                   </div>
                   {exportMessage && <p className="mt-2 text-right text-label text-teal-700">{exportMessage}</p>}
                 </Card>
+
+                {onGoToScreen && !onBack && (
+                  <div className="flex justify-end">
+                    <Button onClick={() => onGoToScreen(3)}>Tiếp: Đối soát →</Button>
+                  </div>
+                )}
               </div>
             </main>
 
-            <footer className="border-t border-slate-200 px-12 py-3 text-label text-slate-500">{FOOTER_NOTE}</footer>
+            <footer className="border-t border-slate-200 px-12 py-3 text-label text-slate-600">{FOOTER_NOTE}</footer>
           </div>
         </SurfaceFrame>
       </div>

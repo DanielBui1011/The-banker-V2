@@ -92,7 +92,7 @@ export default function Screen10({ onGoToScreen }) {
             </div>
           </main>
 
-          <footer className="border-t border-slate-200 px-12 py-3 text-label text-slate-500">{FOOTER_NOTE}</footer>
+          <footer className="border-t border-slate-200 px-12 py-3 text-label text-slate-600">{FOOTER_NOTE}</footer>
         </div>
       </SurfaceFrame>
     </div>
@@ -128,7 +128,7 @@ function RequestStep({ recipients, toggleRecipient, canSubmit, onSubmit }) {
         ))}
       </div>
 
-      <p className="text-label text-slate-500">Chỉ các bên bạn chọn nhận được dữ liệu cho yêu cầu này.</p>
+      <p className="text-label text-slate-600">Chỉ các bên bạn chọn nhận được dữ liệu cho yêu cầu này.</p>
 
       <div className="flex justify-end">
         <Button onClick={onSubmit} disabled={!canSubmit}>
@@ -171,7 +171,7 @@ function QuotesStep({ quotes, onSelect }) {
             key: 'estimatedCost',
             header: `Chi phí ước tính (${formatNumberVN(COMPARISON_PRINCIPAL)} triệu, ${INTEREST_DAYS} ngày)`,
             align: 'right',
-            render: (q) => `${formatNumberVN(q.estimatedCost)} triệu`,
+            render: (q) => <Money value={Math.round(q.estimatedCost * 1000)} unit="nghìn đồng" />,
           },
           { key: 'term', header: 'Hạn hiệu lực chào giá' },
           { key: 'action', header: '', render: (q) => <SelectButton onClick={() => onSelect(q)} /> },
@@ -207,7 +207,7 @@ function LenderSignPage({ quote, confirmed, setConfirmed, onConfirm }) {
 
             <div className="space-y-4 text-body">
               <div>
-                <div className="text-label font-medium text-slate-500">Nội dung thỏa thuận</div>
+                <div className="text-label font-medium text-slate-600">Nội dung thỏa thuận</div>
                 <div className="text-slate-900">
                   Chuyển giao quyền đòi nợ đối với{' '}
                   {UNITS.map((u, i) => (
@@ -221,12 +221,12 @@ function LenderSignPage({ quote, confirmed, setConfirmed, onConfirm }) {
               </div>
 
               <div>
-                <div className="text-label font-medium text-slate-500">Đăng ký biện pháp bảo đảm</div>
+                <div className="text-label font-medium text-slate-600">Đăng ký biện pháp bảo đảm</div>
                 <div className="text-slate-900">{A4_AGREEMENT.registrationNote}</div>
               </div>
 
               <div>
-                <div className="text-label font-medium text-slate-500">Dòng tiền</div>
+                <div className="text-label font-medium text-slate-600">Dòng tiền</div>
                 <div className="text-slate-900">Tiền sàn về tài khoản {quote.lender} dùng để trả khoản vay.</div>
               </div>
 
@@ -248,7 +248,7 @@ function LenderSignPage({ quote, confirmed, setConfirmed, onConfirm }) {
             </div>
           </Card>
         </main>
-        <footer className="border-t border-slate-200 px-8 py-3 text-label text-slate-500">{FOOTER_NOTE}</footer>
+        <footer className="border-t border-slate-200 px-8 py-3 text-label text-slate-600">{FOOTER_NOTE}</footer>
       </div>
     </SurfaceFrame>
   )
@@ -304,7 +304,7 @@ function CertificateStep({ quote, onBack }) {
 function CertRow({ label, value }) {
   return (
     <div className="flex items-center justify-between py-2.5 text-label">
-      <span className="text-slate-500">{label}</span>
+      <span className="text-slate-600">{label}</span>
       <span className="font-medium text-slate-900">{value}</span>
     </div>
   )

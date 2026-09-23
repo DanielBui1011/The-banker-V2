@@ -182,3 +182,10 @@ chiếu 1920×1080 > ít code (CLAUDE.md mục "Quy ước plugin").
    `data-surface-frame` trên khung ngoài cùng và selector
    `[data-surface-frame='bank'], [data-surface-frame='bankOps']` ghi đè biến
    này thành `#0F172A` (slate-900). Sửa màu ở đây, không sửa từng màn.
+
+8. **Tương phản chữ (Vòng 16)**: mọi chữ mang nội dung đạt ≥4,5:1 so với nền
+   (WCAG AA). Không làm mờ nội dung bằng `opacity-*` hay `text-slate-100…400`;
+   chữ phụ tối thiểu `slate-600` trên nền trắng, chữ trên nền tối dùng
+   `text-slate-50`/`text-white`. Hiệu ứng hiện dần phải kết thúc ở opacity 1
+   (và hiện ngay khi `prefers-reduced-motion`). `tests/quy-tac.test.js` quy tắc 8
+   chặn tái phạm; chỉ biến thể trạng thái (`disabled:`, `hover:`) được phép.

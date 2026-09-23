@@ -18,10 +18,10 @@ export default function Stepper({ steps, currentStep, tone = 'light' }) {
                   isDone
                     ? 'bg-navy text-white'
                     : isActive
-                      ? `border-2 border-navy ${isDark ? 'text-slate-100' : 'text-navy'}`
+                      ? `border-2 border-navy ${isDark ? 'text-slate-50' : 'text-navy'}`
                       : isDark
-                        ? 'border border-slate-600 text-slate-500'
-                        : 'border border-slate-300 text-slate-400'
+                        ? 'border border-slate-600 text-slate-50'
+                        : 'border border-slate-400 text-slate-600'
                 }`}
               >
                 {stepNumber}
@@ -29,10 +29,10 @@ export default function Stepper({ steps, currentStep, tone = 'light' }) {
               <span
                 className={`text-label ${
                   isActive
-                    ? `font-semibold ${isDark ? 'text-slate-100' : 'text-slate-900'}`
+                    ? `font-semibold ${isDark ? 'text-slate-50' : 'text-slate-900'}`
                     : isDark
-                      ? 'text-slate-500'
-                      : 'text-slate-500'
+                      ? 'text-slate-50'
+                      : 'text-slate-600'
                 }`}
               >
                 {step}

@@ -10,7 +10,7 @@ const VARIANTS = {
   },
   bank: {
     body: 'bg-white text-slate-900',
-    strip: 'bg-slate-800 text-slate-100',
+    strip: 'bg-slate-800 text-slate-50',
     icon: true,
     label: (bankName) => `Bạn đang ở trang của ${bankName}`,
   },
@@ -18,8 +18,8 @@ const VARIANTS = {
     body: 'bg-white text-slate-900',
   },
   tech: {
-    body: 'bg-slate-950 font-mono text-slate-100',
-    strip: 'bg-slate-900 text-slate-300',
+    body: 'bg-slate-950 font-mono text-slate-50',
+    strip: 'bg-slate-900 text-slate-50',
     label: () => 'Hậu trường kỹ thuật',
   },
 }
@@ -35,7 +35,7 @@ export default function SurfaceFrame({ variant = 'platform', bankName, children,
   if (variant === 'bankOps') {
     return (
       <div className={`flex h-full ${config.body} ${className}`} data-surface-frame={variant}>
-        <div className="flex w-56 flex-shrink-0 flex-col bg-slate-700 text-slate-100">
+        <div className="flex w-56 flex-shrink-0 flex-col bg-slate-700 text-slate-50">
           <div className="flex items-center gap-2 px-5 py-5">
             <Landmark size={24} aria-hidden="true" />
             <span className="text-label font-semibold">{bankName ? `${bankName} · Nội bộ — mô phỏng` : 'Nội bộ — mô phỏng'}</span>
@@ -45,7 +45,7 @@ export default function SurfaceFrame({ variant = 'platform', bankName, children,
               <div
                 key={label}
                 className={`rounded-lg px-3 py-2 text-label ${
-                  i === 0 ? 'bg-slate-600 font-medium text-white' : 'text-slate-300'
+                  i === 0 ? 'bg-slate-600 font-medium text-white' : 'text-slate-50'
                 }`}
               >
                 {label}

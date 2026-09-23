@@ -11,7 +11,7 @@ const SHORTCUTS = [
   { key: '?', desc: 'Hiện/ẩn bảng phím tắt' },
 ]
 
-export default function KeyHint({ label, onClose, className = 'border-slate-300 bg-slate-100 text-slate-600' }) {
+export default function KeyHint({ label, onClose, className = 'border-slate-300 bg-slate-100 text-slate-50' }) {
   if (onClose) {
     return (
       <div
@@ -25,18 +25,18 @@ export default function KeyHint({ label, onClose, className = 'border-slate-300 
           onClick={(event) => event.stopPropagation()}
         >
           <div className="mb-4 flex items-center justify-between">
-            <span className="text-emphasis font-semibold text-slate-100">Phím tắt</span>
-            <button onClick={onClose} className="text-label text-slate-400 hover:text-slate-200">
+            <span className="text-emphasis font-semibold text-slate-50">Phím tắt</span>
+            <button onClick={onClose} className="text-label text-slate-50 hover:text-slate-50">
               Đóng
             </button>
           </div>
           <div className="space-y-2">
             {SHORTCUTS.map((s) => (
               <div key={s.key} className="flex items-center justify-between gap-4">
-                <kbd className="rounded border border-slate-600 bg-slate-800 px-2 py-0.5 font-mono text-label text-slate-200">
+                <kbd className="rounded border border-slate-600 bg-slate-800 px-2 py-0.5 font-mono text-label text-slate-50">
                   {s.key}
                 </kbd>
-                <span className="text-label text-slate-400">{s.desc}</span>
+                <span className="text-label text-slate-50">{s.desc}</span>
               </div>
             ))}
           </div>

@@ -127,13 +127,13 @@ export default function Screen8({ onNext }) {
               <>
               <div>
                 <Money value={totalExposure} size="hero" className="text-slate-900" />
-                <div className="mt-1 text-label text-slate-500">bảo đảm bằng {lockedTierUnits.length} đơn vị đã khóa</div>
-                <div className="mt-2 text-label text-slate-500">
+                <div className="mt-1 text-label text-slate-600">bảo đảm bằng {lockedTierUnits.length} đơn vị đã khóa</div>
+                <div className="mt-2 text-label text-slate-600">
                   Khả dụng còn lại để khóa: <Money value={availableToLock} size="body" className="font-medium text-slate-700" />
                 </div>
               </div>
 
-              <div className="text-label text-slate-500">
+              <div className="text-label text-slate-600">
                 Truy cập theo quyền A2 của nhà bán — hiệu lực đến {formatDateVN(A2_PERMISSION.expiryDate)}
               </div>
 
@@ -160,8 +160,8 @@ export default function Screen8({ onNext }) {
                     </ul>
                   </div>
                   <div>
-                    <div className="mb-2 text-label font-semibold text-slate-400">Ngân hàng KHÔNG thấy</div>
-                    <ul className="space-y-1 text-label text-slate-400">
+                    <div className="mb-2 text-label font-semibold text-slate-600">Ngân hàng KHÔNG thấy</div>
+                    <ul className="space-y-1 text-label text-slate-600">
                       <li>Dữ liệu đơn hàng thô</li>
                       <li>Danh tính bên khóa khác</li>
                       <li>Dữ liệu ngoài phạm vi A2</li>
@@ -184,22 +184,22 @@ export default function Screen8({ onNext }) {
                     <div className="text-emphasis font-semibold text-slate-900">
                       Minh họa: đã có bên khác khóa {formatNumberVN(BANK_VIEW.crossExposureExample.otherLockedAmount)} triệu
                     </div>
-                    <div className="text-label text-slate-500">Ảnh hưởng tới giá trị khả dụng của RU-03 và RU-04.</div>
+                    <div className="text-label text-slate-600">Ảnh hưởng tới giá trị khả dụng của RU-03 và RU-04.</div>
                   </div>
                   <ToggleSwitch active={crossExposureOn} onToggle={() => setCrossExposureOn((v) => !v)} label="Bên khác khóa" />
                 </div>
 
                 <div className="mt-4 flex items-center gap-8">
                   <div>
-                    <div className="text-label text-slate-500">Giá trị khả dụng (RU-03 + RU-04)</div>
+                    <div className="text-label text-slate-600">Giá trị khả dụng (RU-03 + RU-04)</div>
                     <Money value={crossExposure.result} size="emphasis" className="text-slate-900" />
                   </div>
                   <div>
-                    <div className="text-label text-slate-500">Số bên đang khóa</div>
+                    <div className="text-label text-slate-600">Số bên đang khóa</div>
                     <div className="text-emphasis font-semibold tabular-nums text-slate-900">{crossExposureLenderCount}</div>
                   </div>
                 </div>
-                <p className="mt-2 text-label italic text-slate-500">
+                <p className="mt-2 text-label italic text-slate-600">
                   Danh tính bên khóa được ẩn theo quy chế thành viên.
                 </p>
 
@@ -221,7 +221,7 @@ export default function Screen8({ onNext }) {
           </div>
         </main>
 
-        <footer className="border-t border-slate-200 px-12 py-3 text-label text-slate-500">{FOOTER_NOTE}</footer>
+        <footer className="border-t border-slate-200 px-12 py-3 text-label text-slate-600">{FOOTER_NOTE}</footer>
       </div>
     </SurfaceFrame>
   )
@@ -237,7 +237,7 @@ function LayerGroup({ layer, title, units }) {
       </div>
       <table className="w-full table-fixed text-label">
         <thead>
-          <tr className="border-b border-slate-200 text-left text-slate-500">
+          <tr className="border-b border-slate-200 text-left text-slate-600">
             <th className="w-24 px-3 py-2 font-medium">Đơn vị</th>
             <th className="w-48 px-3 py-2 text-right font-medium">Giá trị ròng dự phóng</th>
             <th className="w-48 px-3 py-2 text-right font-medium">Giá trị khả dụng</th>
