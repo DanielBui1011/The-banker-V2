@@ -143,6 +143,7 @@ function RequestStep({ recipients, toggleRecipient, canSubmit, onSubmit }) {
 // Bước 10b — chào giá chỉ từ các bên đã chọn, sắp theo lãi suất tăng dần.
 // KHÔNG gắn nhãn "khuyên dùng" hay bất kỳ nhãn thiên vị nào (docs/man-hinh.md).
 function QuotesStep({ quotes, onSelect }) {
+  const lowestRate = Math.min(...quotes.map((q) => q.annualRate))
   return (
     <div className="space-y-6">
       <p className="text-body text-slate-600">{QUOTE_DISCLAIMER}</p>
@@ -151,7 +152,20 @@ function QuotesStep({ quotes, onSelect }) {
 
       <DataTable
         columns={[
-          { key: 'lender', header: 'Bên cho vay' },
+          {
+            key: 'lender',
+            header: 'Bên cho vay',
+            render: (q) => (
+              <span className="flex items-center gap-2">
+                {q.lender}
+                {q.annualRate === lowestRate && (
+                  <span className="rounded-full border border-teal-600 bg-teal-50 px-2 py-0.5 text-label font-medium text-teal-700">
+                    Lãi thấp nhất
+                  </span>
+                )}
+              </span>
+            ),
+          },
           { key: 'value', header: 'Giá trị', align: 'right', render: (q) => `${formatNumberVN(q.value)} triệu` },
           { key: 'annualRate', header: 'Lãi suất/năm', align: 'right', render: (q) => formatPercentVN(q.annualRate) },
           {
@@ -243,8 +257,19 @@ function LenderSignPage({ quote, confirmed, setConfirmed, onConfirm }) {
   )
 }
 
+// Chuỗi JWS chỉ để minh họa hình thức chứng từ số — không phải chữ ký thật,
+// rút gọn để hiển thị gọn trong một dòng (docs/man-hinh.md Màn 10, bước 10c).
+function truncateMiddle(str, head = 28, tail = 10) {
+  if (str.length <= head + tail + 1) return str
+  return `${str.slice(0, head)}…${str.slice(-tail)}`
+}
+
 // Bước 10c — chứng thư khóa theo docs/du-lieu.md mục 12, chỉ đổi "Bên nhận bảo đảm".
+// Thứ tự ưu tiên trình bày nổi bật nhất trong chứng từ (docs/plans Vòng 11).
 function CertificateStep({ quote, onBack }) {
+  const jwsCompact = truncateMiddle(
+    `eyJhbGciOiJSUzI1NiJ9.${btoa(`cert=${LOCK_CERTIFICATE.certificateId};priority=${LOCK_CERTIFICATE.priority}`)}.MINHHOA`
+  )
   return (
     <div className="space-y-6">
       <Card className="border-violet-600 bg-violet-50">
@@ -253,10 +278,19 @@ function CertificateStep({ quote, onBack }) {
           <CertRow label="Mã chứng thư" value={LOCK_CERTIFICATE.certificateId} />
           <CertRow label="Đơn vị" value={LOCK_CERTIFICATE.units.join(', ')} />
           <CertRow label="Bên nhận bảo đảm" value={quote.lender} />
-          <CertRow label="Thứ tự ưu tiên" value={`#${LOCK_CERTIFICATE.priority}`} />
+          <CertRow label="Giá trị" value={<Money value={quote.value} size="label" className="text-violet-900" />} />
+        </div>
+
+        <div className="flex items-center justify-between border-t border-violet-300 py-4">
+          <span className="text-label text-violet-700">Thứ tự ưu tiên</span>
+          <span className="text-section-title font-bold tabular-nums text-violet-900">#{LOCK_CERTIFICATE.priority}</span>
+        </div>
+
+        <div className="divide-y divide-violet-100 border-t border-violet-100">
           <CertRow label="Thời điểm khóa" value={LOCK_CERTIFICATE.lockedAt} />
           <CertRow label="Mã đăng ký bảo đảm" value={LOCK_CERTIFICATE.registrationId} />
           <CertRow label="Ký số" value={LOCK_CERTIFICATE.signature} />
+          <CertRow label="Chuỗi JWS (rút gọn)" value={<span className="font-mono">{jwsCompact}</span>} />
         </div>
       </Card>
 

@@ -11,7 +11,7 @@ const SHORTCUTS = [
   { key: '?', desc: 'Hiện/ẩn bảng phím tắt' },
 ]
 
-export default function KeyHint({ label, onClose }) {
+export default function KeyHint({ label, onClose, className = 'border-slate-300 bg-slate-100 text-slate-600' }) {
   if (onClose) {
     return (
       <div
@@ -46,7 +46,7 @@ export default function KeyHint({ label, onClose }) {
   }
 
   return (
-    <span className="inline-block rounded border border-slate-300 bg-slate-100 px-1.5 py-0.5 font-mono text-label text-slate-600">
+    <span className={`inline-block rounded border px-1.5 py-0.5 font-mono text-label ${className}`}>
       {label}
     </span>
   )
