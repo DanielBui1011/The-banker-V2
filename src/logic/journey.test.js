@@ -733,3 +733,120 @@ describe('loadState / saveState', () => {
     expect(loadState(undefined)).toEqual(initialState())
   })
 })
+
+// ─── Vòng 26: chống vỡ ────────────────────────────────────────────────────────
+
+// Mọi giá trị trong kết quả selector: không NaN/Infinity, không undefined, không chữ "undefined"/"NaN"
+function assertClean(value, path) {
+  if (value === undefined) throw new Error(`undefined tại ${path}`)
+  if (typeof value === 'number') expect(Number.isFinite(value), path).toBe(true)
+  else if (typeof value === 'string') expect(/undefined|NaN/.test(value), `${path}: ${value}`).toBe(false)
+  else if (value && typeof value === 'object') for (const [k, v] of Object.entries(value)) assertClean(v, `${path}.${k}`)
+}
+const PAGES_ALL = ['tong-quan', 'doi-soat', 'khoan-phai-thu', 'ung-von', 'khoan-vay', 'quyen-du-lieu', 'tra-cuu', 'danh-muc-khoa', 'canh-bao']
+function assertRenderable(s) {
+  assertClean(simDate(s), 'simDate')
+  assertClean(loan(s), 'loan')
+  assertClean(bankView(s), 'bankView')
+  assertClean(accessLog(s), 'accessLog')
+  assertClean(tasks(s), 'tasks')
+  assertClean(activeUnits(s), 'activeUnits')
+  for (const page of PAGES_ALL) assertClean(nextStep(s, page), `nextStep(${page})`)
+  for (const code of ['RU-01', 'RU-02', 'RU-03', 'RU-04', 'RU-05']) unitStatus(s, code)
+  for (const action of CHECKED) assertClean(availability(s, action), `availability(${JSON.stringify(action)})`)
+}
+
+describe('Vòng 26 — chống vỡ', () => {
+  it('trả nợ đơn vị không thuộc khoản vay (sửa ?don-vi= bằng tay) → chặn, không ném', () => {
+    for (const s of [start(), disbursed(), at1909(), at2009(), fullyRepaid(), accountChangeAt(3)]) {
+      for (const unit of ['RU-05', 'XYZ', undefined]) {
+        const a = availability(s, { type: 'repay', unit })
+        expect(a.ok).toBe(false)
+        expect(a.reason).toBeTruthy()
+        expect(reducer(s, { type: 'repay', unit })).toBe(s)
+      }
+    }
+  })
+
+  it('bấm nhanh nhiều lần: action lặp lại không đổi kết quả', () => {
+    const twice = (s, a) => run(s, a, a, a)
+    expect(twice(estimated(), 'signA4')).toEqual(signed())
+    expect(twice(signed(), 'submit')).toEqual(disbursed())
+    expect(twice(at1909(), { type: 'repay', unit: 'RU-03' })).toEqual(repaidRU03())
+    expect(twice(connected(), 'grantA1')).toEqual(connected())
+  })
+
+  it('bật/tắt từng tình huống ở mọi ngày mô phỏng: không ném, không NaN/undefined', () => {
+    const TOGGLES = ['togglePeakSeason', 'toggleAccountChange', 'togglePhase3']
+    const days = [start(), connected(), at1509(), estimated(), signed(), disbursed(), at1909(), repaidRU03(), at2009(), fullyRepaid(),
+      accountChangeAt(1), accountChangeAt(2), accountChangeAt(3), accountChangeAt(4), phase3Quotes()]
+    for (const day of days) {
+      for (const t of TOGGLES) {
+        const once = run(day, t)
+        const back = run(once, t)
+        assertRenderable(once)
+        assertRenderable(back)
+        // Bật rồi tắt được thì về đúng như cũ (trừ Giai đoạn 3: xóa hồ sơ đề nghị theo thiết kế)
+        if (t !== 'togglePhase3' && once !== day) expect(back).toEqual(day)
+      }
+    }
+  })
+
+  it('chuỗi thao tác ngẫu nhiên (80 × 30 bước, có đổi vai) → luôn hiển thị được', () => {
+    let seed = 26
+    const rand = () => ((seed = (seed * 1103515245 + 12345) % 2 ** 31) / 2 ** 31)
+    const pool = [...ALL_ACTIONS, 'switchRole', { type: 'repay', unit: 'RU-05' }, { type: 'visit', key: 'officer:tra-cuu' }]
+    for (let i = 0; i < 80; i++) {
+      let s = start()
+      for (let j = 0; j < 30; j++) {
+        const a = pool[Math.floor(rand() * pool.length)]
+        s = reducer(s, typeof a === 'string' ? { type: a } : a)
+        assertRenderable(s)
+      }
+    }
+  })
+
+  it('localStorage đúng version nhưng sai cấu trúc → trạng thái khởi đầu', () => {
+    const base = disbursed()
+    const broken = [
+      { scenario: null },
+      { scenario: { peakSeason: 'có' } },
+      { consents: {} },
+      { consents: { A1: 'active', A2: 'active', A4: 'hỏng' } },
+      { eventIndex: 99 },
+      { eventIndex: -1 },
+      { eventIndex: '1' },
+      { role: 'admin' },
+      { registry: 'x' },
+      { registry: [{}] },
+      { registry: [{ lenderId: 'Techcombank', unitId: 'RU-03', amount: 'nhiều' }] },
+      { repaid: null },
+      { userLog: [{ eventIndex: 42, actor: 'a', purpose: 'b', data: 'c' }] },
+      { visited: null },
+      { guide: null },
+      { application: null },
+      { application: { ...base.application, chosenLender: 'Ngân hàng X' } },
+      { application: { ...base.application, quoteRequest: { recipients: 'Techcombank' } } },
+      { accountChangeResolved: 'rồi' },
+    ]
+    for (const patch of broken) {
+      const storage = memoryStorage({ [STORAGE_KEY]: JSON.stringify({ ...base, ...patch }) })
+      expect(loadState(storage), JSON.stringify(patch)).toEqual(initialState())
+    }
+  })
+
+  it('bản lưu thiếu trường mới (cùng version) → bổ sung mặc định, giữ tiến trình', () => {
+    const { guide, visited, ...old } = disbursed()
+    const loaded = loadState(memoryStorage({ [STORAGE_KEY]: JSON.stringify(old) }))
+    expect(loaded.registry).toEqual(disbursed().registry)
+    expect(loaded.guide).toEqual(initialState().guide)
+  })
+
+  it('mọi trạng thái của hành trình lưu rồi đọc lại → giữ nguyên', () => {
+    for (const s of [fullyRepaid(), accountChangeAt(4), run(phase3Quotes(), { type: 'chooseQuote', lender: 'Ngân hàng B' }, 'signA4'), run(start(), 'switchRole', { type: 'welcome', mode: 'explore' })]) {
+      const storage = memoryStorage()
+      saveState(s, storage)
+      expect(loadState(storage)).toEqual(s)
+    }
+  })
+})

@@ -23,9 +23,13 @@ export function resolveRoute(hash, role) {
   return { href, space, page, params: ok ? Object.fromEntries(new URLSearchParams(query)) : {} }
 }
 
-// Sang hoặc về trang Techcombank: dùng màn chuyển tiếp 700ms (L.2) thay chuyển trang thường
-const isBank = (hash) => hash.split('/')[1] === 'techcombank'
-export const crossesBankSurface = (from, to) => isBank(from) !== isBank(to)
+// Sang hoặc về trang Techcombank từ app nhà bán: dùng màn chuyển tiếp 700ms (L.2) thay chuyển
+// trang thường. Đổi vai sang cổng nội bộ không phải "quay về app" → không dùng màn này (Vòng 26).
+const spaceOf = (hash) => hash.split('?')[0].split('/')[1]
+export function crossesBankSurface(from, to) {
+  const spaces = [spaceOf(from), spaceOf(to)]
+  return spaces.includes('techcombank') && spaces.includes('nha-ban')
+}
 
 export const go = (href) => {
   window.location.hash = href
@@ -39,6 +43,11 @@ export function withViewTransition(update) {
   // Chuyển liên tiếp làm hiệu ứng trước bị bỏ qua — trạng thái vẫn cập nhật, chỉ nuốt lỗi promise
   document.startViewTransition(() => flushSync(update)).ready.catch(() => {})
 }
+
+// Thanh địa chỉ luôn hiện trang đang dựng. Lệnh bấm trong app đã được ScenarioPanel xử lý
+// ngay trong sự kiện hashchange; lệnh còn lại ở đây là lệnh mở thẳng khi tải trang → bỏ,
+// nếu không, bấm lại đúng lệnh đó không phát hashchange (Vòng 26).
+export const addressBarFix = (current, href) => (current === href ? null : href)
 
 export function useHashRoute(role) {
   const [hash, setHash] = useState(() => window.location.hash)
@@ -57,10 +66,10 @@ export function useHashRoute(role) {
 
   const route = resolveRoute(hash, role)
 
-  // Đồng bộ thanh địa chỉ khi hash rỗng/sai vai (replaceState: không thêm mục Back)
+  // Đồng bộ thanh địa chỉ khi hash rỗng/sai vai/là lệnh (replaceState: không thêm mục Back)
   useEffect(() => {
-    const current = window.location.hash
-    if (current !== route.href && !isCommand(current)) window.history.replaceState(null, '', route.href)
+    const fix = addressBarFix(window.location.hash, route.href)
+    if (fix) window.history.replaceState(null, '', fix)
     if (hash !== route.href) setHash(route.href)
   }, [route.href, hash])
 
