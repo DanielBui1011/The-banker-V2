@@ -148,7 +148,7 @@ function SideNav({ active }) {
               <a
                 href={href}
                 aria-current={current ? 'page' : undefined}
-                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-body transition duration-fast focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary ${
+                className={`flex items-center gap-3 rounded-lg px-3 py-2 text-body transition duration-fast focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary ${
                   current ? `${ACTIVE_TONE[tone]} font-semibold` : 'text-ink hover:bg-app-bg'
                 }`}
               >

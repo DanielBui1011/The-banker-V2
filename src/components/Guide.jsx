@@ -96,21 +96,64 @@ function GoTo({ task, current }) {
   )
 }
 
-function TaskRow({ task, index, current }) {
+// Tên ngắn cho thanh điều hướng (thiếu chỗ ở 1366×768); tên đầy đủ ở nhiệm vụ đang làm,
+// aria-label và ngăn Hướng dẫn.
+const SHORT = {
+  1: 'Kết nối Techcombank',
+  2: 'Xem khoản phải thu',
+  3: 'Nhận giải ngân',
+  4: 'Trả hết khoản vay',
+  5: 'Góc nhìn cán bộ',
+  6: 'Đổi tài khoản nhận tiền',
+  7: 'Nhiều bên chào giá',
+}
+
+function TaskIcon({ task, current }) {
+  if (task.done) return <DoneCheck size={22} className="text-primary" />
+  return (
+    <span
+      aria-hidden="true"
+      className={`flex h-[22px] w-[22px] flex-shrink-0 items-center justify-center rounded-full border-2 text-label font-semibold leading-none ${
+        current ? 'border-primary text-primary' : 'border-line text-ink-muted'
+      }`}
+    >
+      {task.id}
+    </span>
+  )
+}
+
+// compact: một dòng tên ngắn; nhiệm vụ chưa xong thì cả dòng là liên kết Đi tới.
+// Nhiệm vụ đang làm (current) luôn hiện đủ: tên đầy đủ + nút Đi tới.
+function TaskRow({ task, current, compact }) {
+  if (compact && !current) {
+    const text = (
+      <>
+        <span className="sr-only">{task.done ? 'Đã xong: ' : 'Chưa xong: '}</span>
+        {SHORT[task.id]}
+      </>
+    )
+    return (
+      <li className="flex items-center gap-2.5 px-2 py-1">
+        <TaskIcon task={task} />
+        {task.fix ? (
+          <a
+            href={task.fix.href}
+            aria-label={`Đi tới: ${task.label}`}
+            className="min-w-0 flex-1 truncate rounded text-label text-ink transition-colors duration-fast hover:text-primary hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+          >
+            {text}
+          </a>
+        ) : (
+          <span className="min-w-0 flex-1 truncate text-label text-ink-muted transition-colors duration-slow">{text}</span>
+        )}
+      </li>
+    )
+  }
   return (
     <li className={`flex gap-2.5 rounded-lg px-2 py-1.5 transition-colors duration-slow ${current ? 'bg-primary-soft' : ''}`}>
-      {task.done ? (
-        <DoneCheck size={22} className="mt-0.5 text-primary" />
-      ) : (
-        <span
-          aria-hidden="true"
-          className={`mt-0.5 flex h-[22px] w-[22px] flex-shrink-0 items-center justify-center rounded-full border-2 text-label font-semibold leading-none ${
-            current ? 'border-primary text-primary' : 'border-line text-ink-muted'
-          }`}
-        >
-          {index}
-        </span>
-      )}
+      <span className="mt-0.5">
+        <TaskIcon task={task} current={current} />
+      </span>
       <div className="min-w-0 flex-1 space-y-1">
         <p className={`text-label transition-colors duration-slow ${task.done ? 'text-ink-muted' : current ? 'font-semibold text-ink' : 'text-ink'}`}>
           <span className="sr-only">{task.done ? 'Đã xong: ' : 'Chưa xong: '}</span>
@@ -141,7 +184,7 @@ function FinishCard({ optional }) {
       <p className="text-label text-ink-muted">Muốn xem thêm? Thử hai tình huống:</p>
       <ol className="space-y-1">
         {optional.map((t) => (
-          <TaskRow key={t.id} task={t} index={t.id} />
+          <TaskRow key={t.id} task={t} compact />
         ))}
       </ol>
       <a
@@ -156,7 +199,7 @@ function FinishCard({ optional }) {
 }
 
 // Cuối thanh điều hướng trái: thu gọn được thành một dòng "Nhiệm vụ x/5". Chỉ 5 nhiệm vụ bắt
-// buộc (vừa chiều cao 1366×768); 2 nhiệm vụ tùy chọn nằm ở thẻ kết và ngăn Hướng dẫn.
+// buộc, dạng gọn (vừa chiều cao 1366×768); 2 nhiệm vụ tùy chọn ở thẻ kết và ngăn Hướng dẫn.
 export function TaskChecklist() {
   const { state, dispatch } = useApp()
   const { items, requiredDone, requiredTotal, allRequiredDone } = tasks(state)
@@ -184,7 +227,7 @@ export function TaskChecklist() {
         ) : (
           <ol className="space-y-0.5">
             {required.map((t) => (
-              <TaskRow key={t.id} task={t} index={t.id} current={t.id === currentId} />
+              <TaskRow key={t.id} task={t} current={t.id === currentId} compact />
             ))}
           </ol>
         ))}
@@ -224,7 +267,7 @@ export function HelpDrawer({ open, onClose, onReplayWelcome }) {
         <Section title={`Nhiệm vụ ${requiredDone}/${requiredTotal}`}>
           <ol className="space-y-0.5">
             {items.map((t) => (
-              <TaskRow key={t.id} task={t} index={t.id} current={t.id === currentId} />
+              <TaskRow key={t.id} task={t} current={t.id === currentId} />
             ))}
           </ol>
         </Section>
