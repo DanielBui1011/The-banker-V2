@@ -1,4 +1,4 @@
-// Kiểm tra vi phạm quy tắc nội dung — quét src/pages/**, src/screens/** và src/components/**
+// Kiểm tra vi phạm quy tắc nội dung — quét src/pages/** và src/components/**
 // docs/quy-tac.md + ràng buộc CLAUDE.md
 import { describe, it, expect } from 'vitest'
 import { readFileSync, readdirSync, statSync } from 'fs'
@@ -6,7 +6,6 @@ import { join, relative } from 'path'
 import { fileURLToPath } from 'url'
 
 const ROOT = join(fileURLToPath(import.meta.url), '..', '..')
-const SCREENS_DIR = join(ROOT, 'src', 'screens')
 const PAGES_DIR = join(ROOT, 'src', 'pages')
 const COMPONENTS_DIR = join(ROOT, 'src', 'components')
 
@@ -27,9 +26,8 @@ function getLines(filepath) {
     .map((line, i) => ({ text: line, num: i + 1, rel: relative(ROOT, filepath) }))
 }
 
-// Vòng 22: trang mới nằm ở src/pages (màn cũ còn lại ở src/screens tới Vòng 25) — mọi luật
-// áp cho src/screens áp y hệt cho src/pages.
-const screenFiles = [...collectJsxFiles(SCREENS_DIR), ...collectJsxFiles(PAGES_DIR)]
+// Vòng 24: src/screens đã gỡ hết — mọi luật "màn" áp cho src/pages.
+const screenFiles = collectJsxFiles(PAGES_DIR)
 const allFiles = [...screenFiles, ...collectJsxFiles(COMPONENTS_DIR)]
 
 // ─── 1. Cụm từ cấm ─────────────────────────────────────────────────────────────
@@ -45,7 +43,7 @@ const BANNED_PHRASES = [
 ]
 
 describe('Quy tắc 1 — cụm từ cấm', () => {
-  it('không xuất hiện trong src/screens và src/components', () => {
+  it('không xuất hiện trong src/pages và src/components', () => {
     const violations = []
     for (const file of allFiles) {
       const content = readFileSync(file, 'utf-8')
@@ -79,7 +77,7 @@ const SMALL_FONT_PATTERNS = [
 // Các class Tailwind này được dùng hợp lệ trong component UI nội bộ (KeyHint, badge phụ)
 // chỉ khi có chú thích // allow-small-text
 describe('Quy tắc 2 — không dùng chữ < 16px', () => {
-  it('src/screens không có text-xs / text-sm / text-[<16px]', () => {
+  it('src/pages không có text-xs / text-sm / text-[<16px]', () => {
     const violations = []
     for (const file of screenFiles) {
       for (const { text, num, rel } of getLines(file)) {
@@ -115,12 +113,12 @@ describe('Quy tắc 3 — DISPLAY_NAME không ở bề mặt ngân hàng', () =>
   })
 })
 
-// ─── 4. Số viết cứng kèm đơn vị trong JSX của src/screens ─────────────────────
+// ─── 4. Số viết cứng kèm đơn vị trong JSX của src/pages ─────────────────────
 // Vi phạm: literal như "85 triệu" hoặc "73 nghìn" viết thẳng trong JSX text
 // (không qua formatNumberVN). Ngoại lệ khi có // allow-literal: <lý do>
 const LITERAL_NUMBER_RE = /\b(\d{2,}(?:[,.]\d+)?)\s+(triệu|nghìn)\b/
 describe('Quy tắc 4 — không viết cứng số có đơn vị trong JSX', () => {
-  it('src/screens không có số literal kèm "triệu" / "nghìn"', () => {
+  it('src/pages không có số literal kèm "triệu" / "nghìn"', () => {
     const violations = []
     for (const file of screenFiles) {
       for (const { text, num, rel } of getLines(file)) {
@@ -140,9 +138,9 @@ describe('Quy tắc 4 — không viết cứng số có đơn vị trong JSX', (
 
 // ─── 5. Màn hiện giá trị ước tính phải có EstimateDisclaimer ───────────────────
 // Các trang có hiển thị giá trị ước tính: Ứng vốn (Màn 5 cũ, bước ước tính/gửi) và Màn 10
-const SCREENS_WITH_ESTIMATES = [join(PAGES_DIR, 'UngVon.jsx'), join(SCREENS_DIR, 'Screen10.jsx')]
+const SCREENS_WITH_ESTIMATES = [join(PAGES_DIR, 'UngVon.jsx')]
 describe('Quy tắc 5 — màn ước tính phải có EstimateDisclaimer', () => {
-  it('UngVon và Screen10 import EstimateDisclaimer', () => {
+  it('UngVon import EstimateDisclaimer', () => {
     const violations = []
     for (const file of SCREENS_WITH_ESTIMATES) {
       const name = relative(ROOT, file)
@@ -157,7 +155,7 @@ describe('Quy tắc 5 — màn ước tính phải có EstimateDisclaimer', () =
 
 // ─── 6. Màu ngữ nghĩa — chỉ qua allowlist đã duyệt (Vòng 12 mục 3) ─────────────
 // Chốt chặn chống tái phạm: class Tailwind red-*/amber-*/teal-*/violet-*/orange-*
-// viết tay trong src/screens phải nằm trong allowlist dưới đây (đúng bảng màu
+// viết tay trong src/pages phải nằm trong allowlist dưới đây (đúng bảng màu
 // ngữ nghĩa DESIGN.md tại thời điểm Vòng 12 — mỗi mục đã được soát thủ công).
 // Thêm màu mới ở một màn phải sửa allowlist này một cách có ý thức, không phải
 // vô tình sao chép class cũ từ màn khác. StatusBadge/src/ui/status.js và mọi
@@ -168,13 +166,9 @@ const COLOR_CLASS_RE = /\b(?:red|amber|teal|violet|orange)-\d{2,3}\b/g
 // giữ từ Screen3 đã duyệt).
 const ALLOWED_SCREEN_COLOR_CLASSES = {
   'DoiSoat.jsx': ['teal-700'],
-  'Screen10.jsx': [
-    'teal-50', 'teal-600', 'teal-700', 'teal-100',
-    'violet-50', 'violet-600', 'violet-900', 'violet-100', 'violet-300', 'violet-700',
-  ],
 }
 describe('Quy tắc 6 — màu ngữ nghĩa chỉ qua allowlist đã duyệt', () => {
-  it('src/screens không có class red-*/amber-*/teal-*/violet-*/orange-* mới ngoài allowlist', () => {
+  it('src/pages không có class red-*/amber-*/teal-*/violet-*/orange-* mới ngoài allowlist', () => {
     const violations = []
     for (const file of screenFiles) {
       const name = file.split(/[\\/]/).pop()
@@ -193,11 +187,11 @@ describe('Quy tắc 6 — màu ngữ nghĩa chỉ qua allowlist đã duyệt', (
 
 // ─── 7. Không lộ "Màn X" trong chuỗi hiển thị cho nhà bán/ngân hàng ────────────
 // Vòng 21: không còn "màn" (san-pham.md mục J) — bỏ miễn trừ cũ cho TopBar/KeyHint/
-// ScenarioPanel. Mọi file thuộc src/screens/src/components chỉ được nhắc "Màn N" trong
+// ScenarioPanel. Mọi file thuộc src/pages/src/components chỉ được nhắc "Màn N" trong
 // comment (// hoặc /* */), không phải trong chuỗi JSX hiển thị.
 const SCREEN_REF_RE = /Màn\s*\d+/
 describe('Quy tắc 7 — không lộ "Màn X" ra chuỗi hiển thị', () => {
-  it('src/screens và src/components không hiện "Màn N" ngoài comment', () => {
+  it('src/pages và src/components không hiện "Màn N" ngoài comment', () => {
     const violations = []
     for (const file of allFiles) {
       for (const { text, num, rel } of getLines(file)) {

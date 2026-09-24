@@ -3,7 +3,7 @@ import { STATUS_TABLE } from '../../ui/status.js'
 
 // Vệt vòng đời một đơn vị khoản phải thu: 4 chấm nối nhau, chấm hiện tại được tô
 // bằng màu của đúng bước đó (cùng tone với StatusBadge). Các bước còn lại là chấm
-// rỗng trung tính. Chỉ Màn 4 dùng; nằm trong ui/ vì test màu quét src/screens.
+// rỗng trung tính. Chỉ Khoản phải thu dùng; nằm trong ui/ vì test màu quét src/pages.
 const STEPS = ['projected', 'verified', 'locked', 'settled']
 
 const DOT_STYLE = {

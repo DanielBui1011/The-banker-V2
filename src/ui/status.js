@@ -13,7 +13,7 @@
 //   neutral = trung tính / dự phóng / hết hiệu lực / đã hoàn / chưa đủ lịch sử (slate)
 
 export const STATUS_TABLE = {
-  // Trạng thái quyền (Màn 7, docs/man-hinh.md) — đọc từ src/state/permissionState.jsx.
+  // Trạng thái quyền (Màn 7, docs/man-hinh.md) — đọc từ state.consents (src/logic/journey.js).
   'not-granted': { tone: 'neutral', icon: 'Clock', label: 'Chưa cấp' },
   'granted-active': { tone: 'tier1', icon: 'ShieldCheck', label: 'Đang hoạt động' },
   'granted-revoked': { tone: 'neutral', icon: 'CircleSlash', label: 'Đã thu hồi' },

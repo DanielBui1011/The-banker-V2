@@ -29,10 +29,9 @@ Không thêm thư viện khác nếu chưa hỏi.
 - src/state/appState.jsx — store duy nhất bọc journey.js, lưu localStorage
 - src/pages/ — 6 trang nhà bán; src/pages/bank/ — trang Techcombank (A1, A2, A4, Trả nợ, Rút quyền)
 - src/pages/ngan-hang/CongNoiBo.jsx — cổng nội bộ Techcombank (vai cán bộ), đọc bankView(state)
-- src/screens/ — màn cũ còn lại (Screen10 Giai đoạn 3) tới Vòng 25
 - src/components/ — thành phần dùng chung
 - src/components/ScenarioPanel.jsx — bảng điều khiển Mô phỏng
-- tests/quy-tac.test.js — kiểm tra vi phạm quy tắc nội dung (quét src/pages, src/screens và src/components)
+- tests/quy-tac.test.js — kiểm tra vi phạm quy tắc nội dung (quét src/pages và src/components)
 
 ## Quy tắc bắt buộc
 1. Không viết cứng số liệu trong component. Mọi con số lấy từ mockData.js

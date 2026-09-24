@@ -142,12 +142,6 @@
   }
 }
 
-/* Màn cũ bọc trong khung app (adapter tạm Vòng 21, gỡ ở Vòng 24): chân trang riêng của
-   màn cũ bị ẩn vì khung app đã có chân trang chung. */
-[data-legacy-screen] footer {
-  display: none;
-}
-
 /* Tôn trọng prefers-reduced-motion: mọi thứ hiện ngay (L.3). */
 @media (prefers-reduced-motion: reduce) {
   *,

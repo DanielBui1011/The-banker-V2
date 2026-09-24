@@ -6,7 +6,6 @@ import AppShell from './components/ui/AppShell.jsx'
 import { HandoffScreen } from './components/ui/SurfaceFrame.jsx'
 import KeyHint from './components/ui/KeyHint.jsx'
 import ScenarioPanel from './components/ScenarioPanel.jsx'
-import LegacyScreen from './components/LegacyScreen.jsx'
 import TongQuan, { SixWeeksSummary } from './pages/TongQuan.jsx'
 import DoiSoat from './pages/DoiSoat.jsx'
 import KhoanPhaiThu from './pages/KhoanPhaiThu.jsx'
@@ -91,7 +90,7 @@ export default function App() {
 }
 
 function AppRoutes() {
-  const { state, dispatch, resetSignal } = useApp()
+  const { state, dispatch } = useApp()
   const route = useHashRoute(state.role)
   const [helpOpen, setHelpOpen] = useState(false)
   const handoff = useBankHandoff(route.space)
@@ -103,11 +102,13 @@ function AppRoutes() {
   }, [dispatch, state.role, route.page, state.eventIndex])
 
   const openHelp = () => setHelpOpen((v) => !v)
+  // Giai đoạn 3: trang ký A4 là trang của bên được chọn (có thể không phải Techcombank)
+  const bankName = (route.page === 'a4' && state.scenario.phase3 && state.application.chosenLender) || 'Techcombank'
 
   return (
     <>
       {handoff ? (
-        <HandoffScreen toBank={handoff.toBank} text={handoff.toBank ? 'Đang chuyển tới Techcombank…' : `Quay về ${DISPLAY_NAME}`} />
+        <HandoffScreen toBank={handoff.toBank} bankName={bankName} text={handoff.toBank ? `Đang chuyển tới ${bankName}…` : `Quay về ${DISPLAY_NAME}`} />
       ) : (
         <AppShell
           route={route}
@@ -115,7 +116,7 @@ function AppRoutes() {
           notice={sixWeeks && route.page !== 'tong-quan' && <SixWeeksSummary onClose={closeSixWeeks} />}
         >
           {/* Ba mục cổng ngân hàng dùng chung một trang → không remount khi đổi mục */}
-          <Page key={`${route.space === "ngan-hang" ? route.space : route.page}:${resetSignal}`} route={route} state={state} />
+          <Page key={route.space === 'ngan-hang' ? route.space : route.page} route={route} />
         </AppShell>
       )}
       <ScenarioPanel route={route} onHelp={openHelp} />
@@ -124,16 +125,8 @@ function AppRoutes() {
   )
 }
 
-function Page({ route, state }) {
+function Page({ route }) {
   if (route.space === 'ngan-hang') return <CongNoiBo page={route.page} />
-  // Chưa chuyển (Vòng 25): Ứng vốn ở Giai đoạn 3 vẫn là màn cũ
-  if (route.page === 'ung-von' && state.scenario.phase3) {
-    return (
-      <div data-legacy-screen className="h-full">
-        <LegacyScreen />
-      </div>
-    )
-  }
   if ((route.page === 'a1' || route.page === 'a2') && route.params['thao-tac'] === 'rut') {
     return <RutQuyen code={route.page.toUpperCase()} />
   }
