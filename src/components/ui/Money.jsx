@@ -13,7 +13,7 @@ const SIZE_CLASS = {
 // không nhảy hàng khi cập nhật (số tiền là điểm nhìn đầu tiên).
 export default function Money({ value, unit = 'triệu', size = 'body', className = '' }) {
   return (
-    <span className={`tabular-nums ${SIZE_CLASS[size] ?? SIZE_CLASS.body} ${className}`}>
+    <span className={`whitespace-nowrap tabular-nums ${SIZE_CLASS[size] ?? SIZE_CLASS.body} ${className}`}>
       {formatNumberVN(value)}
       {unit && <span className="ml-1 text-label font-normal text-slate-600">{unit}</span>}
     </span>

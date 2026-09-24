@@ -9,12 +9,13 @@ import GatedButton from '../components/ui/GatedButton.jsx'
 import EmptyState from '../components/ui/EmptyState.jsx'
 import DoneCheck from '../components/ui/DoneCheck.jsx'
 import Term from '../components/ui/Term.jsx'
-import Callout, { EstimateDisclaimer } from '../components/ui/Callout.jsx'
+import { EstimateDisclaimer } from '../components/ui/Callout.jsx'
 import DataTable from '../components/ui/DataTable.jsx'
 import LockCertificate from '../components/LockCertificate.jsx'
 import { A2_CONSENT, LENDER_QUOTES, PRICING_PARAMS } from '../data/mockData.js'
 import { computeAvailableValueStaircase, computeAdvanceInterest, computeQuoteComparison } from '../logic/pricing.js'
-import { ROUTES, availability, activeUnits, loan, unitStatus, fundingFrozen } from '../logic/journey.js'
+import SimHint from '../components/ui/SimHint.jsx'
+import { ROUTES, availability, activeUnits, loan, unitStatus, fundingFrozen, nextStep } from '../logic/journey.js'
 import { go } from '../utils/route.js'
 import { formatNumberVN, formatPercentVN } from '../utils/format.js'
 import { useApp } from '../state/appState.jsx'
@@ -31,6 +32,9 @@ const INTEREST_DAYS = 5
 // "Techcombank đang thẩm định" — trạng thái giao diện có chữ, giữ 1,2 giây kể cả khi
 // reduced-motion (san-pham.md mục I, dòng 5d)
 const REVIEW_MS = 1200
+
+// Mỗi trang đúng một nút đặc (DESIGN.md "Thứ bậc nút"): nút là đích của thẻ Bước tiếp theo → đặc
+const variantFor = (state, target) => (nextStep(state, 'ung-von').target === target ? 'primary' : 'secondary')
 
 function currentStep(state) {
   const { consents, application } = state
@@ -117,8 +121,14 @@ function NeedA2() {
           </p>
         </div>
       </div>
-      <GatedButton gate={availability(state, 'viewEstimate')} onClick={() => {}}>
-        {state.scenario.phase3 ? 'Tiếp: chọn bên nhận yêu cầu' : 'Xem ước tính'}
+      {/* Nút chính của bước 1 (Vòng 28) — thẻ Bước tiếp theo chỉ dẫn xuống đây */}
+      <GatedButton
+        gate={availability(state, 'grantA2')}
+        variant={variantFor(state, 'grantA2')}
+        stepTarget="grantA2"
+        onClick={() => go(ROUTES.a2)}
+      >
+        Cấp A2 trên trang Techcombank
       </GatedButton>
     </Card>
   )
@@ -145,7 +155,7 @@ function Estimate({ staircase }) {
           <Money value={staircase.result} size="hero" className="mt-1 block text-ink" />
           <EstimateDisclaimer className="mt-3" />
         </Card>
-        <GatedButton gate={sign} onClick={() => go(ROUTES.a4)}>
+        <GatedButton gate={sign} variant={variantFor(state, 'signA4')} stepTarget="signA4" onClick={() => go(ROUTES.a4)}>
           Tiếp: ký thỏa thuận A4
         </GatedButton>
         <Card padding="px-6 py-3">
@@ -171,6 +181,12 @@ function StaircaseCard({ staircase, units, className }) {
   const discount = minus('verificationDiscount')
   const formula = staircase.formulaValueTotal
   const pct = (v) => `${projected > 0 ? Math.max(0, Math.min(100, (v / projected) * 100)) : 0}%`
+  const segments = [
+    { label: 'Khả dụng theo công thức', value: formula, fill: 'bg-primary' },
+    { label: 'Tỷ lệ hoàn', value: returns, fill: 'bg-slate-500' },
+    { label: 'Biên an toàn', value: safety, fill: 'bg-slate-300' },
+    { label: 'Chiết khấu xác thực', value: discount, fill: 'bg-slate-200' },
+  ]
 
   return (
     <Card padding="p-6" className={className}>
@@ -178,11 +194,21 @@ function StaircaseCard({ staircase, units, className }) {
         Bảng tính <Term name="Giá trị khả dụng">giá trị khả dụng</Term>
       </h2>
       <div className="mt-3 flex h-8 w-full overflow-hidden rounded-lg" role="img" aria-label="Cơ cấu giá trị ròng dự phóng">
-        <div className="bg-primary" style={{ width: pct(formula) }} />
-        <div className="bg-slate-400" style={{ width: pct(returns) }} />
-        <div className="bg-slate-300" style={{ width: pct(safety) }} />
-        <div className="bg-slate-200" style={{ width: pct(discount) }} />
+        {segments.map((s) => (
+          <div key={s.label} className={s.fill} style={{ width: pct(s.value) }} />
+        ))}
       </div>
+      {/* Chú thích từng đoạn (Vòng 28) — chấm màu + tên + số, không chỉ dựa vào màu */}
+      <ul className="mt-2 flex flex-wrap gap-x-5 gap-y-1 text-label text-ink">
+        {segments
+          .filter((s) => s.value > 0)
+          .map((s) => (
+            <li key={s.label} className="flex items-center gap-1.5 whitespace-nowrap">
+              <span className={`h-3 w-3 rounded-sm ${s.fill}`} aria-hidden="true" />
+              {s.label} <Money value={s.value} size="label" className="font-semibold" />
+            </li>
+          ))}
+      </ul>
       <div className="mt-4 divide-y divide-line rounded-lg border border-line">
         <CalcRow
           label={<><Term name="Giá trị ròng dự phóng" /> ({units.map((u) => `${u.code} ${formatNumberVN(u.projectedNetValue)}`).join(" + ")})</>}
@@ -209,7 +235,7 @@ function CalcRow({ label, value, strong }) {
   return (
     <div className={`flex items-center justify-between px-4 py-2 text-body ${strong ? 'bg-app-bg font-semibold text-ink' : 'text-ink-muted'}`}>
       <span>{label}</span>
-      <span className="font-medium tabular-nums text-ink">{formatNumberVN(value)} triệu</span>
+      <span className="whitespace-nowrap font-medium tabular-nums text-ink">{formatNumberVN(value)} triệu</span>
     </div>
   )
 }
@@ -256,7 +282,7 @@ function Submit({ staircase }) {
           Techcombank đang thẩm định…
         </div>
       ) : (
-        <GatedButton gate={gate} onClick={() => setReviewing(true)}>
+        <GatedButton gate={gate} variant={variantFor(state, 'submit')} stepTarget="submit" onClick={() => setReviewing(true)}>
           Gửi đề nghị tới Techcombank
         </GatedButton>
       )}
@@ -279,12 +305,14 @@ function Disbursed() {
         </div>
         <LockedUnits amounts={amounts} />
         <div className="flex justify-end">
-          <Button onClick={() => go(ROUTES.khoanVay)}>Xem khoản vay</Button>
+          <Button variant="secondary" onClick={() => go(ROUTES.khoanVay)}>
+            Xem khoản vay
+          </Button>
         </div>
         {/* Hành trình 2.6: đứt gãy → đóng băng cấp vốn mới; Ký A4 cho đề nghị mới vô hiệu kèm lý do */}
         {fundingFrozen(state) && (
           <div className="border-t border-line pt-4">
-            <GatedButton gate={availability(state, 'signA4')} onClick={() => {}}>
+            <GatedButton gate={availability(state, 'signA4')} variant="secondary" onClick={() => {}}>
               Ký A4 cho đề nghị mới
             </GatedButton>
           </div>
@@ -348,6 +376,8 @@ function Recipients() {
       </fieldset>
       <GatedButton
         gate={availability(state, { type: 'requestQuotes', recipients })}
+        variant={variantFor(state, 'requestQuotes')}
+        stepTarget="requestQuotes"
         onClick={() => dispatch({ type: 'requestQuotes', recipients })}
       >
         Gửi yêu cầu chào giá
@@ -442,7 +472,7 @@ function SignChosen() {
         <Button variant="secondary" onClick={() => dispatch({ type: 'requestQuotes', recipients: quoteRequest.recipients })}>
           Chọn chào giá khác
         </Button>
-        <GatedButton gate={availability(state, 'signA4')} onClick={() => go(ROUTES.a4)}>
+        <GatedButton gate={availability(state, 'signA4')} variant={variantFor(state, 'signA4')} stepTarget="signA4" onClick={() => go(ROUTES.a4)}>
           Ký trên trang {chosenLender}
         </GatedButton>
       </div>
@@ -466,12 +496,19 @@ function OtherLenderEnd() {
           </p>
         </div>
         <LockedUnits amounts={amounts} />
-        <Callout>Dòng tất toán trong mô phỏng dựng cho Techcombank.</Callout>
+        <SimHint>Dòng tất toán trong mô phỏng dựng cho Techcombank</SimHint>
         <div className="flex justify-end gap-3">
-          <Button variant="secondary" onClick={() => go(ROUTES.batDauLai)}>
+          <Button variant="secondary" className="whitespace-nowrap" onClick={() => go(ROUTES.batDauLai)}>
             Bắt đầu lại
           </Button>
-          <Button onClick={() => dispatch({ type: 'rechooseQuote' })}>Chọn lại chào giá</Button>
+          <Button
+            variant={variantFor(state, 'rechooseQuote')}
+            className="whitespace-nowrap"
+            data-step-target="rechooseQuote"
+            onClick={() => dispatch({ type: 'rechooseQuote' })}
+          >
+            Chọn lại chào giá
+          </Button>
         </div>
       </Card>
       <LockCertificate amounts={amounts} secured={l.lender} />

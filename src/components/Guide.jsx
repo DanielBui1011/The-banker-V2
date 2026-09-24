@@ -86,7 +86,7 @@ export function WelcomeDialog({ open, onChoose }) {
         </button>
       </div>
       <p className="mt-5 text-label text-ink-muted">
-        {FOOTER_NOTE}. Bạn có thể đổi sang vai cán bộ Techcombank ở bảng Mô phỏng bên phải.
+        {FOOTER_NOTE}. Bạn có thể đổi sang vai cán bộ Techcombank ở bảng tối bên phải.
       </p>
     </dialog>
   )
@@ -96,28 +96,17 @@ export function WelcomeDialog({ open, onChoose }) {
 const GO_CLASS =
   'inline-block rounded-md px-3 py-1 text-label font-semibold transition duration-fast focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'
 
-function GoTo({ task, current }) {
+// Luôn viền: nút đặc duy nhất của trang thuộc thẻ Bước tiếp theo hoặc thân trang (Vòng 28)
+function GoTo({ task }) {
   return (
     <a
       href={task.fix.href}
       aria-label={`Đi tới: ${task.label}`}
-      className={`${GO_CLASS} ${current ? 'bg-primary text-white hover:opacity-90' : 'border border-primary text-primary hover:bg-primary-soft'}`}
+      className={`${GO_CLASS} border border-primary text-primary hover:bg-primary-soft`}
     >
       Đi tới
     </a>
   )
-}
-
-// Tên ngắn cho thanh điều hướng (thiếu chỗ ở 1366×768); tên đầy đủ ở nhiệm vụ đang làm,
-// aria-label và ngăn Hướng dẫn.
-const SHORT = {
-  1: 'Kết nối Techcombank',
-  2: 'Xem khoản phải thu',
-  3: 'Nhận giải ngân',
-  4: 'Trả hết khoản vay',
-  5: 'Góc nhìn cán bộ',
-  6: 'Đổi tài khoản nhận tiền',
-  7: 'Nhiều bên chào giá',
 }
 
 function TaskIcon({ task, current }) {
@@ -134,14 +123,15 @@ function TaskIcon({ task, current }) {
   )
 }
 
-// compact: một dòng tên ngắn; nhiệm vụ chưa xong thì cả dòng là liên kết Đi tới.
+// Một bộ nhãn duy nhất từ tasks() cho thanh trái, ngăn Hướng dẫn và thẻ kết (Vòng 28); thiếu
+// chỗ thì xuống dòng, không cắt. compact: nhiệm vụ chưa xong thì cả dòng là liên kết Đi tới.
 // Nhiệm vụ đang làm (current) luôn hiện đủ: tên đầy đủ + nút Đi tới.
 function TaskRow({ task, current, compact }) {
   if (compact && !current) {
     const text = (
       <>
         <span className="sr-only">{task.done ? 'Đã xong: ' : 'Chưa xong: '}</span>
-        {SHORT[task.id]}
+        {task.label}
       </>
     )
     return (
@@ -151,12 +141,12 @@ function TaskRow({ task, current, compact }) {
           <a
             href={task.fix.href}
             aria-label={`Đi tới: ${task.label}`}
-            className="min-w-0 flex-1 truncate rounded text-label text-ink transition-colors duration-fast hover:text-primary hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+            className="min-w-0 flex-1 rounded text-label text-ink transition-colors duration-fast hover:text-primary hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
           >
             {text}
           </a>
         ) : (
-          <span className="min-w-0 flex-1 truncate text-label text-ink-muted transition-colors duration-slow">{text}</span>
+          <span className="min-w-0 flex-1 text-label text-ink-muted transition-colors duration-slow">{text}</span>
         )}
       </li>
     )
@@ -172,7 +162,7 @@ function TaskRow({ task, current, compact }) {
           {task.label}
           {task.optional && <span className="text-ink-muted"> (tùy chọn)</span>}
         </p>
-        {task.fix && <GoTo task={task} current={current} />}
+        {task.fix && <GoTo task={task} />}
       </div>
     </li>
   )
@@ -201,7 +191,7 @@ function FinishCard({ optional }) {
       </ol>
       <a
         href={ROUTES.batDauLai}
-        className={`${GO_CLASS} flex w-fit items-center gap-1.5 border border-primary text-primary hover:bg-app-surface`}
+        className={`${GO_CLASS} flex w-fit items-center gap-1.5 whitespace-nowrap border border-primary text-primary hover:bg-app-surface`}
       >
         <RotateCcw size={16} aria-hidden="true" />
         Bắt đầu lại

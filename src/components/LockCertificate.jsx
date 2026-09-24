@@ -43,7 +43,7 @@ export default function LockCertificate({ amounts, secured = LOCK_CERTIFICATE.se
         <CertRow label="Thuật toán chữ ký" value="RS256 (JWS) — kiểm chứng độc lập" />
       </div>
 
-      <p className="mt-4 text-label italic text-slate-600">Chữ ký minh họa trong prototype.</p>
+      <p className="mt-4 text-label italic text-slate-600">Chữ ký hiển thị rút gọn.</p>
 
       <button
         onClick={() => setShowTech((v) => !v)}

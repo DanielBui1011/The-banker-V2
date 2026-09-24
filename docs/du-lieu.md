@@ -210,11 +210,24 @@ Ví dụ minh họa phơi nhiễm chéo: nếu đã có bên khác khóa 100 →
 KHÔNG hiển thị tên bên đang khóa.
 
 ## 12. Giai đoạn 3 — chào giá cho RU-03 và RU-04
-| Bên cho vay | Giá trị | Lãi suất/năm | Kỳ hạn | Tiền lãi ước tính nếu tất toán sau 5 ngày |
+| Bên cho vay | Giá trị | Lãi suất/năm | Kỳ hạn | Tiền lãi ước tính nếu tất toán sau 5 ngày (nghìn đồng, số dẫn xuất) |
 |---|---|---|---|---|
-| Techcombank | 85,0 | 12,0% | Đến khi tất toán, tối đa 20 ngày | 0,14 |
-| Ngân hàng B | 85,0 | 13,2% | Đến khi tất toán, tối đa 20 ngày | 0,15 |
-| Công ty tài chính C | 80,0 | 15,6% | Đến khi tất toán, tối đa 15 ngày | 0,17 |
+| Techcombank | 85,0 | 12,0% | Đến khi tất toán, tối đa 20 ngày | 140 |
+| Ngân hàng B | 85,0 | 13,2% | Đến khi tất toán, tối đa 20 ngày | 154 |
+| Công ty tài chính C | 80,0 | 15,6% | Đến khi tất toán, tối đa 15 ngày | 171 |
+
+**Tiền lãi là số dẫn xuất, không phải đầu vào (Vòng 28).** Công thức (T9, `computeAdvanceInterest`
+trong src/logic/pricing.js): tiền lãi = giá trị × lãi suất/năm × số ngày / 365, đổi sang nghìn đồng
+(× 1.000) rồi làm tròn tới nghìn đồng. Giao diện hiển thị tiền lãi bằng "nghìn đồng" (AGENTS.md mục 5).
+
+| Trường hợp | Đầu vào | Kết quả chưa làm tròn | Hiển thị |
+|---|---|---|---|
+| Techcombank (T9) | 85 × 12% × 5 / 365 | 139,73 nghìn | **140 nghìn đồng** |
+| Ngân hàng B | 85 × 13,2% × 5 / 365 | 153,70 nghìn | **154 nghìn đồng** |
+| Công ty tài chính C | 80 × 15,6% × 5 / 365 | 170,96 nghìn | **171 nghìn đồng** |
+| Mùa cao điểm (T2, sau trần dư nợ) | 150 × 12% × 5 / 365 | 246,58 nghìn | **247 nghìn đồng** |
+
+Bản trước ghi 0,15 / 0,17 (triệu, làm tròn 2 chữ số) — thay bằng 154 / 171 nghìn đồng ở trên.
 
 Chứng thư khóa (khi chọn Techcombank):
 | Trường | Giá trị |

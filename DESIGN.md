@@ -46,6 +46,37 @@ mô phỏng, nút "?".
 bounce/elastic; không chạy số. CSS + View Transitions API, không thư viện;
 `prefers-reduced-motion` → hiện ngay, bỏ màn chuyển tiếp.
 
+## Vòng 28 — Thứ bậc nút, SimHint
+
+**Mỗi trang đúng MỘT nút đặc** (nền `--color-primary`, hoặc `#141414` trong khung `bank`). Mọi
+nút/liên kết hành động khác trên trang là nút viền. Nguồn quyết định duy nhất:
+`nextStep(state, trang)` trong `src/logic/journey.js`:
+
+| `nextStep` trả về | Thẻ "Bước tiếp theo" | Thân trang |
+|---|---|---|
+| `target` (hành động nằm TRÊN CÙNG TRANG) | Chỉ chữ + liên kết "Đến bước này ↓": cuộn tới nút đó (giữa màn hình), đặt focus, viền nổi `.step-flash` ≤800ms; `prefers-reduced-motion` → cuộn ngay | Nút có `data-step-target` bằng `target` là nút đặc |
+| `action`, không `target` (hành động ở trang khác, kể cả trang Techcombank và Tua) | Nút đặc như cũ | Mọi nút là viền |
+| không có gì | Chỉ chữ | Mọi nút là viền |
+
+- Trạng thái trống (`EmptyState`) luôn dùng nút viền: trang trống luôn có thẻ Bước tiếp theo
+  mang nút đặc.
+- Nút "Đi tới" trong danh sách nhiệm vụ luôn là viền.
+- Ứng vốn bước 1: nút chính "Cấp A2 trên trang Techcombank" trong thân trang (bỏ nút xám
+  "Xem ước tính").
+- Kiểm chứng: `journey.test.js` "Vòng 28 — một nút đặc mỗi trang" (mọi trang × mọi trạng thái
+  của hành trình 1; nút đặc trong thân trang luôn bấm được theo `availability`).
+- Nút vô hiệu luôn một kiểu: nền `#ECE8E0`, chữ `#545B69` (5,58:1), `cursor: not-allowed`
+  (kể cả nút Tua trên bảng Mô phỏng, thêm viền đứt để khác nút bật trên nền tối).
+
+**SimHint** (`src/components/ui/SimHint.jsx`) — chip tối `slate-900` cùng kiểu bảng Mô phỏng,
+icon `SlidersHorizontal`, chữ ngắn một dòng; bấm → mở bảng Mô phỏng. Là chỗ DUY NHẤT trong trang
+sản phẩm được nhắc tới mô phỏng (ngày mô phỏng ở thanh trên, gợi ý mùa cao điểm, "Dòng tất toán
+trong mô phỏng dựng cho Techcombank", đường sửa trỏ bảng Mô phỏng trong `GateReason`). Chữ
+"prototype"/"mô phỏng" ngoài SimHint, bảng Mô phỏng, chân trang và nhãn khung ngân hàng bị
+`tests/quy-tac.test.js` quy tắc 11 chặn.
+
+**Tiền và đơn vị** không xuống dòng: `Money` mang `whitespace-nowrap`.
+
 ---
 
 Tài liệu này mô tả ĐÚNG những gì đang tồn tại trong code tại thời điểm Vòng 7

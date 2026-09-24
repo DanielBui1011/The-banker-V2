@@ -289,3 +289,30 @@ describe('Quy tắc 10 — tên sản phẩm đi qua src/config/brand.js', () =>
     expect(violations).toEqual([])
   })
 })
+
+// ─── 11. Chữ "prototype" / "mô phỏng" chỉ ở chỗ được phép (Vòng 28) ─────────────
+// Trang sản phẩm không nói về việc dàn dựng. Được phép: SimHint (chip mở bảng Mô phỏng), bảng
+// Mô phỏng, chân trang (FOOTER_NOTE ở mockData, không quét), nhãn khung ngân hàng (SurfaceFrame).
+// Chuỗi từ src/logic (thẻ Bước tiếp theo, lý do chặn) có test riêng ở journey.test.js.
+const STAGED_RE = /prototype|mô phỏng/i
+const STAGED_ALLOWED_FILES = ['SimHint.jsx', 'ScenarioPanel.jsx', 'SurfaceFrame.jsx']
+describe('Quy tắc 11 — không nhắc "prototype"/"mô phỏng" ngoài SimHint', () => {
+  it('src/pages và src/components: chỉ trong comment, trong <SimHint> hoặc file được phép', () => {
+    const violations = []
+    for (const file of allFiles) {
+      if (STAGED_ALLOWED_FILES.includes(file.split(/[\\/]/).pop())) continue
+      const lines = getLines(file)
+      let inSimHint = false
+      for (const { text: raw, num, rel } of lines) {
+        const text = raw.replace(/\r$/, '')
+        if (text.includes('<SimHint')) inSimHint = true
+        const code = text.replace(/\{\/\*.*?\*\/\}/g, '').replace(/(^|\s)\/\/.*$/, '')
+        const trimmed = code.trimStart()
+        const isComment = trimmed.startsWith('*') || trimmed.startsWith('/*') || trimmed === ''
+        if (!inSimHint && !isComment && STAGED_RE.test(code)) violations.push(`${rel}:${num} — "${text.trim().slice(0, 100)}"`)
+        if (text.includes('</SimHint>') || /<SimHint[^>]*\/>/.test(text)) inSimHint = false
+      }
+    }
+    expect(violations, violations.join('\n')).toHaveLength(0)
+  })
+})

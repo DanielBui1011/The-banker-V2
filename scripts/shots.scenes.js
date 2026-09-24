@@ -45,7 +45,7 @@ export default [
     id: 'n03',
     tieuDe: 'Tổng quan — ngăn chọn ngân hàng nhận tiền',
     buoc: [...CHAO, { click: 'Kết nối Techcombank' }, { click: 'Hỗ trợ kết nối qua Open API' }],
-    ghiChu: 'Đã bấm một ngân hàng khác để hiện ghi chú "mô phỏng đi theo Techcombank"',
+    ghiChu: 'Đã bấm một ngân hàng khác để hiện ghi chú "Tiền sàn của chị Lan về tài khoản Techcombank."',
   },
   {
     id: 'n04',
@@ -128,8 +128,8 @@ export default [
   {
     id: 'n35',
     tieuDe: 'Tổng quan — thẻ kết "Bạn đã đi hết hành trình"',
-    buoc: [...DA_TRA_HET, { goto: '#/nha-ban/khoan-phai-thu' }, DOI_VAI, { wait: 300 }, DOI_VAI, { goto: '#/nha-ban/tong-quan' }],
-    ghiChu: 'Mở Khoản phải thu (nhiệm vụ 2), đổi sang vai cán bộ rồi đổi lại (nhiệm vụ 5)',
+    buoc: [...DA_TRA_HET, DOI_VAI, { wait: 300 }, DOI_VAI, { goto: '#/nha-ban/tong-quan' }],
+    ghiChu: 'Vòng 28: KHÔNG mở Khoản phải thu — nhiệm vụ 2 xong nhờ bước ước tính; đổi vai cán bộ rồi đổi lại (nhiệm vụ 5)',
   },
 
   // ─── Vai Cán bộ Techcombank ──────────────────────────────────────────────
@@ -138,10 +138,16 @@ export default [
   { id: 'c03', tieuDe: 'Cán bộ — Minh họa bên khác khóa (bật)', buoc: [...DA_VAY, DOI_VAI, { click: 'Minh họa bên khác khóa' }] },
   {
     id: 'c04',
-    tieuDe: 'Cán bộ — Danh mục khóa + gửi lại lệnh khóa (phím D)',
-    buoc: [...DA_VAY, DOI_VAI, { goto: '#/ngan-hang/danh-muc-khoa' }, { press: 'd' }],
-    giuThongBao: true,
+    tieuDe: 'Cán bộ — Danh mục khóa, TRƯỚC khi bấm "Thử gửi lại lệnh khóa"',
+    buoc: [...DA_VAY, DOI_VAI, { goto: '#/ngan-hang/danh-muc-khoa' }],
     man1920: true,
+    ghiChu: 'Vòng 28: thông báo lũy đẳng chưa hiện',
+  },
+  {
+    id: 'c07',
+    tieuDe: 'Cán bộ — Danh mục khóa, SAU khi bấm "Thử gửi lại lệnh khóa"',
+    buoc: [...DA_VAY, DOI_VAI, { goto: '#/ngan-hang/danh-muc-khoa' }, { click: 'Thử gửi lại lệnh khóa' }],
+    giuThongBao: true,
   },
   { id: 'c05', tieuDe: 'Cán bộ — ngăn Chứng thư', buoc: [...DA_VAY, DOI_VAI, { goto: '#/ngan-hang/danh-muc-khoa' }, { click: 'Xem chứng thư' }] },
   { id: 'c06', tieuDe: 'Cán bộ — Cảnh báo (không có)', buoc: [...DA_VAY, DOI_VAI, { goto: '#/ngan-hang/canh-bao' }] },
@@ -155,6 +161,19 @@ export default [
     buoc: [...DUT_GAY, { goto: '#/nha-ban/khoan-vay' }, { click: 'Tôi đã đổi tài khoản — giải trình' }],
   },
   { id: 't04', tieuDe: 'Đổi TK — Cán bộ, trang Cảnh báo có cảnh báo đứt gãy', buoc: [...DUT_GAY, DOI_VAI, { goto: '#/ngan-hang/canh-bao' }] },
+  {
+    id: 't05',
+    tieuDe: 'Đổi TK — sau giải trình, đã trả RU-03 từ nguồn khác',
+    buoc: [
+      ...DUT_GAY,
+      { goto: '#/nha-ban/khoan-vay' },
+      { click: 'Tôi đã đổi tài khoản — giải trình' },
+      { click: 'Xác nhận' },
+      ...TRA('RU-03'),
+      { goto: '#/nha-ban/khoan-vay' },
+    ],
+    man1920: true,
+  },
 
   // ─── Tình huống Giai đoạn 3 ──────────────────────────────────────────────
   { id: 'g01', tieuDe: 'GĐ3 — chọn bên nhận yêu cầu chào giá', buoc: [...GD3] },
@@ -173,5 +192,28 @@ export default [
     id: 'g05',
     tieuDe: 'GĐ3 — đã ký với Ngân hàng B (kết thúc nhánh bên khác)',
     buoc: [...GD3_CHAO_GIA, { click: 'Chọn chào giá của Ngân hàng B' }, DONG_Y, { click: 'Ký thỏa thuận' }],
+  },
+  {
+    id: 'g06',
+    tieuDe: 'GĐ3 — chọn Techcombank, ký tới giải ngân',
+    buoc: [...GD3_CHAO_GIA, { click: 'Chọn chào giá của Techcombank' }, DONG_Y, { click: 'Ký thỏa thuận' }, { goto: '#/nha-ban/ung-von' }],
+  },
+  {
+    id: 'g07',
+    tieuDe: 'GĐ3 — trang ký của Công ty tài chính C (khóa 44 + 36)',
+    buoc: [...GD3_CHAO_GIA, { click: 'Chọn chào giá của Công ty tài chính C' }],
+  },
+
+  // ─── Vòng 28: cảnh còn thiếu ở walkthrough v27 mục 5 ─────────────────────
+  { id: 'n36', tieuDe: 'Chế độ "Tự khám phá" (bỏ qua hướng dẫn)', buoc: [{ click: 'Tự khám phá' }] },
+  {
+    id: 'n37',
+    tieuDe: 'Bong bóng chú giải thuật ngữ (Lô tất toán, Tổng quan 15/09)',
+    buoc: [...DEN_1509, { goto: '#/nha-ban/tong-quan' }, { click: 'Lô tất toán' }],
+  },
+  {
+    id: 'n38',
+    tieuDe: 'Ứng vốn bước 1 — bấm "Đến bước này ↓" (viền nổi quanh nút chính)',
+    buoc: [...DEN_1509, { goto: '#/nha-ban/ung-von' }, { click: 'Đến bước này ↓' }],
   },
 ]

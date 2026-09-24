@@ -8,7 +8,7 @@ import SurfaceFrame from '../components/ui/SurfaceFrame.jsx'
 import Term from '../components/ui/Term.jsx'
 import { GRANTED_PERMISSIONS, A1_TOKEN_TTL_SECONDS } from '../data/mockData.js'
 import { LEGAL_NAME, TPP_CODE } from '../config/brand.js'
-import { ROUTES, availability, accessLog, loan } from '../logic/journey.js'
+import { ROUTES, availability, accessLog, loan, nextStep } from '../logic/journey.js'
 import { formatDateVN } from '../utils/format.js'
 import { useApp } from '../state/appState.jsx'
 
@@ -32,13 +32,19 @@ function statusOf(state, code) {
 }
 
 // Nút của từng thẻ quyền: rút / cấp lại (đều mở trang Techcombank) hoặc nút vô hiệu + lý do
+// Mỗi trang đúng một nút đặc (Vòng 28): chỉ nút là đích của thẻ Bước tiếp theo mới đặc; mọi nút
+// rút/cấp lại khác cùng một kiểu viền.
 function PermissionAction({ code, status }) {
   const { state, dispatch } = useApp()
-  const link = (href, label, variant) => (
+  const target = nextStep(state, 'quyen-du-lieu').target
+  const link = (href, label, stepTarget) => (
     <a
       href={href}
-      className={`inline-block rounded-xl px-5 py-2.5 text-body font-semibold transition duration-fast ${
-        variant === 'primary' ? 'bg-primary text-white hover:opacity-90' : 'border border-line text-ink hover:bg-app-bg'
+      data-step-target={stepTarget}
+      className={`inline-block rounded-xl border px-5 py-2.5 text-body font-semibold transition duration-fast ${
+        stepTarget && stepTarget === target
+          ? 'border-primary bg-primary text-white hover:opacity-90'
+          : 'border-primary bg-app-surface text-primary hover:bg-primary-soft'
       }`}
     >
       {label}
@@ -53,10 +59,10 @@ function PermissionAction({ code, status }) {
     )
   }
   const base = code === 'A1' ? ROUTES.a1 : ROUTES.a2
-  if (status === 'granted-active') return link(`${base}?thao-tac=rut`, `Rút quyền ${code} trên Techcombank`, 'secondary')
+  if (status === 'granted-active') return link(`${base}?thao-tac=rut`, `Rút quyền ${code} trên Techcombank`)
   if (status === 'granted-revoked')
-    return link(code === 'A1' ? ROUTES.a1 : `${ROUTES.a2}?ve=quyen-du-lieu`, `Cấp lại ${code} trên Techcombank`, 'primary')
-  if (code === 'A1') return link(ROUTES.a1, 'Kết nối Techcombank', 'primary')
+    return link(code === 'A1' ? ROUTES.a1 : `${ROUTES.a2}?ve=quyen-du-lieu`, `Cấp lại ${code} trên Techcombank`, code === 'A1' ? 'grantA1' : 'grantA2')
+  if (code === 'A1') return link(ROUTES.a1, 'Kết nối Techcombank', 'grantA1')
   return null
 }
 
@@ -84,6 +90,7 @@ export default function QuyenDuLieu() {
                 <Term name={TERM[code]}>{code}</Term> — {p.purpose}
               </div>
               <StatusBadge status={status} className="self-start" />
+              {status === 'granted-terminated' && <div className="text-label text-ink-muted">Lý do: khoản vay đã tất toán</div>}
               <div className="text-label text-ink-muted">Bản chất: {NATURE[code]}</div>
               <div className="text-label text-ink-muted">Bên nhận: {RECIPIENT[code] ?? p.to}</div>
               <div className="text-label text-ink-muted">
@@ -146,7 +153,7 @@ export default function QuyenDuLieu() {
           <h2 className="text-emphasis font-semibold text-ink">Dữ liệu của tôi</h2>
           <p className="text-body text-ink-muted">
             {exported
-              ? 'Đã xuất hồ sơ doanh thu đã xác thực (mô phỏng) — không có tệp thật được tạo.'
+              ? 'Đã xuất hồ sơ doanh thu đã xác thực — không có tệp thật được tạo.'
               : 'Xuất hồ sơ doanh thu đã xác thực để lưu hoặc chia sẻ.'}
           </p>
         </div>
