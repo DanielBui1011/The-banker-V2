@@ -204,15 +204,15 @@ function Lookup({ view }) {
         </h2>
         <DataTable
           columns={[
-            { key: 'code', header: 'Đơn vị', render: (u) => <span className="font-semibold text-slate-900">{u.code}</span> },
-            { key: 'projected', header: <Term name="Giá trị ròng dự phóng" />, align: 'right', render: (u) => `${formatNumberVN(u.projectedNetValue)} triệu` },
+            { key: 'code', header: 'Đơn vị', render: (u) => <span className="whitespace-nowrap font-semibold text-slate-900">{u.code}</span> },
+            { key: 'projected', header: <Term name="Giá trị ròng dự phóng" />, align: 'right', render: (u) => <span className="whitespace-nowrap">{formatNumberVN(u.projectedNetValue)} triệu</span> },
             {
               key: 'available',
               header: <Term name="Giá trị khả dụng" />,
               align: 'right',
-              render: (u) => (u.availableValue == null ? 'Chưa đủ điều kiện' : `${formatNumberVN(u.availableValue)} triệu`),
+              render: (u) => (u.availableValue == null ? 'Chưa đủ điều kiện' : <span className="whitespace-nowrap">{formatNumberVN(u.availableValue)} triệu</span>),
             },
-            { key: 'locked', header: 'Đã bị khóa', align: 'right', render: (u) => `${formatNumberVN(u.lockedAmount)} triệu` },
+            { key: 'locked', header: 'Đã bị khóa', align: 'right', render: (u) => <span className="whitespace-nowrap">{formatNumberVN(u.lockedAmount)} triệu</span> },
             { key: 'count', header: 'Số bên đang khóa', align: 'right', render: (u) => u.lockerCount },
             { key: 'status', header: 'Trạng thái', render: (u) => <StatusBadge status={u.status} size="sm" className="whitespace-nowrap" /> },
           ]}
@@ -274,7 +274,13 @@ function Portfolio({ onResend, result }) {
   const { state } = useApp()
   const [certOpen, setCertOpen] = useState(false)
   const gate = availability(state, 'viewCertificate')
-  if (!gate.ok) return <Blocked gate={gate} />
+  if (!gate.ok)
+    return (
+      <>
+        <Blocked gate={gate} />
+        {result}
+      </>
+    )
   const own = state.registry.filter((e) => e.lenderId === TCB)
   const amounts = Object.fromEntries(own.map((e) => [e.unitId, e.amount]))
   return (
