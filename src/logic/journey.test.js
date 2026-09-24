@@ -190,10 +190,31 @@ describe('bankView', () => {
     const v = bankView(fullyRepaid())
     expect(v.totalConsolidatedExposure).toBe(0)
     expect(v.units.every((u) => u.lockedAmount === 0 && u.lockerCount === 0)).toBe(true)
+    // đơn vị đã tất toán không còn khóa được
+    expect(v.remainingAvailable).toBe(0)
+    expect(v.units.map((u) => u.status)).toEqual(['settled', 'settled', 'insufficient-history'])
+  })
+  it('mỗi đơn vị mang trạng thái của unitStatus (đứt gãy hiện ở cổng ngân hàng)', () => {
+    expect(bankView(accountChangeAt(4)).units[0]).toMatchObject({ code: 'RU-03', status: 'broken' })
   })
   it('cảnh báo chỉ khi Đổi tài khoản và ngày ≥ 24/09', () => {
     expect(bankView(accountChangeAt(3)).alerts).toEqual([])
     expect(bankView(accountChangeAt(4)).alerts).toEqual([{ unit: 'RU-03', date: '2027-09-24' }])
+  })
+  it('hành trình 2: phơi nhiễm = dư nợ trang Khoản vay ở mọi mốc (15/09 → 24/09 → tất toán)', () => {
+    const states = [
+      accountChangeAt(0),
+      accountChangeAt(1),
+      run(accountChangeAt(2), { type: 'repay', unit: 'RU-04' }),
+      run(accountChangeAt(2), { type: 'repay', unit: 'RU-04' }, 'advance', 'advance'),
+      run(accountChangeAt(4), { type: 'repay', unit: 'RU-04' }, 'resolveAccountChange', { type: 'repay', unit: 'RU-03' }),
+    ]
+    expect(states.map((s) => bankView(s).totalConsolidatedExposure)).toEqual([85, 85, 46.75, 46.75, 0])
+    for (const s of states) expect(bankView(s).totalConsolidatedExposure).toBe(loan(s).debt)
+  })
+  it('không đọc BANK_VIEW tĩnh: mockData không còn xuất BANK_VIEW', async () => {
+    const data = await import('../data/mockData.js')
+    expect(data.BANK_VIEW).toBeUndefined()
   })
   it('không lộ tên bên đang khóa (quy-tac mục 5)', () => {
     const s = run(phase3Quotes(), { type: 'chooseQuote', lender: 'Ngân hàng B' }, 'signA4')
@@ -236,6 +257,13 @@ describe('tasks', () => {
 })
 
 describe('nextStep', () => {
+  it('hành trình 2.8: sau giải trình, RU-03 trả từ nguồn khác — không nói Shopee đã thanh toán', () => {
+    const s = run(accountChangeAt(4), { type: 'repay', unit: 'RU-04' }, 'resolveAccountChange')
+    expect(nextStep(s, 'khoan-vay')).toEqual({
+      text: 'Đã giải trình. Trả 46,75 triệu cho RU-03 từ nguồn khác trên Techcombank.',
+      action: { label: 'Trả nợ trên Techcombank', href: '#/techcombank/tra-no' },
+    })
+  })
   it('Đối soát, chưa kết nối → Kết nối Techcombank (D.3)', () => {
     expect(nextStep(start(), 'doi-soat')).toEqual({
       text: 'Kết nối tài khoản Techcombank để app đối soát tự động.',
