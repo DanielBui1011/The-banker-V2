@@ -152,3 +152,33 @@ bậc thị giác, một việc một lúc, trí nhớ làm việc).
 | Toàn cục | cream-palette, Callout lồng trong Card, SurfaceFrame sát mép | — | B | Dương tính giả: nền ngà là token DESIGN.md; dòng "Ước tính…" bắt buộc (quy-tac mục 4); khung app chạy sát mép có chủ đích |
 
 Bộ dò CLI (`src/pages`, `src/components`): 0 phát hiện. Không có lỗi console.
+
+### Vòng 25 — Kiểm thử người mới (browser agent)
+
+Cách chạy: agent không đọc mã, xóa localStorage, mở app ở 1366×768, chọn "Bắt đầu có hướng dẫn",
+**chỉ** làm theo thẻ Bước tiếp theo và nút "Đi tới" (được làm thao tác chính trên trang
+Techcombank). Kết quả: **đạt 5/5 sau 23 cú bấm**, không kẹt hẳn chỗ nào, không phải mở bảng Mô
+phỏng hay dùng phím tắt. (Ghi chép người lạ thật chưa có — ô `[DÁN GHI CHÉP]` của yêu cầu để
+trống; bảng dưới dùng kết quả agent.)
+
+Chú thích cột "Lớp xử lý": D.1 màn chào · D.2 danh sách nhiệm vụ · D.3 thẻ Bước tiếp theo ·
+D.4 chú giải thuật ngữ · D.5 ngăn Hướng dẫn.
+
+| # | Chỗ phải đoán | Mức | Lớp xử lý | Trạng thái |
+|---|---|---|---|---|
+| 1 | Ứng vốn, bước Gửi đề nghị: thẻ ghi "Gửi đề nghị tới Techcombank." nhưng không có nút — phải tìm nút trong trang | Chậm | D.3 | **Còn mở** — `nextStep` (fundingStep) trả `action: null` cho bước này; cần nút dẫn tới nút Gửi (sửa `src/logic/journey.js`, TDD) |
+| 2 | Ứng vốn 19/09: thẻ nói "Trả 46,75 triệu trên Techcombank" nhưng nút là "Xem khoản vay" — thêm một bước trung gian | Khó chịu nhẹ | D.3 | Có chủ đích (hành động trả nằm ở Khoản vay); cân nhắc dẫn thẳng tới trang Trả nợ |
+| 3 | Đối soát 01/08: thẻ "Tua tới 15/09…", nút "Tua tới sự kiện tiếp theo" — hai tên cho một việc | Khó chịu nhẹ | D.3 | **Còn mở** — thống nhất nhãn nút theo ngày ("Tua tới 15/09") |
+| 4 | Góc nhìn cán bộ hứa "xem tổng kết", về Tổng quan thẻ lại ghi "Không cần làm gì ở trang này"; tổng kết chỉ là thẻ nhỏ ở thanh bên | Khó chịu nhẹ | D.2 + D.3 | **Còn mở** — khi xong 5/5, thẻ Bước tiếp theo nên trỏ tới thẻ kết / hai nhiệm vụ tùy chọn |
+| 5 | Nhiệm vụ 2 vẫn "Chưa xong" sau khi tua; tên đổi giữa chừng ("Tua tới 15/09 và xem…" → "Xem khoản phải thu") | Khó chịu nhẹ | D.2 | Điều kiện đúng spec D.2 (phải mở Khoản phải thu); tên ngắn gây lệch — dùng tên ngắn "Tua và xem khoản phải thu" |
+
+Lỗi hiển thị agent ghi nhận:
+
+| Vấn đề | Đánh giá |
+|---|---|
+| Thanh bước của app nằm phía trên dải "Bạn đang ở trang của Techcombank" ở A2/A4 | Đúng thiết kế — san-pham.md B.2 và AGENTS.md mục 4: "thanh bước của Nền tảng nằm NGOÀI khung ngân hàng" |
+| Sau giải ngân, bước 4 "Gửi đề nghị" trên thanh bước vẫn hiện số 4, không có dấu tích | Còn mở — kiểm lại `Stepper` khi `currentStep = steps.length + 1` |
+| Tổng quan ngày 20/09 vẫn hiện thẻ "6 tuần sau" | Còn mở — thẻ nên chỉ hiện ở 15/09 |
+| Chuyển trang mờ dần > 1 giây, trang cũ và mới chồng nhau | Cần kiểm lại trên máy thật — khung trình duyệt bị ẩn làm trình duyệt hãm khung hình; token là 200ms |
+| Trang Trả nợ: nút "Hủy"/"Xác nhận trả nợ" sát mép dưới ở 1366×768 | Còn mở — cùng cách sửa như ConsentPage (dính đáy) |
+| Ô xác nhận + nút Đồng ý/Ký ở A1/A2/A4 nằm trong 768px | Xác nhận sửa mức Cao ở trên có hiệu lực |
