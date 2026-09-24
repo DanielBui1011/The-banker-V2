@@ -16,6 +16,10 @@ nên bước chụp phải chạy trên máy của bạn.
 
    Lệnh thứ hai tải Chromium (khoảng 150 MB) vào `%LOCALAPPDATA%\ms-playwright`.
 
+   Nếu PowerShell báo `npm.ps1 cannot be loaded because running scripts is disabled on this system`, thêm đuôi
+   `.cmd` vào lệnh (`npm.cmd install`, `npx.cmd playwright install chromium`, `npm.cmd run shots -- v27`), hoặc chạy
+   các lệnh trong Command Prompt (cmd). Cách này không phải đổi Execution Policy của máy.
+
 ## 2. Chụp
 
 `<nhan>` là tên đợt chụp, ví dụ `v27`. Ảnh ghi vào `docs/shots/<nhan>/`.
