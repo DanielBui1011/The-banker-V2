@@ -3,7 +3,7 @@ import Card from './ui/Card.jsx'
 import Money from './ui/Money.jsx'
 import SurfaceFrame from './ui/SurfaceFrame.jsx'
 import { LOCK_CERTIFICATE } from '../data/mockData.js'
-import { formatNumberVN } from '../utils/format.js'
+import { formatNumberVN, formatDateVN } from '../utils/format.js'
 
 // LockCertificate (Vòng 7C, Màn 5) — biên nhận ngân hàng sau khi khóa RU-03/RU-04
 // (docs/du-lieu.md mục 12). Chỉ dùng component chung trong src/components/ui/.
@@ -38,7 +38,7 @@ export default function LockCertificate({ amounts, secured = LOCK_CERTIFICATE.se
           }
         />
         <CertRow label="Thứ tự ưu tiên" value={`#${LOCK_CERTIFICATE.priority}`} />
-        <CertRow label="Thời điểm khóa" value={LOCK_CERTIFICATE.lockedAt} />
+        <CertRow label="Thời điểm khóa" value={`${formatDateVN(LOCK_CERTIFICATE.lockedAt.slice(0, 10))} ${LOCK_CERTIFICATE.lockedAt.slice(11)}`} />
         <CertRow label="Mã đăng ký bảo đảm" value={LOCK_CERTIFICATE.registrationId} />
         <CertRow label="Thuật toán chữ ký" value="RS256 (JWS) — kiểm chứng độc lập" />
       </div>

@@ -12,7 +12,7 @@ import { EstimateDisclaimer } from '../components/ui/Callout.jsx'
 import LockCertificate from '../components/LockCertificate.jsx'
 import { A2_CONSENT, LENDER_QUOTES, PRICING_PARAMS } from '../data/mockData.js'
 import { computeAvailableValueStaircase, computeAdvanceInterest } from '../logic/pricing.js'
-import { ROUTES, availability, activeUnits, loan, unitStatus } from '../logic/journey.js'
+import { ROUTES, availability, activeUnits, loan, unitStatus, fundingFrozen } from '../logic/journey.js'
 import { go } from '../utils/route.js'
 import { formatNumberVN, formatPercentVN } from '../utils/format.js'
 import { useApp } from '../state/appState.jsx'
@@ -256,6 +256,14 @@ function Disbursed() {
         <div className="flex justify-end">
           <Button onClick={() => go(ROUTES.khoanVay)}>Xem khoản vay</Button>
         </div>
+        {/* Hành trình 2.6: đứt gãy → đóng băng cấp vốn mới; Ký A4 cho đề nghị mới vô hiệu kèm lý do */}
+        {fundingFrozen(state) && (
+          <div className="border-t border-line pt-4">
+            <GatedButton gate={availability(state, 'signA4')} onClick={() => {}}>
+              Ký A4 cho đề nghị mới
+            </GatedButton>
+          </div>
+        )}
       </Card>
       <LockCertificate amounts={amounts} secured={l.lender} />
     </div>

@@ -18,6 +18,7 @@ import A2 from './pages/bank/A2.jsx'
 import A4 from './pages/bank/A4.jsx'
 import TraNo from './pages/bank/TraNo.jsx'
 import RutQuyen from './pages/bank/RutQuyen.jsx'
+import CongNoiBo from './pages/ngan-hang/CongNoiBo.jsx'
 
 const PAGES = {
   'tong-quan': TongQuan,
@@ -113,7 +114,7 @@ function AppRoutes() {
           onHelp={openHelp}
           notice={sixWeeks && route.page !== 'tong-quan' && <SixWeeksSummary onClose={closeSixWeeks} />}
         >
-          {/* Ba mục cổng ngân hàng dùng chung một màn cũ → không remount khi đổi mục */}
+          {/* Ba mục cổng ngân hàng dùng chung một trang → không remount khi đổi mục */}
           <Page key={`${route.space === "ngan-hang" ? route.space : route.page}:${resetSignal}`} route={route} state={state} />
         </AppShell>
       )}
@@ -124,11 +125,12 @@ function AppRoutes() {
 }
 
 function Page({ route, state }) {
-  // Chưa chuyển (Vòng 25): cổng ngân hàng và Ứng vốn ở Giai đoạn 3 vẫn là màn cũ
-  if (route.space === 'ngan-hang' || (route.page === 'ung-von' && state.scenario.phase3)) {
+  if (route.space === 'ngan-hang') return <CongNoiBo page={route.page} />
+  // Chưa chuyển (Vòng 25): Ứng vốn ở Giai đoạn 3 vẫn là màn cũ
+  if (route.page === 'ung-von' && state.scenario.phase3) {
     return (
       <div data-legacy-screen className="h-full">
-        <LegacyScreen route={route} />
+        <LegacyScreen />
       </div>
     )
   }

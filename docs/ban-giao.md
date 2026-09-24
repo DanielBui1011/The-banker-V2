@@ -164,7 +164,7 @@ Từ Vòng 20, danh sách trên được thay bằng lộ trình docs/plans/san-
 
 ### 7a. Adapter tạm Vòng 21 — gỡ ở Vòng 24
 
-**Vòng 22:** đã gỡ `permissionState`, `settlementState`, `scenarioState`, `TopBar`, `ActProgress`, `flow.js`, `ScreenShell` và Screen1–7, 9. Còn lại: `LegacyScreen` chỉ cho Screen8 (cổng ngân hàng) và Screen10 (Ứng vốn khi bật Giai đoạn 3) — hai màn này đọc thẳng `useApp()`; `[data-legacy-screen] footer` trong index.css. Gỡ ở Vòng 25. Bảng dưới là lịch sử.
+**Vòng 22:** đã gỡ `permissionState`, `settlementState`, `scenarioState`, `TopBar`, `ActProgress`, `flow.js`, `ScreenShell` và Screen1–7, 9. Còn lại: `LegacyScreen` chỉ cho Screen8 (cổng ngân hàng) và Screen10 (Ứng vốn khi bật Giai đoạn 3) — hai màn này đọc thẳng `useApp()`; `[data-legacy-screen] footer` trong index.css. Gỡ ở Vòng 25. **Vòng 23:** Screen8 đã thay bằng `src/pages/ngan-hang/CongNoiBo.jsx` (đọc `bankView(state)`, bỏ `BANK_VIEW` tĩnh và bộ chọn thời điểm); `LegacyScreen` chỉ còn Screen10. Bảng dưới là lịch sử.
 
 Các màn cũ (Screen1–10) chưa viết lại vẫn chạy trong khung app mới qua các lớp dưới đây. Mọi dữ kiện
 đọc từ store journey.js (selector); không còn state miền song song. Gỡ toàn bộ khi Vòng 24 thay xong các trang.

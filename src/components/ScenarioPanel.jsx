@@ -31,14 +31,14 @@ const SCENARIOS = [
     key: 'peakSeason',
     label: 'Mùa cao điểm',
     hint: 'M',
-    desc: 'Doanh thu sàn tăng mạnh — xem ước tính giá trị khả dụng mùa cao điểm.',
+    desc: 'Doanh thu sàn tăng mạnh — chỉ xem ước tính giá trị khả dụng, không tạo khoản vay.',
   },
   {
     action: 'toggleAccountChange',
     key: 'accountChange',
     label: 'Đổi tài khoản nhận tiền',
     hint: 'L',
-    desc: 'Tiền Shopee của RU-03 về một tài khoản khác, không về Techcombank.',
+    desc: 'Chị Lan đổi tài khoản nhận tiền trên Shopee sang ngân hàng khác mà chưa cập nhật.',
   },
   {
     action: 'togglePhase3',
@@ -76,7 +76,7 @@ export default function ScenarioPanel({ route, onHelp }) {
   function showToast(text) {
     clearTimeout(toastTimer.current)
     setToast(text)
-    toastTimer.current = setTimeout(() => setToast(null), 3000)
+    toastTimer.current = setTimeout(() => setToast(null), 4000) // hanh-trinh 2.1: tự tắt sau 4 giây
   }
 
   // Chạy một hành động qua availability; trả về thông báo cho phím tắt / lệnh hash
@@ -215,7 +215,7 @@ export default function ScenarioPanel({ route, onHelp }) {
                           aria-checked={on}
                           aria-label={s.label}
                           disabled={!a.ok}
-                          onClick={() => dispatch({ type: s.action })}
+                          onClick={() => showToast(toggleMessage(s))}
                           className="flex flex-shrink-0 items-center gap-2 rounded-full text-label font-semibold disabled:cursor-not-allowed"
                         >
                           {on ? 'Bật' : 'Tắt'}

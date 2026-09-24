@@ -11,7 +11,7 @@ import {
   SETTLEMENT_TIMELINE_NORMAL,
   SETTLEMENT_TIMELINE_LEAK,
   ACCESS_LOG,
-  BANK_VIEW,
+  CROSS_EXPOSURE_EXAMPLE,
   LENDER_QUOTES,
   LOCK_CERTIFICATE,
 } from '../data/mockData.js'
@@ -175,14 +175,18 @@ export function accessLog(state) {
 
 // Góc nhìn ngân hàng tại ngày mô phỏng — không bao giờ chứa tên bên khóa (quy-tac mục 5).
 // Mùa cao điểm không áp: du-lieu.md chưa có khả dụng từng đơn vị khi bị chặn trần.
+// Đơn vị ngân hàng tra cứu được (du-lieu mục 11): chưa tất toán, chưa hoàn — RU-03, RU-04, RU-05
+const BANK_UNITS = RECEIVABLE_UNITS.filter((u) => u.status !== 'settled' && u.status !== 'reversed')
+
 export function bankView(state) {
   const units =
     state.eventIndex < E1
       ? []
-      : BANK_VIEW.units.map((u) => {
+      : BANK_UNITS.map((u) => {
           const live = state.registry.filter((e) => e.unitId === u.code && !state.repaid[u.code])
           return {
             code: u.code,
+            status: unitStatus(state, u.code),
             projectedNetValue: u.projectedNetValue,
             availableValue: u.code in UNIT_AVAILABLE ? round2(UNIT_AVAILABLE[u.code]) : null,
             lockedAmount: round2(live.reduce((sum, e) => sum + e.amount, 0)),
@@ -193,14 +197,18 @@ export function bankView(state) {
   const cross = computeAvailableValue({
     units: NORMAL_UNITS,
     params: PRICING_PARAMS.normal,
-    lockedByOthers: BANK_VIEW.crossExposureExample.otherLockedAmount,
+    lockedByOthers: CROSS_EXPOSURE_EXAMPLE.otherLockedAmount,
   })
   return {
     units,
     totalConsolidatedExposure: round2(units.reduce((sum, u) => sum + u.lockedAmount, 0)),
     lenderCount: new Set(liveLocks.map((e) => e.lenderId)).size,
-    // Phần còn trống trên sổ = khả dụng − đã khóa (cùng quy tắc lockUnit)
-    remainingAvailable: round2(units.reduce((sum, u) => sum + Math.max(0, (u.availableValue ?? 0) - u.lockedAmount), 0)),
+    // Phần còn trống trên sổ = khả dụng − đã khóa (cùng quy tắc lockUnit); đơn vị đã tất toán/đứt gãy không khóa được
+    remainingAvailable: round2(
+      units
+        .filter((u) => u.status === 'verified' || u.status === 'locked')
+        .reduce((sum, u) => sum + Math.max(0, (u.availableValue ?? 0) - u.lockedAmount), 0)
+    ),
     crossExposureExample: { otherLockedAmount: cross.lockedByOthers, remainingAvailable: cross.result },
     alerts: isBroken(state) ? [{ unit: 'RU-03', date: E_ACCOUNT_CHANGE[E5].date }] : [],
   }
@@ -524,7 +532,9 @@ function loanStep(state) {
   for (const u of NORMAL_UNITS) {
     if (availability(state, { type: 'repay', unit: u.code }).ok)
       return step(
-        `${u.channel} đã thanh toán ${u.code}. Trả ${formatNumberVN(UNIT_AVAILABLE[u.code])} triệu trên Techcombank.`,
+        u.code === 'RU-03' && state.scenario.accountChange
+          ? `Đã giải trình. Trả ${formatNumberVN(UNIT_AVAILABLE[u.code])} triệu cho ${u.code} từ nguồn khác trên Techcombank.`
+          : `${u.channel} đã thanh toán ${u.code}. Trả ${formatNumberVN(UNIT_AVAILABLE[u.code])} triệu trên Techcombank.`,
         link('Trả nợ trên Techcombank', ROUTES.traNo)
       )
   }

@@ -290,19 +290,9 @@ export const SETTLEMENT_TIMELINE_LEAK = [
 // Kịch bản rò rỉ — tỷ lệ rò rỉ 1/8 lô, dùng để chiết khấu điểm xác thực Shopee (mục 4.3, T10).
 export const LEAK_BATCH_RATE = 1 / 8
 
-// Mục 11 — Góc nhìn ngân hàng
-export const BANK_VIEW = {
-  units: [
-    { code: 'RU-03', projectedNetValue: 55.0, availableValue: 46.75, lockedAmount: 46.75, lockerCount: 1 },
-    { code: 'RU-04', projectedNetValue: 45.0, availableValue: 38.25, lockedAmount: 38.25, lockerCount: 1 },
-    { code: 'RU-05', projectedNetValue: 12.0, availableValue: null, availableValueNote: 'Chưa đủ điều kiện', lockedAmount: 0, lockerCount: 0 },
-  ],
-  totalConsolidatedExposure: 85.0,
-  crossExposureExample: {
-    otherLockedAmount: 100,
-    remainingAvailable: 50.0,
-  },
-}
+// Mục 11 — Góc nhìn ngân hàng. Bảng đơn vị suy ra từ sổ khóa theo ngày (journey.js bankView);
+// chỉ giữ ví dụ minh họa phơi nhiễm chéo: bên khác đã khóa 100 → còn 50 khả dụng (T3).
+export const CROSS_EXPOSURE_EXAMPLE = { otherLockedAmount: 100 }
 
 // Vòng 18 — chính sách cảnh báo cổng nghiệp vụ ngân hàng (Màn 8, mục "Cảnh báo").
 // Giả định do nhóm đề án chốt trong yêu cầu Vòng 18; chưa có trong docs/du-lieu.md.
