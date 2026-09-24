@@ -126,3 +126,29 @@ cuối Vòng 11. Không lặp lại các mục đã "Đã xử lý" ở Vòng 8�
 chế độ trình chiếu, vì va chạm trực tiếp với kịch bản rò rỉ dùng trong Hồi 4).
 Hai mục Thấp (Màn 2, Màn 9) chuyển cho **Vòng 13** (rà soát) nếu còn thời
 gian — không chặn tiến độ trình chiếu.
+
+## Vòng 25
+
+`/impeccable critique` toàn app sau khi thêm lớp hướng dẫn (màn chào, danh sách nhiệm vụ,
+chú giải thuật ngữ, ngăn Hướng dẫn). Chạy hai đánh giá độc lập: A — đánh giá thiết kế
+(nguồn + app ở 1366×768 và 1920×1080); B — bộ dò `impeccable detect` + dò trong trình duyệt
+trên 6 khung nhìn. Điểm Nielsen: **27/40**. Tải nhận thức: trượt 4/8 mục (một trọng tâm, thứ
+bậc thị giác, một việc một lúc, trí nhớ làm việc).
+
+| Khu vực | Vấn đề | Mức | Nguồn | Xử lý |
+|---|---|---|---|---|
+| Trang Techcombank A1/A2/A4 | Nút "Đồng ý cấp quyền" nằm ở y≈1001 ở 1366×768 — dưới màn hình đầu, đúng lúc người dùng lo nhất (vi phạm K.5) | Cao | A | **Đã xử lý** — `ConsentPage.jsx`: ô xác nhận + nút dính đáy vùng cuộn (đo lại: đáy nút 703/768) |
+| Danh sách nhiệm vụ | Nhiệm vụ 1 "Đi tới" trỏ về Tổng quan — bấm khi đang ở Tổng quan không đi đâu (kẹt ngay bước đầu của người mới) | Cao | A | **Đã xử lý** — `Guide.jsx` `guideTasks`: đường trỏ đúng trang đang mở thì dùng hành động của thẻ Bước tiếp theo (→ A1). Không sửa `journey.js` (test ghim href) |
+| Toàn cục | Thanh trên hiện `[TÊN APP]` (placeholder) ở mọi trang và màn "Quay về …" | Cao | A | **Chưa xử lý — cần người dùng quyết**: `DISPLAY_NAME` là quyết định Vòng 20 (docs/san-pham.md), không tự đặt tên |
+| Ứng vốn bước 1 | Nút chính là "Xem ước tính" vô hiệu trong khi việc cần làm là cấp A2 | Trung bình | A | Chuyển vòng sau: đổi nút chính thành "Cấp A2 trên trang Techcombank" |
+| Tổng quan / Đối soát | Cùng một hành động lặp 2–3 lần trên màn (thẻ Bước tiếp theo, nút trong trang, danh sách nhiệm vụ) | Trung bình | A | Chuyển vòng sau (distill): giữ một lời gọi hành động chính |
+| Phím tắt | Space/M/L/3 một phím đổi trạng thái mô phỏng — Space hay dùng để cuộn trên laptop (WCAG 2.1.4) | Trung bình | A | Chuyển vòng sau: chỉ nhận Space khi không có vùng cuộn đang focus, hoặc liệt kê phím trên màn chào |
+| Drawer | `aria-modal` nhưng không giữ focus bên trong; đóng không trả focus về nút mở | Trung bình | A | Chuyển vòng sau: dùng `<dialog>` + `showModal()` như màn chào |
+| Dải tiêu đề | "Tầng 1/2/3" chưa có chú giải tại chỗ | Thấp | A | Thuật ngữ "Tầng 1 / 2 / 3" đã có trong ngăn Hướng dẫn; gắn Term vào dải tiêu đề ở vòng sau |
+| Term | Bong bóng `pointer-events-none` — không rê chuột vào bong bóng được (WCAG 1.4.13) | Thấp | A | Chuyển vòng sau |
+| Danh sách nhiệm vụ, Stepper | Thanh tiến độ tạo hiệu ứng bằng `width` (layout) | Thấp | B | Chuyển vòng sau: `transform: scaleX` |
+| Khoản phải thu | Nút "Điểm xác thực …" đệm dọc 4px (`py-1`) | Thấp | B | Chuyển vòng sau |
+| Tổng quan | Đoạn "6 tuần sau" ~100 ký tự/dòng | Thấp | B | Chuyển vòng sau: `max-w-prose` |
+| Toàn cục | cream-palette, Callout lồng trong Card, SurfaceFrame sát mép | — | B | Dương tính giả: nền ngà là token DESIGN.md; dòng "Ước tính…" bắt buộc (quy-tac mục 4); khung app chạy sát mép có chủ đích |
+
+Bộ dò CLI (`src/pages`, `src/components`): 0 phát hiện. Không có lỗi console.
