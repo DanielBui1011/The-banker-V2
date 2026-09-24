@@ -126,3 +126,59 @@ cuối Vòng 11. Không lặp lại các mục đã "Đã xử lý" ở Vòng 8�
 chế độ trình chiếu, vì va chạm trực tiếp với kịch bản rò rỉ dùng trong Hồi 4).
 Hai mục Thấp (Màn 2, Màn 9) chuyển cho **Vòng 13** (rà soát) nếu còn thời
 gian — không chặn tiến độ trình chiếu.
+
+## Vòng 25
+
+`/impeccable critique` toàn app sau khi thêm lớp hướng dẫn (màn chào, danh sách nhiệm vụ,
+chú giải thuật ngữ, ngăn Hướng dẫn). Chạy hai đánh giá độc lập: A — đánh giá thiết kế
+(nguồn + app ở 1366×768 và 1920×1080); B — bộ dò `impeccable detect` + dò trong trình duyệt
+trên 6 khung nhìn. Điểm Nielsen: **27/40**. Tải nhận thức: trượt 4/8 mục (một trọng tâm, thứ
+bậc thị giác, một việc một lúc, trí nhớ làm việc).
+
+| Khu vực | Vấn đề | Mức | Nguồn | Xử lý |
+|---|---|---|---|---|
+| Trang Techcombank A1/A2/A4 | Nút "Đồng ý cấp quyền" nằm ở y≈1001 ở 1366×768 — dưới màn hình đầu, đúng lúc người dùng lo nhất (vi phạm K.5) | Cao | A | **Đã xử lý** — `ConsentPage.jsx`: ô xác nhận + nút dính đáy vùng cuộn (đo lại: đáy nút 703/768) |
+| Danh sách nhiệm vụ | Nhiệm vụ 1 "Đi tới" trỏ về Tổng quan — bấm khi đang ở Tổng quan không đi đâu (kẹt ngay bước đầu của người mới) | Cao | A | **Đã xử lý** — `Guide.jsx` `guideTasks`: đường trỏ đúng trang đang mở thì dùng hành động của thẻ Bước tiếp theo (→ A1). Không sửa `journey.js` (test ghim href) |
+| Toàn cục | Thanh trên hiện `[TÊN APP]` (placeholder) ở mọi trang và màn "Quay về …" | Cao | A | **Chưa xử lý — cần người dùng quyết**: `DISPLAY_NAME` là quyết định Vòng 20 (docs/san-pham.md), không tự đặt tên |
+| Ứng vốn bước 1 | Nút chính là "Xem ước tính" vô hiệu trong khi việc cần làm là cấp A2 | Trung bình | A | Chuyển vòng sau: đổi nút chính thành "Cấp A2 trên trang Techcombank" |
+| Tổng quan / Đối soát | Cùng một hành động lặp 2–3 lần trên màn (thẻ Bước tiếp theo, nút trong trang, danh sách nhiệm vụ) | Trung bình | A | Chuyển vòng sau (distill): giữ một lời gọi hành động chính |
+| Phím tắt | Space/M/L/3 một phím đổi trạng thái mô phỏng — Space hay dùng để cuộn trên laptop (WCAG 2.1.4) | Trung bình | A | Chuyển vòng sau: chỉ nhận Space khi không có vùng cuộn đang focus, hoặc liệt kê phím trên màn chào |
+| Drawer | `aria-modal` nhưng không giữ focus bên trong; đóng không trả focus về nút mở | Trung bình | A | Chuyển vòng sau: dùng `<dialog>` + `showModal()` như màn chào |
+| Dải tiêu đề | "Tầng 1/2/3" chưa có chú giải tại chỗ | Thấp | A | Thuật ngữ "Tầng 1 / 2 / 3" đã có trong ngăn Hướng dẫn; gắn Term vào dải tiêu đề ở vòng sau |
+| Term | Bong bóng `pointer-events-none` — không rê chuột vào bong bóng được (WCAG 1.4.13) | Thấp | A | Chuyển vòng sau |
+| Danh sách nhiệm vụ, Stepper | Thanh tiến độ tạo hiệu ứng bằng `width` (layout) | Thấp | B | Chuyển vòng sau: `transform: scaleX` |
+| Khoản phải thu | Nút "Điểm xác thực …" đệm dọc 4px (`py-1`) | Thấp | B | Chuyển vòng sau |
+| Tổng quan | Đoạn "6 tuần sau" ~100 ký tự/dòng | Thấp | B | Chuyển vòng sau: `max-w-prose` |
+| Toàn cục | cream-palette, Callout lồng trong Card, SurfaceFrame sát mép | — | B | Dương tính giả: nền ngà là token DESIGN.md; dòng "Ước tính…" bắt buộc (quy-tac mục 4); khung app chạy sát mép có chủ đích |
+
+Bộ dò CLI (`src/pages`, `src/components`): 0 phát hiện. Không có lỗi console.
+
+### Vòng 25 — Kiểm thử người mới (browser agent)
+
+Cách chạy: agent không đọc mã, xóa localStorage, mở app ở 1366×768, chọn "Bắt đầu có hướng dẫn",
+**chỉ** làm theo thẻ Bước tiếp theo và nút "Đi tới" (được làm thao tác chính trên trang
+Techcombank). Kết quả: **đạt 5/5 sau 23 cú bấm**, không kẹt hẳn chỗ nào, không phải mở bảng Mô
+phỏng hay dùng phím tắt. (Ghi chép người lạ thật chưa có — ô `[DÁN GHI CHÉP]` của yêu cầu để
+trống; bảng dưới dùng kết quả agent.)
+
+Chú thích cột "Lớp xử lý": D.1 màn chào · D.2 danh sách nhiệm vụ · D.3 thẻ Bước tiếp theo ·
+D.4 chú giải thuật ngữ · D.5 ngăn Hướng dẫn.
+
+| # | Chỗ phải đoán | Mức | Lớp xử lý | Trạng thái |
+|---|---|---|---|---|
+| 1 | Ứng vốn, bước Gửi đề nghị: thẻ ghi "Gửi đề nghị tới Techcombank." nhưng không có nút — phải tìm nút trong trang | Chậm | D.3 | **Còn mở** — `nextStep` (fundingStep) trả `action: null` cho bước này; cần nút dẫn tới nút Gửi (sửa `src/logic/journey.js`, TDD) |
+| 2 | Ứng vốn 19/09: thẻ nói "Trả 46,75 triệu trên Techcombank" nhưng nút là "Xem khoản vay" — thêm một bước trung gian | Khó chịu nhẹ | D.3 | Có chủ đích (hành động trả nằm ở Khoản vay); cân nhắc dẫn thẳng tới trang Trả nợ |
+| 3 | Đối soát 01/08: thẻ "Tua tới 15/09…", nút "Tua tới sự kiện tiếp theo" — hai tên cho một việc | Khó chịu nhẹ | D.3 | **Còn mở** — thống nhất nhãn nút theo ngày ("Tua tới 15/09") |
+| 4 | Góc nhìn cán bộ hứa "xem tổng kết", về Tổng quan thẻ lại ghi "Không cần làm gì ở trang này"; tổng kết chỉ là thẻ nhỏ ở thanh bên | Khó chịu nhẹ | D.2 + D.3 | **Còn mở** — khi xong 5/5, thẻ Bước tiếp theo nên trỏ tới thẻ kết / hai nhiệm vụ tùy chọn |
+| 5 | Nhiệm vụ 2 vẫn "Chưa xong" sau khi tua; tên đổi giữa chừng ("Tua tới 15/09 và xem…" → "Xem khoản phải thu") | Khó chịu nhẹ | D.2 | Điều kiện đúng spec D.2 (phải mở Khoản phải thu); tên ngắn gây lệch — dùng tên ngắn "Tua và xem khoản phải thu" |
+
+Lỗi hiển thị agent ghi nhận:
+
+| Vấn đề | Đánh giá |
+|---|---|
+| Thanh bước của app nằm phía trên dải "Bạn đang ở trang của Techcombank" ở A2/A4 | Đúng thiết kế — san-pham.md B.2 và AGENTS.md mục 4: "thanh bước của Nền tảng nằm NGOÀI khung ngân hàng" |
+| Sau giải ngân, bước 4 "Gửi đề nghị" trên thanh bước vẫn hiện số 4, không có dấu tích | Còn mở — kiểm lại `Stepper` khi `currentStep = steps.length + 1` |
+| Tổng quan ngày 20/09 vẫn hiện thẻ "6 tuần sau" | Còn mở — thẻ nên chỉ hiện ở 15/09 |
+| Chuyển trang mờ dần > 1 giây, trang cũ và mới chồng nhau | Cần kiểm lại trên máy thật — khung trình duyệt bị ẩn làm trình duyệt hãm khung hình; token là 200ms |
+| Trang Trả nợ: nút "Hủy"/"Xác nhận trả nợ" sát mép dưới ở 1366×768 | Còn mở — cùng cách sửa như ConsentPage (dính đáy) |
+| Ô xác nhận + nút Đồng ý/Ký ở A1/A2/A4 nằm trong 768px | Xác nhận sửa mức Cao ở trên có hiệu lực |

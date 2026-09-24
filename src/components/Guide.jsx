@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { ChevronDown, RotateCcw } from 'lucide-react'
 import { ESCROW_STUCK, FOOTER_NOTE, GLOSSARY, SALES_CHANNELS, SELLER_PROFILE } from '../data/mockData.js'
-import { ROUTES, tasks } from '../logic/journey.js'
+import { ROUTES, nextStep, tasks } from '../logic/journey.js'
 import { formatNumberVN } from '../utils/format.js'
 import { useApp } from '../state/appState.jsx'
 import Drawer from './ui/Drawer.jsx'
@@ -15,6 +15,18 @@ const OWNER = SELLER_PROFILE.ownerName.replace('Chị', 'chị')
 const CHANNELS = SALES_CHANNELS.map((c) => c.channel.split('/')[0]).join(', ').replace(/, ([^,]*)$/, ' và $1')
 const ROLE_TEXT = `Bạn là ${OWNER}, chủ shop ${SELLER_PROFILE.industry.toLowerCase()} ${SELLER_PROFILE.shopName}, bán trên ${CHANNELS}.`
 const GOAL_TEXT = `Lúc nào cũng có khoảng ${formatNumberVN(ESCROW_STUCK.normal.amount)} triệu tiền hàng nằm ở sàn. Hãy dùng app để biến số tiền đó thành tài sản bảo đảm và nhận vốn từ Techcombank — rồi trả nợ khi sàn thanh toán.`
+
+// Nhiệm vụ kèm đường Đi tới. Đường trỏ đúng trang đang mở (vd. nhiệm vụ 1 → Tổng quan) thì bấm
+// không đi đâu → dùng hành động của thẻ Bước tiếp theo trên trang này. Đọc hash lúc vẽ: App vẽ
+// lại mỗi lần đổi trang.
+function guideTasks(state) {
+  const here = window.location.hash.split('?')[0]
+  const t = tasks(state)
+  const items = t.items.map((task) =>
+    task.fix?.href === here ? { ...task, fix: nextStep(state, here.split('/')[2]).action ?? task.fix } : task
+  )
+  return { ...t, items }
+}
 
 // ─── D.1 Màn chào ────────────────────────────────────────────────────────────
 // <dialog> gốc: showModal() cho lớp phủ, chặn nền và giữ focus bên trong. Esc = Tự khám phá.
@@ -202,7 +214,7 @@ function FinishCard({ optional }) {
 // buộc, dạng gọn (vừa chiều cao 1366×768); 2 nhiệm vụ tùy chọn ở thẻ kết và ngăn Hướng dẫn.
 export function TaskChecklist() {
   const { state, dispatch } = useApp()
-  const { items, requiredDone, requiredTotal, allRequiredDone } = tasks(state)
+  const { items, requiredDone, requiredTotal, allRequiredDone } = guideTasks(state)
   const open = state.guide.checklistOpen
   const required = items.filter((t) => !t.optional)
   const currentId = required.find((t) => !t.done)?.id
@@ -247,7 +259,7 @@ function Section({ title, children }) {
 
 export function HelpDrawer({ open, onClose, onReplayWelcome }) {
   const { state } = useApp()
-  const { items, requiredDone, requiredTotal } = tasks(state)
+  const { items, requiredDone, requiredTotal } = guideTasks(state)
   const currentId = items.find((t) => !t.optional && !t.done)?.id
   return (
     <Drawer open={open} onClose={onClose} title="Hướng dẫn">
