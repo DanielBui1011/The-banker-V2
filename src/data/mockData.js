@@ -21,6 +21,7 @@ export const SELLER_PROFILE = {
   connectedDate: '2027-08-01',
   monthlyManualReconciliationHours: 9,
   currentFundingOption: 'Vay tín chấp từ 2%/tháng',
+  currentFundingMonthlyRate: 0.02, // quy năm = × 12 (danh nghĩa, không lãi kép) — du-lieu mục 2, Vòng 29
 }
 
 export const SALES_CHANNELS = [

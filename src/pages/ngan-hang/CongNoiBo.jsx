@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Eye, EyeOff, Lock, FileBadge, ArrowRight, CircleHelp, RotateCw } from 'lucide-react'
-import SimHint from '../../components/ui/SimHint.jsx'
+import SimHint, { isSimHref } from '../../components/ui/SimHint.jsx'
 import SurfaceFrame from '../../components/ui/SurfaceFrame.jsx'
 import Card from '../../components/ui/Card.jsx'
 import Money from '../../components/ui/Money.jsx'
@@ -22,7 +22,7 @@ import {
   MIN_LOTS_FOR_SCORE,
 } from '../../data/mockData.js'
 import { computeVerificationScore, computeLeakAdjustedScore } from '../../logic/verification.js'
-import { ROUTES, availability, bankView, nextStep, resendLock, simDate, unitStatus } from '../../logic/journey.js'
+import { ROUTES, availability, bankView, nextStep, resendLock, simDate, unitStatus, ru03Broke } from '../../logic/journey.js'
 import { go } from '../../utils/route.js'
 import { isTypingTarget } from '../../utils/keyboard.js'
 import { formatNumberVN, formatDateVN } from '../../utils/format.js'
@@ -100,23 +100,28 @@ export default function CongNoiBo({ page, onHelp }) {
 
         <OfficerStep page={page} />
 
-        {resent && (
-          <Callout variant="info">
-            {resent === 'ok'
-              ? `Lệnh khóa này đã được ghi nhận lúc ${LOCK_CERTIFICATE.lockedAt.slice(11, 16)} — không tạo khóa mới. Thứ tự ưu tiên #${LOCK_CERTIFICATE.priority} giữ nguyên. Tổng đã khóa: ${formatNumberVN(tcbTotal)} triệu.`
-              : resent}
-          </Callout>
-        )}
+        {resent && page !== 'danh-muc-khoa' && <ResendResult resent={resent} total={tcbTotal} />}
 
         {page === 'tra-cuu' && <Lookup view={view} />}
-        {page === 'danh-muc-khoa' && <Portfolio onResend={resend} />}
-        {page === 'canh-bao' && <Alerts alerts={view.alerts} />}
+        {page === 'danh-muc-khoa' && <Portfolio onResend={resend} result={resent && <ResendResult resent={resent} total={tcbTotal} />} />}
+        {page === 'canh-bao' && <Alerts alerts={view.alerts} resolved={view.resolvedAlerts} />}
       </div>
     </SurfaceFrame>
   )
 }
 
-// Thẻ "Bước tiếp theo" của cổng (D.3, 3.8) — màu trung tính, không mang màu Nền tảng
+function ResendResult({ resent, total }) {
+  return (
+    <Callout variant="info">
+      {resent === 'ok'
+        ? `Lệnh khóa này đã được ghi nhận lúc ${LOCK_CERTIFICATE.lockedAt.slice(11, 16)} — không tạo khóa mới. Thứ tự ưu tiên #${LOCK_CERTIFICATE.priority} giữ nguyên. Tổng đã khóa: ${formatNumberVN(total)} triệu.`
+        : resent}
+    </Callout>
+  )
+}
+
+// Thẻ "Bước tiếp theo" của cổng (D.3, 3.8) — màu trung tính, không mang màu Nền tảng.
+// Tua là thao tác mô phỏng → SimHint (Vòng 29), không phải nút của cổng.
 function OfficerStep({ page }) {
   const { state } = useApp()
   const step = nextStep(state, page)
@@ -126,12 +131,18 @@ function OfficerStep({ page }) {
     <section aria-label="Bước tiếp theo" className="flex items-center gap-4 rounded-xl border border-slate-300 bg-slate-50 px-5 py-3">
       <ArrowRight size={22} className="flex-shrink-0 text-slate-700" aria-hidden="true" />
       <p className="min-w-0 flex-1 text-body text-slate-900">{step.text}</p>
-      <a
-        href={step.action.href}
-        className="flex-shrink-0 rounded-lg border border-slate-900 px-4 py-2 text-body font-semibold text-slate-900 transition duration-fast hover:bg-slate-100"
-      >
-        {step.action.label}
-      </a>
+      {isSimHref(step.action.href) ? (
+        <SimHint href={step.action.href} className="flex-shrink-0 whitespace-nowrap">
+          {step.action.label}
+        </SimHint>
+      ) : (
+        <a
+          href={step.action.href}
+          className="flex-shrink-0 rounded-lg border border-slate-900 px-4 py-2 text-body font-semibold text-slate-900 transition duration-fast hover:bg-slate-100"
+        >
+          {step.action.label}
+        </a>
+      )}
     </section>
   )
 }
@@ -142,7 +153,9 @@ function Blocked({ gate }) {
     <Card padding="p-8" className="space-y-3">
       <Lock size={32} className="text-slate-600" aria-hidden="true" />
       <h2 className="text-section-title font-semibold text-slate-900">{gate.reason}</h2>
-      {gate.fix && (
+      {isSimHref(gate.fix?.href) ? (
+        <SimHint href={gate.fix.href}>{gate.fix.label}</SimHint>
+      ) : gate.fix && (
         <a href={gate.fix.href} className="inline-block text-body font-semibold text-slate-900 underline underline-offset-2">
           {gate.fix.label}
         </a>
@@ -158,7 +171,7 @@ function Lookup({ view }) {
   if (!gate.ok) return <Blocked gate={gate} />
 
   const shopeeBase = computeVerificationScore(VERIFICATION_METRICS.Shopee)
-  const shopeeBroken = unitStatus(state, 'RU-03') === 'broken'
+  const shopeeBroken = ru03Broke(state) // điểm giữ 58 cả sau khi đã xử lý (Vòng 29)
   const cross = view.crossExposureExample
 
   return (
@@ -257,7 +270,7 @@ function Lookup({ view }) {
   )
 }
 
-function Portfolio({ onResend }) {
+function Portfolio({ onResend, result }) {
   const { state } = useApp()
   const [certOpen, setCertOpen] = useState(false)
   const gate = availability(state, 'viewCertificate')
@@ -282,10 +295,8 @@ function Portfolio({ onResend }) {
           rows={own}
           rowKey={(e) => e.unitId}
         />
-        <div className="mt-4 flex flex-wrap items-center justify-end gap-3">
-          <p className="mr-auto text-label text-slate-700">
-            Lệnh trùng không tạo khóa mới và không đổi thứ tự ưu tiên (lũy đẳng).
-          </p>
+        <p className="mt-4 text-label text-slate-700">Lệnh trùng không tạo khóa mới và không đổi thứ tự ưu tiên (lũy đẳng).</p>
+        <div className="mt-2 flex flex-wrap items-center gap-3">
           <button
             type="button"
             onClick={onResend}
@@ -304,6 +315,7 @@ function Portfolio({ onResend }) {
             Xem chứng thư
           </button>
         </div>
+        {result && <div className="mt-3">{result}</div>}
       </Card>
       <p className="text-label text-slate-700">Khóa của bên khác trên cùng đơn vị chỉ hiện số bên ở mục Tra cứu nhà bán.</p>
       <Drawer open={certOpen} onClose={() => setCertOpen(false)} title="Chứng thư khóa">
@@ -313,17 +325,36 @@ function Portfolio({ onResend }) {
   )
 }
 
-function Alerts({ alerts }) {
+function Alerts({ alerts, resolved }) {
   const policy = `Hệ thống kiểm tra ${BANK_ALERT_POLICY.checkInterval}; cảnh báo đứt gãy được gửi trong ${BANK_ALERT_POLICY.brokenNoticeMinutes} phút.`
-  if (alerts.length === 0)
+  if (alerts.length === 0 && resolved.length === 0)
     return (
       <Card>
         <div className="text-emphasis font-semibold text-slate-900">Không có cảnh báo</div>
         <p className="mt-2 text-label text-slate-700">{policy}</p>
       </Card>
     )
-  return alerts.map((a) => (
-    <Card key={a.unit}>
+  return [
+    ...alerts.map((a) => <OpenAlert key={a.unit} alert={a} policy={policy} />),
+    ...resolved.map((a) => (
+      <Card key={`${a.unit}-xu-ly`}>
+        <div className="flex items-center gap-3">
+          <StatusBadge status="resolved" />
+          <span className="text-emphasis font-semibold text-slate-900">{a.unit}</span>
+          <span className="ml-auto text-label tabular-nums text-slate-600">{formatDateVN(a.date)}</span>
+        </div>
+        <p className="mt-3 text-body text-slate-900">
+          Từng đứt gãy {formatDateVN(a.date).slice(0, 5)}. Nhà bán đã giải trình và trả {a.unit} từ nguồn khác; khóa trên {a.unit} đã
+          giải phóng, cấp vốn mới đã mở lại.
+        </p>
+      </Card>
+    )),
+  ]
+}
+
+function OpenAlert({ alert: a, policy }) {
+  return (
+    <Card>
       <div className="flex items-center gap-3">
         <StatusBadge status="broken" />
         <span className="text-emphasis font-semibold text-slate-900">{a.unit}</span>
@@ -335,7 +366,7 @@ function Alerts({ alerts }) {
       </p>
       <p className="mt-2 text-label text-slate-700">{policy}</p>
     </Card>
-  ))
+  )
 }
 
 function InsufficientNote({ units }) {

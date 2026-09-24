@@ -10,11 +10,14 @@ import {
 } from 'lucide-react'
 import { DISPLAY_NAME } from '../../config/brand.js'
 import { FOOTER_NOTE } from '../../data/mockData.js'
-import { ROUTES, simDate, nextStep } from '../../logic/journey.js'
+import { ROUTES, simDate, nextStep, initialState } from '../../logic/journey.js'
 import { formatDateVN } from '../../utils/format.js'
+import { useState } from 'react'
 import { useApp } from '../../state/appState.jsx'
+import { go } from '../../utils/route.js'
 import { TaskChecklist } from '../Guide.jsx'
-import SimHint from './SimHint.jsx'
+import SimHint, { isSimHref } from './SimHint.jsx'
+import ConfirmDialog from './ConfirmDialog.jsx'
 
 // Khung app nhà bán (docs/san-pham.md B.1, K.2, K.5): thanh trên, thanh điều hướng trái
 // 6 trang + khu nhiệm vụ ở cuối, chân trang. Mục đang chọn mang nền nhạt của Tầng nó
@@ -95,12 +98,20 @@ function goToStep(target) {
   el.classList.add('step-flash')
 }
 
+const START_DATE = formatDateVN(simDate(initialState()))
+
 // Thẻ "Bước tiếp theo" (san-pham.md D.3): một câu + một nút, đọc nextStep(state, trang).
 // Hành động ngay trên trang (step.target) → chỉ liên kết "Đến bước này ↓"; nút đặc là nút
-// trong thân trang (mỗi trang đúng một nút đặc — Vòng 28).
+// trong thân trang (mỗi trang tối đa một nút đặc — Vòng 28). Tua là thao tác mô phỏng → SimHint
+// (Vòng 29). Thẻ kết: step.tryScenarios → SimHint bật tình huống, cần bắt đầu lại thì hỏi trước.
 function NextStepCard({ page }) {
-  const { state } = useApp()
+  const { state, dispatch } = useApp()
+  const [pending, setPending] = useState(null)
   const step = nextStep(state, page)
+  const tryScenario = (t) => {
+    dispatch({ type: 'tryScenario', scenario: t.scenario })
+    if (t.restart) go(ROUTES.tongQuan)
+  }
   return (
     <section aria-label="Bước tiếp theo" className="flex items-center gap-4 rounded-xl border border-primary bg-primary-soft px-5 py-3">
       <ArrowRight size={22} className="flex-shrink-0 text-primary" aria-hidden="true" />
@@ -110,6 +121,26 @@ function NextStepCard({ page }) {
           {step.text}
         </p>
         {step.sim && <SimHint>{step.sim}</SimHint>}
+        {step.tryScenarios && (
+          <div className="flex flex-wrap gap-2">
+            {step.tryScenarios.map((t) => (
+              <SimHint key={t.scenario} onClick={() => (t.restart ? setPending(t) : tryScenario(t))}>
+                {t.label}
+              </SimHint>
+            ))}
+          </div>
+        )}
+        <ConfirmDialog
+          open={Boolean(pending)}
+          title="Bắt đầu lại"
+          message={pending && `"${pending.label}" bắt đầu từ ${START_DATE}. Xóa tiến trình hiện tại và bắt đầu lại?`}
+          confirmLabel="Bắt đầu lại"
+          onCancel={() => setPending(null)}
+          onConfirm={() => {
+            tryScenario(pending)
+            setPending(null)
+          }}
+        />
       </div>
       {step.target ? (
         <button
@@ -119,6 +150,10 @@ function NextStepCard({ page }) {
         >
           Đến bước này ↓
         </button>
+      ) : step.action && isSimHref(step.action.href) ? (
+        <SimHint href={step.action.href} className="flex-shrink-0 whitespace-nowrap">
+          {step.action.label}
+        </SimHint>
       ) : step.action && (
         <a
           href={step.action.href}

@@ -1,6 +1,5 @@
 import Button from './Button.jsx'
-import SimHint from './SimHint.jsx'
-import { ROUTES } from '../../logic/journey.js'
+import SimHint, { isSimHref } from './SimHint.jsx'
 
 // Nút có điều kiện (san-pham.md mục G): không đủ điều kiện → vẫn hiện, bị vô hiệu, dưới
 // nút có MỘT dòng lý do và MỘT đường dẫn tới bước còn thiếu. gate = availability(state, …)
@@ -16,19 +15,21 @@ export default function GatedButton({ gate, onClick, variant = 'primary', align 
   )
 }
 
-// Đường sửa trỏ bảng Mô phỏng → SimHint, không phải liên kết sản phẩm (Vòng 28)
+// Đường sửa là lệnh mô phỏng (bảng Mô phỏng, Tua) → SimHint, không phải liên kết sản phẩm (Vòng 28, 29)
 export function GateReason({ gate, className = '' }) {
-  if (gate.fix?.href === ROUTES.moPhong)
+  if (isSimHref(gate.fix?.href))
     return (
       <div className={`flex flex-col gap-1.5 ${className}`}>
         <p className="text-label text-ink-muted">{gate.reason}</p>
-        <SimHint>{gate.fix.label}</SimHint>
+        <SimHint href={gate.fix.href}>{gate.fix.label}</SimHint>
       </div>
     )
+  // Đọc hash lúc vẽ (App vẽ lại mỗi lần đổi trang): liên kết về chính trang này không đi đâu
+  const here = gate.fix?.href === window.location.hash.split('?')[0]
   return (
     <p className={`text-label text-ink-muted ${className}`}>
       {gate.reason}
-      {gate.fix && (
+      {gate.fix && !here && (
         <>
           {' '}
           →{' '}

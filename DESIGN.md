@@ -48,14 +48,15 @@ bounce/elastic; không chạy số. CSS + View Transitions API, không thư vi�
 
 ## Vòng 28 — Thứ bậc nút, SimHint
 
-**Mỗi trang đúng MỘT nút đặc** (nền `--color-primary`, hoặc `#141414` trong khung `bank`). Mọi
+**Mỗi trang tối đa MỘT nút đặc; đúng một khi còn việc cần làm** (Vòng 29 — trang không còn việc, hoặc việc duy
+nhất là Tua, có 0 nút đặc) (nền `--color-primary`, hoặc `#141414` trong khung `bank`). Mọi
 nút/liên kết hành động khác trên trang là nút viền. Nguồn quyết định duy nhất:
 `nextStep(state, trang)` trong `src/logic/journey.js`:
 
 | `nextStep` trả về | Thẻ "Bước tiếp theo" | Thân trang |
 |---|---|---|
 | `target` (hành động nằm TRÊN CÙNG TRANG) | Chỉ chữ + liên kết "Đến bước này ↓": cuộn tới nút đó (giữa màn hình), đặt focus, viền nổi `.step-flash` ≤800ms; `prefers-reduced-motion` → cuộn ngay | Nút có `data-step-target` bằng `target` là nút đặc |
-| `action`, không `target` (hành động ở trang khác, kể cả trang Techcombank và Tua) | Nút đặc như cũ | Mọi nút là viền |
+| `action`, không `target` (hành động ở trang khác, kể cả trang Techcombank) | Nút đặc như cũ — riêng Tua là SimHint (Vòng 29) | Mọi nút là viền |
 | không có gì | Chỉ chữ | Mọi nút là viền |
 
 - Trạng thái trống (`EmptyState`) luôn dùng nút viền: trang trống luôn có thẻ Bước tiếp theo
@@ -76,6 +77,45 @@ trong mô phỏng dựng cho Techcombank", đường sửa trỏ bảng Mô ph�
 `tests/quy-tac.test.js` quy tắc 11 chặn.
 
 **Tiền và đơn vị** không xuống dòng: `Money` mang `whitespace-nowrap`.
+
+## Vòng 29 — Tua là SimHint, trước → sau, đứt gãy đã xử lý
+
+**"Tua tới sự kiện tiếp theo" là thao tác mô phỏng**, không phải hành động sản phẩm: ở MỌI trang nhà bán, cổng ngân
+hàng, trạng thái trống, dòng lý do dưới nút vô hiệu và danh sách nhiệm vụ, đường dẫn Tua vẽ bằng `SimHint` (chip tối,
+icon `Clock`; lệnh mở bảng Mô phỏng giữ icon `SlidersHorizontal`). Nhận diện bằng `isSimHref(href)`
+(`src/components/ui/SimHint.jsx`: `ROUTES.moPhong`, `ROUTES.tua`). Tua KHÔNG tính là nút đặc; khi Tua là việc duy nhất,
+trang có 0 nút đặc. `SimHint` nhận `href` (mặc định bảng Mô phỏng) hoặc `onClick` (nút bật tình huống ở thẻ kết).
+Kiểm chứng: `tests/quy-tac.test.js` quy tắc 12 (file vẽ `href={….fix.href}`/`href={….action.href}` phải rẽ nhánh qua
+`isSimHref`); `journey.test.js` "một nút đặc mỗi trang" không đếm Tua.
+
+**Luật nút (chốt):** tối đa một nút đặc mỗi trang; đúng một khi còn việc cần làm.
+
+**Tổng quan "trước → sau":** hai `Stat` dưới con số chính. Có dữ liệu đối soát (A1 + từ 15/09): "Đối soát — Tự động · 76%
+giao dịch tự khớp", dòng phụ "Trước: thủ công 9 giờ/tháng". Có khoản vay Techcombank (kể cả đã trả hết): "Vốn — Ứng vốn có
+bảo đảm · 12%/năm (Techcombank)", dòng phụ "Trước: vay tín chấp từ 2%/tháng (≈24%/năm danh nghĩa)". Trước đó giữ nguyên.
+Số lấy từ `autoMatchRate` (src/logic/reconciliation.js, dùng chung với trang Đối soát), `LENDER_QUOTES`,
+`SELLER_PROFILE.currentFundingMonthlyRate` × 12 (du-lieu mục 2, số dẫn xuất).
+
+**Đứt gãy đã xử lý:** đỏ chỉ hiện khi còn đứt gãy CHƯA xử lý. Đã giải trình VÀ đã trả RU-03 từ nguồn khác
+(`breakResolved(state)`): RU-03 mang badge trung tính "Đã trả từ nguồn khác" (icon `Wallet`) + dòng phụ "Từng đứt gãy 24/09";
+khối đỏ đầu trang Khoản vay thành khối trung tính `<details>` thu gọn được với badge "Đã xử lý" (icon `CheckCircle2`);
+dòng thời gian thêm "24/09 — Giải trình, trả RU-03 từ nguồn khác"; điểm Shopee giữ 92 → 58 (`ru03Broke`). Cổng ngân hàng:
+cảnh báo RU-03 chuyển sang thẻ "Đã xử lý" (`bankView.resolvedAlerts`).
+
+**Chấm đỏ đếm cảnh báo trong khung `bankOps` là đúng nghĩa** (đỏ = đứt gãy): giữ nguyên. Nó đếm cảnh báo còn MỞ
+(`bankView.alerts`) — không còn cảnh báo mở thì chấm biến mất.
+
+**Thẻ kết:** xong 5 nhiệm vụ → thẻ Bước tiếp theo "Bạn đã hoàn thành hành trình chính. Thử thêm:" + các SimHint bật tình
+huống chưa làm (`nextStep().tryScenarios`). Tình huống cần bắt đầu lại → hộp xác nhận trước; bắt đầu lại giữ lựa chọn hướng
+dẫn (không hiện lại màn chào).
+
+**Thanh xếp chồng vượt trần (Ứng vốn, mùa cao điểm):** phần trong trần đặc cobalt; phần vượt trần nền nhạt + sọc cobalt,
+chú thích "Bị chặn"; vạch dọc ở mức trần có nhãn "Trần dư nợ 150". Lý do chặn ký A4 dưới nút không lặp chip "Tắt Mùa cao điểm"
+(chip chỉ ở thẻ Bước tiếp theo).
+
+**Chi tiết khác:** câu lũy đẳng ở Danh mục khóa đặt trên hàng nút, kết quả "Thử gửi lại lệnh khóa" hiện ngay dưới hàng nút;
+thông báo "Đã đổi sang vai…" tự tắt sau 3 giây; cột "Bên" của nhật ký không gãy dòng ("Công ty Capix (TPP)"), mã TPP đầy đủ ở
+tooltip và ngăn "Chi tiết truy cập"; dòng lý do dưới nút không vẽ liên kết trỏ về chính trang đang mở.
 
 ---
 
@@ -170,7 +210,7 @@ nhãn chữ, không bao giờ chỉ màu.
 |---|---|---|
 | `platform` | Ứng dụng Nền tảng (nhà bán) | không có dải, nền `bg-slate-50` |
 | `bank` | Trang Techcombank (A1/A2/A4, ký thỏa thuận) | dải tối `bg-slate-800`, icon khóa + "Bạn đang ở trang của {bankName}" |
-| `bankOps` | Cổng nghiệp vụ nội bộ ngân hàng (Màn 8) | thanh điều hướng dọc bên trái `bg-slate-700` (không phải strip ngang) — icon `Landmark`, nhãn "Nội bộ — mô phỏng", 3 mục điều hướng bấm được ("Tra cứu nhà bán" mặc định, "Danh mục khóa", "Cảnh báo" có chấm đếm đỏ khi có cảnh báo) — màn truyền qua prop `nav` (Vòng 18) |
+| `bankOps` | Cổng nghiệp vụ nội bộ ngân hàng (Màn 8) | thanh điều hướng dọc bên trái `bg-slate-700` (không phải strip ngang) — icon `Landmark`, nhãn "Nội bộ — mô phỏng", 3 mục điều hướng bấm được ("Tra cứu nhà bán" mặc định, "Danh mục khóa", "Cảnh báo" có chấm đếm đỏ khi có cảnh báo MỞ — đúng nghĩa đứt gãy, giữ nguyên, Vòng 29) — màn truyền qua prop `nav` (Vòng 18) |
 | `tech` | Hậu trường kỹ thuật (terminal OAuth Màn 2, JWS Màn 5) | nền đen `bg-slate-950`, font mono |
 
 ## 6. Số tiền

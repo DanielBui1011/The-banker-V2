@@ -6,6 +6,7 @@ import { formatNumberVN } from '../utils/format.js'
 import { useApp } from '../state/appState.jsx'
 import Drawer from './ui/Drawer.jsx'
 import DoneCheck from './ui/DoneCheck.jsx'
+import SimHint, { isSimHref } from './ui/SimHint.jsx'
 import { SHORTCUTS } from './ScenarioPanel.jsx'
 
 // Hướng dẫn người dùng (docs/san-pham.md D.1, D.2, D.5): màn chào, danh sách nhiệm vụ,
@@ -98,6 +99,8 @@ const GO_CLASS =
 
 // Luôn viền: nút đặc duy nhất của trang thuộc thẻ Bước tiếp theo hoặc thân trang (Vòng 28)
 function GoTo({ task }) {
+  // Đường tới là Tua (thao tác mô phỏng) → SimHint mang tên thao tác (Vòng 29)
+  if (isSimHref(task.fix.href)) return <SimHint href={task.fix.href}>{task.fix.label}</SimHint>
   return (
     <a
       href={task.fix.href}

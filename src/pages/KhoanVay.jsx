@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ReceiptText, Clock, FileBadge } from 'lucide-react'
+import { ReceiptText, Clock, FileBadge, ChevronDown } from 'lucide-react'
 import Card from '../components/ui/Card.jsx'
 import Money from '../components/ui/Money.jsx'
 import Button from '../components/ui/Button.jsx'
@@ -23,7 +23,7 @@ import {
 import { computeAdvanceInterest } from '../logic/pricing.js'
 import { computeVerificationScore, computeLeakAdjustedScore } from '../logic/verification.js'
 import SimHint from '../components/ui/SimHint.jsx'
-import { ROUTES, availability, loan, nextStep, simDate, unitStatus, fundingFrozen } from '../logic/journey.js'
+import { ROUTES, availability, loan, nextStep, simDate, unitStatus, fundingFrozen, breakResolved } from '../logic/journey.js'
 import { go } from '../utils/route.js'
 import { formatNumberVN } from '../utils/format.js'
 import { useApp } from '../state/appState.jsx'
@@ -71,11 +71,14 @@ function Loan() {
   const amounts = Object.fromEntries(state.registry.map((e) => [e.unitId, e.amount]))
   const interest = Math.round(computeAdvanceInterest(l.principal, TCB_QUOTE.annualRate, INTEREST_DAYS) * 1000)
   const broken = state.scenario.accountChange && unitStatus(state, 'RU-03') === 'broken'
+  const resolved = breakResolved(state)
 
   return (
     <>
       {/* Đứt gãy là việc gấp nhất → lên đầu trang, nút giải trình trong màn hình đầu ở 1366×768 (Vòng 28) */}
       {broken && <AccountChange />}
+      {/* Đã xử lý → khối trung tính thu gọn được; đỏ chỉ khi còn đứt gãy chưa xử lý (Vòng 29) */}
+      {resolved && <BreakResolved />}
       <Card padding="p-6">
         <div className="grid grid-cols-5 gap-6">
           <div className="col-span-2">
@@ -103,7 +106,7 @@ function Loan() {
       </Card>
 
       {l.status === 'repaid' && <Settled interest={interest} />}
-      {!broken && <AccountChange />}
+      {!broken && !resolved && <AccountChange />}
       <LoanTimeline />
 
       <Drawer open={certOpen} onClose={() => setCertOpen(false)} title="Chứng thư khóa">
@@ -127,6 +130,7 @@ function RepayRow({ code, amount }) {
         </span>
         <StatusBadge status={status} className="animate-ru-badge-fade whitespace-nowrap" />
       </div>
+      {status === 'repaid-other' && <p className="mt-1 text-label text-ink-muted">Từng đứt gãy {LEAK['leak-broken'].date}</p>}
       {!repaid && (
         <div className="mt-3">
           <GatedButton
@@ -223,6 +227,24 @@ function AccountChange() {
   return null
 }
 
+// <details> gốc: thu gọn/mở bằng bàn phím và chuột, không cần state
+function BreakResolved() {
+  const base = computeVerificationScore(VERIFICATION_METRICS.Shopee)
+  return (
+    <details className="group rounded-xl border border-line bg-app-surface px-5 py-3">
+      <summary className="flex cursor-pointer list-none items-center gap-3 text-body text-ink [&::-webkit-details-marker]:hidden">
+        <StatusBadge status="resolved" className="whitespace-nowrap" />
+        <span className="flex-1">RU-03 từng đứt gãy {LEAK['leak-broken'].date} — đã giải trình và trả từ nguồn khác.</span>
+        <ChevronDown size={20} aria-hidden="true" className="flex-shrink-0 text-ink-muted transition-transform duration-fast group-open:rotate-180" />
+      </summary>
+      <p className="mt-2 text-body text-ink-muted">
+        Điểm xác thực Shopee: {base} → {computeLeakAdjustedScore(base, LEAK_BATCH_RATE)} (giữ sau đứt gãy). Khóa trên RU-03 đã giải
+        phóng. Cấp vốn mới đã mở lại.
+      </p>
+    </details>
+  )
+}
+
 // Mốc theo ngày mô phỏng; mốc đã tới tô đầy 300ms (transition khi ngày đổi)
 function LoanTimeline() {
   const { state } = useApp()
@@ -241,6 +263,9 @@ function LoanTimeline() {
           { iso: LEAK['leak-window-closed'].isoDate, date: LEAK['leak-window-closed'].date, label: 'Hết cửa sổ thanh toán RU-03' },
           { iso: LEAK['leak-broken'].isoDate, date: LEAK['leak-broken'].date, label: 'Hết ân hạn — RU-03 đứt gãy' },
         ]
+      : []),
+    ...(breakResolved(state)
+      ? [{ iso: LEAK['leak-broken'].isoDate, date: LEAK['leak-broken'].date, label: 'Giải trình, trả RU-03 từ nguồn khác' }]
       : []),
   ]
   return (

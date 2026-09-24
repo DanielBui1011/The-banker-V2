@@ -16,10 +16,11 @@ import {
   LEAK_BATCH_RATE,
   PRICING_PARAMS,
   SETTLEMENT_TIMELINE_NORMAL,
+  SETTLEMENT_TIMELINE_LEAK,
 } from '../data/mockData.js'
 import { computeVerificationScore, computeLeakAdjustedScore, computeMatchRate, isScoreAvailable } from '../logic/verification.js'
 import { computeAvailableValue } from '../logic/pricing.js'
-import { availability, activeUnits, unitStatus } from '../logic/journey.js'
+import { availability, activeUnits, unitStatus, ru03Broke } from '../logic/journey.js'
 import { formatNumberVN, formatPercentVN } from '../utils/format.js'
 import { useApp } from '../state/appState.jsx'
 
@@ -38,6 +39,7 @@ const PAID = Object.fromEntries(
   SETTLEMENT_TIMELINE_NORMAL.filter((m) => m.kind === 'marketplace-payment').map((m) => [m.unit, m.marketplaceAmount])
 )
 const LIFECYCLE = ['verified', 'locked', 'settled']
+const BROKEN_DATE = SETTLEMENT_TIMELINE_LEAK.find((m) => m.id === 'leak-broken').date
 
 export default function KhoanPhaiThu() {
   const { state } = useApp()
@@ -65,7 +67,7 @@ function Receivables() {
   const settledUnits = RECEIVABLE_UNITS.filter((u) => u.status === 'settled')
   const cod = RECEIVABLE_UNITS.find((u) => u.status === 'projected-insufficient-history')
   const reversed = RECEIVABLE_UNITS.find((u) => u.status === 'reversed')
-  const shopeeBroken = unitStatus(state, 'RU-03') === 'broken'
+  const shopeeBroken = ru03Broke(state) // điểm giữ mức sau chiết khấu cả khi đã xử lý (Vòng 29)
 
   const scoreFor = (channel) => {
     const base = computeVerificationScore(VERIFICATION_METRICS[channel])
@@ -185,6 +187,8 @@ function UnitCard({ unit, status, peak, accountChange, first }) {
           Đứt gãy — hết cửa sổ thanh toán và thời gian <Term name="Ân hạn">ân hạn</Term> mà tiền không về tài khoản nhận tiền đã
           đăng ký.
         </Callout>
+      ) : status === 'repaid-other' ? (
+        <p className="mt-3 text-label text-ink-muted">Từng đứt gãy {BROKEN_DATE}</p>
       ) : (
         <LifecycleTrail current={LIFECYCLE.includes(status) ? status : 'verified'} className="mt-3" />
       )}

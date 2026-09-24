@@ -18,11 +18,14 @@ import {
   VERIFICATION_METRICS,
   MIN_LOTS_FOR_SCORE,
   BANK_TRANSACTIONS,
+  LENDER_QUOTES,
+  LOCK_CERTIFICATE,
 } from '../data/mockData.js'
 import { computeEscrowStuck } from '../logic/pricing.js'
-import { ROUTES, events } from '../logic/journey.js'
+import { autoMatchRate } from '../logic/reconciliation.js'
+import { ROUTES, events, availability, loan } from '../logic/journey.js'
 import { go } from '../utils/route.js'
-import { formatNumberVN } from '../utils/format.js'
+import { formatNumberVN, formatPercentVN } from '../utils/format.js'
 import { useApp } from '../state/appState.jsx'
 
 // Tổng quan (san-pham.md B.1, I: gộp Màn 1 + chọn ngân hàng 2a). Trước kết nối: hồ sơ
@@ -47,10 +50,7 @@ export default function TongQuan() {
           <p className="mt-2 text-body text-ink-muted">
             = doanh thu sàn {formatNumberVN(escrow.marketplaceRevenue)} triệu / 30 × {escrow.averageHoldDays} ngày giữ tiền bình quân
           </p>
-          <div className="mt-4 grid grid-cols-2 divide-x divide-line border-t border-line pt-4">
-            <Stat label={<><Term name="Đối soát" /> thủ công</>} value={`${formatNumberVN(SELLER_PROFILE.monthlyManualReconciliationHours)} giờ/tháng`} className="pr-4" />
-            <Stat label="Lựa chọn vốn hiện tại" value={SELLER_PROFILE.currentFundingOption} className="pl-4" />
-          </div>
+          <BeforeAfter />
         </Card>
 
         <Card padding="p-6" className="col-span-2 flex flex-col">
@@ -64,6 +64,44 @@ export default function TongQuan() {
         <BankPicker />
       </Drawer>
     </>
+  )
+}
+
+// "Trước → sau" (Vòng 29): trước khi kết nối giữ nguyên hai con số cũ; có dữ liệu đối soát
+// (A1 + 15/09) và có khoản vay Techcombank thì con số mới lên chính, con số cũ xuống dòng "Trước:".
+const HOURS = `${formatNumberVN(SELLER_PROFILE.monthlyManualReconciliationHours)} giờ/tháng`
+const OLD_FUNDING = SELLER_PROFILE.currentFundingOption
+const TCB = LOCK_CERTIFICATE.secured
+const OLD_ANNUAL = formatPercentVN(SELLER_PROFILE.currentFundingMonthlyRate * 12)
+
+function BeforeAfter() {
+  const { state } = useApp()
+  const auto = availability(state, 'viewReconciliation').ok
+  const l = loan(state)
+  const quote = l.lender === TCB && LENDER_QUOTES.find((q) => q.lender === TCB)
+  return (
+    <div className="mt-4 grid grid-cols-2 divide-x divide-line border-t border-line pt-4">
+      {auto ? (
+        <Stat
+          label={<Term name="Đối soát" />}
+          value={`Tự động · ${formatPercentVN(autoMatchRate(BANK_TRANSACTIONS))} giao dịch tự khớp`}
+          hint={`Trước: thủ công ${HOURS}`}
+          className="pr-4"
+        />
+      ) : (
+        <Stat label={<><Term name="Đối soát" /> thủ công</>} value={HOURS} className="pr-4" />
+      )}
+      {quote ? (
+        <Stat
+          label="Vốn"
+          value={`Ứng vốn có bảo đảm · ${formatPercentVN(quote.annualRate)}/năm (${quote.lender})`}
+          hint={`Trước: ${OLD_FUNDING.charAt(0).toLowerCase()}${OLD_FUNDING.slice(1)} (≈${OLD_ANNUAL}/năm danh nghĩa)`}
+          className="pl-4"
+        />
+      ) : (
+        <Stat label="Lựa chọn vốn hiện tại" value={OLD_FUNDING} className="pl-4" />
+      )}
+    </div>
   )
 }
 

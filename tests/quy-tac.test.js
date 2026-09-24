@@ -316,3 +316,23 @@ describe('Quy tắc 11 — không nhắc "prototype"/"mô phỏng" ngoài SimHin
     expect(violations, violations.join('\n')).toHaveLength(0)
   })
 })
+
+// ─── 12. "Tua tới sự kiện tiếp theo" là thao tác mô phỏng (Vòng 29) ─────────────
+// Đường dẫn Tua đến từ dữ liệu (nextStep.action, availability.fix, nhiệm vụ) nên không quét được
+// theo chữ. Luật: file nào vẽ đường dẫn động (`href={….fix.href}` / `href={….action.href}`) phải
+// rẽ nhánh qua isSimHref (SimHint.jsx) — Tua và lệnh mở bảng Mô phỏng thành chip SimHint, không
+// thành nút đặc/viền của sản phẩm. Bảng Mô phỏng (ScenarioPanel.jsx) tự là nơi mô phỏng.
+const DYNAMIC_HREF_RE = /href=\{[^}]*\.(fix|action)\.href\}/
+const SIM_EXEMPT_FILES = ['ScenarioPanel.jsx', 'SimHint.jsx']
+describe('Quy tắc 12 — đường dẫn Tua/mô phỏng vẽ bằng SimHint', () => {
+  it('file vẽ đường dẫn động phải dùng isSimHref', () => {
+    const violations = allFiles
+      .filter((f) => !SIM_EXEMPT_FILES.includes(f.split(/[\/]/).pop()))
+      .filter((f) => {
+        const content = readFileSync(f, 'utf-8')
+        return DYNAMIC_HREF_RE.test(content) && !/\bisSimHref\(/.test(content)
+      })
+      .map((f) => relative(ROOT, f))
+    expect(violations, violations.join('\n')).toHaveLength(0)
+  })
+})

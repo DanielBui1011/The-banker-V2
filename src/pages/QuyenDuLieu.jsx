@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import { Terminal, X } from 'lucide-react'
 import Card from '../components/ui/Card.jsx'
 import StatusBadge from '../components/ui/StatusBadge.jsx'
+import Drawer from '../components/ui/Drawer.jsx'
 import GatedButton from '../components/ui/GatedButton.jsx'
 import SurfaceFrame from '../components/ui/SurfaceFrame.jsx'
 import Term from '../components/ui/Term.jsx'
@@ -21,6 +22,8 @@ const TERM = { A1: 'Quyền A1', A2: 'Quyền A2', A4: 'Thỏa thuận A4' }
 const PERMISSION = Object.fromEntries(GRANTED_PERMISSIONS.map((p) => [p.code, p]))
 // Mọi vị trí pháp lý dùng LEGAL_NAME + TPP_CODE (docs/thiet-ke.md mục 3)
 const displayActor = (actor) => (actor === LEGAL_NAME ? `${LEGAL_NAME} — mã TPP ${TPP_CODE}` : actor)
+// Cột "Bên" của nhật ký không gãy dòng (Vòng 29): dạng ngắn, mã TPP đầy đủ ở tooltip và ngăn chi tiết
+const shortActor = (actor) => (actor === LEGAL_NAME ? `${LEGAL_NAME} (TPP)` : actor)
 
 function statusOf(state, code) {
   if (code === 'A4') {
@@ -70,6 +73,7 @@ export default function QuyenDuLieu() {
   const { state } = useApp()
   const [techOpen, setTechOpen] = useState(false)
   const [exported, setExported] = useState(false)
+  const [row, setRow] = useState(null)
   const log = accessLog(state).slice().reverse()
   const activeCount = ['A1', 'A2', 'A4'].filter((c) => ['granted-active', 'granted-in-effect'].includes(statusOf(state, c))).length
 
@@ -138,7 +142,16 @@ export default function QuyenDuLieu() {
                   <td className="whitespace-nowrap py-2 pr-4 tabular-nums">
                     {formatDateVN(l.date)} {l.time}
                   </td>
-                  <td className="py-2 pr-4">{displayActor(l.actor)}</td>
+                  <td className="whitespace-nowrap py-2 pr-4">
+                    <button
+                      type="button"
+                      title={displayActor(l.actor)}
+                      onClick={() => setRow(l)}
+                      className="rounded text-left underline decoration-dotted underline-offset-4 transition-colors duration-fast hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+                    >
+                      {shortActor(l.actor)}
+                    </button>
+                  </td>
                   <td className="py-2 pr-4">{l.purpose}</td>
                   <td className="py-2">{l.data}</td>
                 </tr>
@@ -163,6 +176,24 @@ export default function QuyenDuLieu() {
       </Card>
 
       {techOpen && <TechBackstage onClose={() => setTechOpen(false)} />}
+
+      <Drawer open={Boolean(row)} onClose={() => setRow(null)} title="Chi tiết truy cập">
+        {row && (
+          <dl className="space-y-3 text-body">
+            {[
+              ['Thời điểm', `${formatDateVN(row.date)} ${row.time ?? ''}`.trim()],
+              ['Bên', displayActor(row.actor)],
+              ['Mục đích', row.purpose],
+              ['Dữ liệu / thao tác', row.data],
+            ].map(([k, v]) => (
+              <div key={k}>
+                <dt className="text-label text-ink-muted">{k}</dt>
+                <dd className="text-ink">{v}</dd>
+              </div>
+            ))}
+          </dl>
+        )}
+      </Drawer>
     </>
   )
 }
