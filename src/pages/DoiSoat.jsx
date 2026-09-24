@@ -8,6 +8,7 @@ import Stat from '../components/ui/Stat.jsx'
 import StatusBadge from '../components/ui/StatusBadge.jsx'
 import EmptyState from '../components/ui/EmptyState.jsx'
 import DoneCheck from '../components/ui/DoneCheck.jsx'
+import Term from '../components/ui/Term.jsx'
 import {
   BANK_TRANSACTIONS,
   FEE_DEVIATIONS,
@@ -61,7 +62,9 @@ function NotYet({ gate }) {
   if (state.consents.A1 === 'none') {
     return (
       <EmptyState icon={Link2} gate={gate} title="Chưa có dữ liệu">
-        <p>Kết nối tài khoản Techcombank để app đọc giao dịch và tự đối soát với đơn hàng.</p>
+        <p>
+          Kết nối tài khoản Techcombank để app đọc giao dịch và tự <Term name="Đối soát">đối soát</Term> với đơn hàng.
+        </p>
       </EmptyState>
     )
   }
@@ -74,8 +77,8 @@ function NotYet({ gate }) {
         Đã kết nối tài khoản {SELLER_PROFILE.paymentAccount}
       </p>
       <p>
-        Mỗi lần sàn trả tiền về tài khoản là một lô tất toán. App so tiền về với dự phóng lập trước đó — đủ{' '}
-        {MIN_LOTS_FOR_SCORE} lô thì kênh có điểm xác thực.
+        Mỗi lần sàn trả tiền về tài khoản là một <Term name="Lô tất toán">lô tất toán</Term>. App so tiền về với dự phóng lập trước
+        đó — đủ {MIN_LOTS_FOR_SCORE} lô thì kênh có <Term name="Điểm xác thực">điểm xác thực</Term>.
       </p>
       <ul className="flex gap-6">
         {Object.keys(VERIFICATION_METRICS).map((channel) => (
@@ -137,7 +140,7 @@ function Reconciliation({ revoked }) {
         <div className="mt-5 grid grid-cols-4 divide-x divide-line border-t border-line pt-4">
           <Stat label="Đã khớp" value={summary.matchedCount} hint={`${formatNumberVN(summary.matchedTotal)} triệu`} className="pr-4" />
           <div className="px-4">
-            <Stat label="Ngoại lệ" value={summary.exceptionCount} hint="Cần tra thủ công" />
+            <Stat label={<Term name="Ngoại lệ" />} value={summary.exceptionCount} hint="Cần tra thủ công" />
             <button
               type="button"
               onClick={() => setExceptionsOpen(true)}

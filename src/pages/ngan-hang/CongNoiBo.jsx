@@ -7,6 +7,7 @@ import ToggleSwitch from '../../components/ui/ToggleSwitch.jsx'
 import Callout from '../../components/ui/Callout.jsx'
 import DataTable from '../../components/ui/DataTable.jsx'
 import Drawer from '../../components/ui/Drawer.jsx'
+import Term from '../../components/ui/Term.jsx'
 import StatusBadge from '../../components/ui/StatusBadge.jsx'
 import LockCertificate from '../../components/LockCertificate.jsx'
 import {
@@ -160,7 +161,9 @@ function Lookup({ view }) {
       <Card>
         <div className="grid grid-cols-3 gap-6">
           <div className="col-span-2">
-            <div className="text-label font-medium text-slate-600">Tổng phơi nhiễm hợp nhất</div>
+            <div className="text-label font-medium text-slate-600">
+              Tổng <Term name="Phơi nhiễm hợp nhất">phơi nhiễm hợp nhất</Term>
+            </div>
             <Money value={view.totalConsolidatedExposure} size="hero" className="text-slate-900" />
             <div className="mt-1 text-body text-slate-700">
               trên <span className="font-semibold tabular-nums">{view.lenderCount}</span> bên cho vay
@@ -170,20 +173,24 @@ function Lookup({ view }) {
             <div>
               Khả dụng còn lại để khóa: <Money value={view.remainingAvailable} size="body" className="font-semibold text-slate-900" />
             </div>
-            <div>Truy cập theo quyền A2 của nhà bán — hiệu lực đến {formatDateVN(A2_PERMISSION.expiryDate)}</div>
+            <div>
+              Truy cập theo <Term name="Quyền A2">quyền A2</Term> của nhà bán — hiệu lực đến {formatDateVN(A2_PERMISSION.expiryDate)}
+            </div>
           </div>
         </div>
       </Card>
 
       <Card>
-        <h2 className="mb-3 text-emphasis font-semibold text-slate-900">Đơn vị khoản phải thu</h2>
+        <h2 className="mb-3 text-emphasis font-semibold text-slate-900">
+          <Term name="Đơn vị khoản phải thu" />
+        </h2>
         <DataTable
           columns={[
             { key: 'code', header: 'Đơn vị', render: (u) => <span className="font-semibold text-slate-900">{u.code}</span> },
-            { key: 'projected', header: 'Giá trị ròng dự phóng', align: 'right', render: (u) => `${formatNumberVN(u.projectedNetValue)} triệu` },
+            { key: 'projected', header: <Term name="Giá trị ròng dự phóng" />, align: 'right', render: (u) => `${formatNumberVN(u.projectedNetValue)} triệu` },
             {
               key: 'available',
-              header: 'Giá trị khả dụng',
+              header: <Term name="Giá trị khả dụng" />,
               align: 'right',
               render: (u) => (u.availableValue == null ? 'Chưa đủ điều kiện' : `${formatNumberVN(u.availableValue)} triệu`),
             },
@@ -259,7 +266,7 @@ function Portfolio() {
           columns={[
             { key: 'code', header: 'Đơn vị', render: (e) => <span className="font-semibold text-slate-900">{e.unitId}</span> },
             { key: 'amount', header: 'Giá trị khóa', align: 'right', render: (e) => `${formatNumberVN(e.amount)} triệu` },
-            { key: 'priority', header: 'Thứ tự ưu tiên', render: () => `#${LOCK_CERTIFICATE.priority}` },
+            { key: 'priority', header: <Term name="Thứ tự ưu tiên" />, render: () => `#${LOCK_CERTIFICATE.priority}` },
             { key: 'lockedAt', header: 'Thời điểm khóa', render: () => LOCKED_AT },
             {
               key: 'status',

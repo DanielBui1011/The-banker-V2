@@ -7,6 +7,7 @@ import Money from '../components/ui/Money.jsx'
 import Drawer from '../components/ui/Drawer.jsx'
 import Callout from '../components/ui/Callout.jsx'
 import EmptyState from '../components/ui/EmptyState.jsx'
+import Term from '../components/ui/Term.jsx'
 import {
   RECEIVABLE_UNITS,
   MEGA_SALE_UNITS,
@@ -45,7 +46,8 @@ export default function KhoanPhaiThu() {
     return (
       <EmptyState icon={state.consents.A1 === 'none' ? Link2 : Hourglass} gate={gate} title="Chưa có khoản phải thu đã xác thực">
         <p>
-          Đơn vị khoản phải thu chỉ được xác thực khi kênh bán có đủ {MIN_LOTS_FOR_SCORE} lô tất toán — tiền sàn đã về tài khoản
+          <Term name="Đơn vị khoản phải thu" /> chỉ được xác thực khi kênh bán có đủ {MIN_LOTS_FOR_SCORE}{' '}
+          <Term name="Lô tất toán">lô tất toán</Term> — tiền sàn đã về tài khoản
           khớp với dự phóng. {state.consents.A1 === 'none' ? 'Hãy kết nối tài khoản Techcombank trước.' : 'Đang tích lũy lịch sử.'}
         </p>
       </EmptyState>
@@ -78,14 +80,14 @@ function Receivables() {
       {/* A — câu dẫn nối với Tổng quan */}
       <p className="text-section-title font-semibold text-ink">
         <Money value={readyTotal} size="section-title" className="text-ink" /> {peak ? 'chờ sàn mùa cao điểm là' : 'đang ở sàn nay là'}{' '}
-        {readyUnits.length} đơn vị tài sản đã xác thực
+        {readyUnits.length} đơn vị tài sản <Term name="Đã xác thực">đã xác thực</Term>
       </p>
 
       {/* B — sẵn sàng làm tài sản bảo đảm */}
       <section>
         <div className="grid grid-cols-2 gap-4">
-          {readyUnits.map((unit) => (
-            <UnitCard key={unit.code} unit={unit} status={unitStatus(state, unit.code)} peak={peak} accountChange={state.scenario.accountChange} />
+          {readyUnits.map((unit, i) => (
+            <UnitCard key={unit.code} first={i === 0} unit={unit} status={unitStatus(state, unit.code)} peak={peak} accountChange={state.scenario.accountChange} />
           ))}
         </div>
         <div className="mt-2 text-right text-body font-semibold text-ink">
@@ -156,7 +158,8 @@ function Receivables() {
 }
 
 // key={status}: badge và viền thẻ chạy lại hiệu ứng đổi trạng thái (L.2) khi đơn vị đổi trạng thái
-function UnitCard({ unit, status, peak, accountChange }) {
+// first: thẻ đầu tiên mang chú giải thuật ngữ (lần xuất hiện đầu trên trang, D.4)
+function UnitCard({ unit, status, peak, accountChange, first }) {
   const received = status === 'settled' && !(unit.code === 'RU-03' && accountChange) ? PAID[unit.code] : null
   return (
     <Card key={status} padding="p-5" className="animate-ru-card-glow">
@@ -173,11 +176,14 @@ function UnitCard({ unit, status, peak, accountChange }) {
       </div>
       <div className="mt-1 flex items-baseline justify-between gap-3">
         <Money value={unit.projectedNetValue} size="section-title" className="text-ink" />
-        {unit.settlementWindow && <span className="text-label text-ink-muted">Cửa sổ thanh toán: {unit.settlementWindow}</span>}
+        {unit.settlementWindow && <span className="text-label text-ink-muted">
+            {first ? <Term name="Cửa sổ thanh toán" /> : 'Cửa sổ thanh toán'}: {unit.settlementWindow}
+          </span>}
       </div>
       {status === 'broken' ? (
         <Callout variant="danger" className="mt-3">
-          Đứt gãy — hết cửa sổ thanh toán và thời gian ân hạn mà tiền không về tài khoản nhận tiền đã đăng ký.
+          Đứt gãy — hết cửa sổ thanh toán và thời gian <Term name="Ân hạn">ân hạn</Term> mà tiền không về tài khoản nhận tiền đã
+          đăng ký.
         </Callout>
       ) : (
         <LifecycleTrail current={LIFECYCLE.includes(status) ? status : 'verified'} className="mt-3" />
@@ -199,12 +205,14 @@ function PeakCalculation() {
   const rate = pricing.unitBreakdown[0]?.advanceRate ?? 0
   return (
     <div className="mt-3 flex flex-wrap items-center gap-3 rounded-xl border border-line bg-app-surface px-5 py-3 text-body text-ink">
-      <span className="font-semibold">Tỷ lệ ứng {formatPercentVN(rate)}</span>
+      <span className="font-semibold">
+        <Term name="Tỷ lệ ứng" /> {formatPercentVN(rate)}
+      </span>
       <span aria-hidden="true">→</span>
       <Money value={pricing.formulaValueTotal} size="emphasis" />
       <span aria-hidden="true">→</span>
       <span className="font-semibold">
-        Bị chặn bởi trần dư nợ: <Money value={pricing.result} size="emphasis" />
+        Bị chặn bởi <Term name="Trần dư nợ">trần dư nợ</Term>: <Money value={pricing.result} size="emphasis" />
       </span>
     </div>
   )

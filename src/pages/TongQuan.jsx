@@ -3,6 +3,7 @@ import { Landmark, CalendarCheck } from 'lucide-react'
 import Card from '../components/ui/Card.jsx'
 import Money from '../components/ui/Money.jsx'
 import Stat from '../components/ui/Stat.jsx'
+import Term from '../components/ui/Term.jsx'
 import Drawer from '../components/ui/Drawer.jsx'
 import Callout from '../components/ui/Callout.jsx'
 import Button from '../components/ui/Button.jsx'
@@ -47,7 +48,7 @@ export default function TongQuan() {
             = doanh thu sàn {formatNumberVN(escrow.marketplaceRevenue)} triệu / 30 × {escrow.averageHoldDays} ngày giữ tiền bình quân
           </p>
           <div className="mt-4 grid grid-cols-2 divide-x divide-line border-t border-line pt-4">
-            <Stat label="Đối soát thủ công" value={`${formatNumberVN(SELLER_PROFILE.monthlyManualReconciliationHours)} giờ/tháng`} className="pr-4" />
+            <Stat label={<><Term name="Đối soát" /> thủ công</>} value={`${formatNumberVN(SELLER_PROFILE.monthlyManualReconciliationHours)} giờ/tháng`} className="pr-4" />
             <Stat label="Lựa chọn vốn hiện tại" value={SELLER_PROFILE.currentFundingOption} className="pl-4" />
           </div>
         </Card>
@@ -93,7 +94,8 @@ function ConnectedAccount() {
       <p className="mt-2 text-body text-ink">{SELLER_PROFILE.paymentAccount}</p>
       <div className="mt-4 border-t border-line pt-4">
         <div className="text-label font-medium text-ink-muted">
-          Lô tất toán đã theo dõi (cần {MIN_LOTS_FOR_SCORE} lô mỗi kênh để có điểm xác thực)
+          <Term name="Lô tất toán" /> đã theo dõi (cần {MIN_LOTS_FOR_SCORE} lô mỗi kênh để có{' '}
+          <Term name="Điểm xác thực">điểm xác thực</Term>)
         </div>
         <ul className="mt-2 space-y-1 text-body">
           {Object.entries(VERIFICATION_METRICS).map(([channel, m]) => (
