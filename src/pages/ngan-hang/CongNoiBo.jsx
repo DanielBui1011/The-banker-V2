@@ -83,7 +83,7 @@ export default function CongNoiBo({ page, onHelp }) {
             {title} — {SELLER_PROFILE.shopName}
           </h1>
           <span className="flex items-center gap-4 text-body text-slate-700">
-            <SimHint>
+            <SimHint className="whitespace-nowrap">
               Ngày mô phỏng <span className="text-body font-semibold tabular-nums">{formatDateVN(simDate(state))}</span>
             </SimHint>
             {/* Nút ? mở ngăn Hướng dẫn (san-pham.md D.5) — trung tính, không màu Nền tảng */}

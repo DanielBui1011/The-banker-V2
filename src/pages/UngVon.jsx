@@ -497,7 +497,7 @@ function OtherLenderEnd() {
         </div>
         <LockedUnits amounts={amounts} />
         <SimHint>Dòng tất toán trong mô phỏng dựng cho Techcombank</SimHint>
-        <div className="flex justify-end gap-3">
+        <div className="flex flex-wrap justify-end gap-3">
           <Button variant="secondary" className="whitespace-nowrap" onClick={() => go(ROUTES.batDauLai)}>
             Bắt đầu lại
           </Button>

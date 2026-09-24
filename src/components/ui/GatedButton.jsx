@@ -11,7 +11,7 @@ export default function GatedButton({ gate, onClick, variant = 'primary', align 
       <Button type="button" variant={variant} onClick={onClick} disabled={!gate.ok} data-step-target={stepTarget}>
         {children}
       </Button>
-      {!gate.ok && <GateReason gate={gate} />}
+      {!gate.ok && <GateReason gate={gate} className={align === 'end' ? 'items-end' : 'items-start'} />}
     </div>
   )
 }

@@ -140,7 +140,7 @@ function TopBar({ onHelp }) {
         <span className="text-body">Đối tác: Techcombank</span>
         <span className="ml-auto flex items-center gap-2 text-body">
           {/* Ngày là của mô phỏng → SimHint (bấm mở bảng Mô phỏng). key: ngày mới mờ dần vào 200ms khi tua (hanh-trinh 1.7) */}
-          <SimHint>
+          <SimHint className="whitespace-nowrap">
             Ngày mô phỏng
             <span key={state.eventIndex} className="animate-[page-in_200ms_var(--ease-out)] text-body font-semibold tabular-nums">
               {formatDateVN(simDate(state))}
