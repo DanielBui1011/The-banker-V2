@@ -283,8 +283,8 @@ const RULES = {
   signA4: (s) => {
     if (s.scenario.peakSeason)
       return no(
-        'Mô phỏng mùa cao điểm chỉ minh họa ước tính; chưa có dữ liệu khoản vay mùa cao điểm',
-        link('Tắt Mùa cao điểm', ROUTES.moPhong)
+        'Ước tính mùa cao điểm chỉ để tham khảo; chưa có dữ liệu khoản vay mùa cao điểm',
+        link('Tắt Mùa cao điểm', ROUTES.moPhong) // giao diện vẽ đường dẫn bảng Mô phỏng thành SimHint
       )
     if (fundingFrozen(s)) return no('Cấp vốn mới đang tạm dừng', link('Giải trình ở Khoản vay', ROUTES.khoanVay))
     if (s.registry.length > 0) return no('Đã có khoản vay đang hoạt động', link('Xem khoản vay', ROUTES.khoanVay))
@@ -310,8 +310,7 @@ const RULES = {
   repay: (s, { unit: code }) => {
     const l = loan(s)
     if (l.status === 'none') return no('Chưa có khoản vay', link('Đi tới Ứng vốn', ROUTES.ungVon))
-    if (l.lender !== TCB)
-      return no('Dòng tất toán trong mô phỏng chỉ dựng cho Techcombank', link('Chọn lại chào giá', ROUTES.ungVon))
+    if (l.lender !== TCB) return no(`Khoản vay này của ${l.lender}, không trả trên Techcombank`, link('Chọn lại chào giá', ROUTES.ungVon))
     // Đơn vị lấy từ hash (?don-vi=) — không thuộc khoản vay thì chặn, không tra tiếp
     if (!s.registry.some((e) => e.unitId === code))
       return no(`${code ?? 'Đơn vị này'} không gắn với khoản vay`, link('Xem khoản vay', ROUTES.khoanVay))
@@ -420,7 +419,11 @@ const APPLY = {
     consents: { ...s.consents, A2: 'revoked' },
     userLog: logLine(s, 'A2 — đánh giá tín dụng', 'Rút quyền'),
   }),
-  viewEstimate: (s) => ({ ...s, application: { ...s.application, estimateViewed: true } }),
+  viewEstimate: (s) => ({
+    ...s,
+    application: { ...s.application, estimateViewed: true },
+    visited: { ...s.visited, [ESTIMATE_SEEN]: s.eventIndex },
+  }),
   signA4: (s) => {
     const signedState = { ...s, consents: { ...s.consents, A4: 'signed' } }
     if (!s.scenario.phase3) return signedState
@@ -452,6 +455,7 @@ const APPLY = {
   requestQuotes: (s, { recipients }) => ({
     ...s,
     application: { ...s.application, quoteRequest: { recipients: [...recipients] }, chosenLender: null },
+    visited: { ...s.visited, [ESTIMATE_SEEN]: s.eventIndex },
   }),
   chooseQuote: (s, { lender }) => ({ ...s, application: { ...s.application, chosenLender: lender } }),
   // ponytail: gỡ sự kiện khỏi sổ là "tua ngược" của mô phỏng, không phải thao tác sổ thật
@@ -477,36 +481,48 @@ export function reducer(state, action) {
 
 // ─── Nhiệm vụ (mục D.2) ──────────────────────────────────────────────────────
 const seenAfterE1 = (state, key) => (state.visited[key] ?? -1) >= E1
+// Bước ước tính ở Ứng vốn (GĐ3: bảng chào giá) — ghi vào visited để không mất khi đổi tình huống
+const ESTIMATE_SEEN = 'seller:uoc-tinh'
 
+// Nhãn ngắn là bộ nhãn duy nhất: thanh trái, ngăn Hướng dẫn và thẻ kết (Vòng 28).
 export function tasks(state) {
   const l = loan(state)
   const tcbLoan = l.lender === TCB
-  const items = [
-    { id: 1, label: 'Kết nối tài khoản Techcombank', done: state.consents.A1 !== 'none', fix: link('Kết nối Techcombank', ROUTES.tongQuan) },
+  const raw = [
+    { id: 1, label: 'Kết nối Techcombank', done: state.consents.A1 !== 'none', fix: link('Kết nối Techcombank', ROUTES.tongQuan) },
     {
       id: 2,
-      label: 'Tua tới 15/09 và xem khoản phải thu đã xác thực',
-      done: state.eventIndex >= E1 && seenAfterE1(state, 'seller:khoan-phai-thu'),
+      label: 'Xem khoản phải thu',
+      // Mở Khoản phải thu HOẶC đã tới bước ước tính ở Ứng vốn (Vòng 28)
+      done: state.eventIndex >= E1 && (seenAfterE1(state, 'seller:khoan-phai-thu') || seenAfterE1(state, ESTIMATE_SEEN)),
       fix: state.eventIndex >= E1 ? link('Mở Khoản phải thu', ROUTES.khoanPhaiThu) : toE1Fix(state),
     },
-    { id: 3, label: 'Đề nghị ứng vốn và nhận giải ngân từ Techcombank', done: tcbLoan, fix: link('Đi tới Ứng vốn', ROUTES.ungVon) },
-    { id: 4, label: 'Trả hết khoản vay khi sàn thanh toán', done: tcbLoan && l.status === 'repaid', fix: link('Xem khoản vay', ROUTES.khoanVay) },
-    { id: 5, label: 'Xem hồ sơ dưới góc nhìn cán bộ Techcombank', done: 'officer:tra-cuu' in state.visited, fix: link('Đổi vai', ROUTES.doiVai) },
+    { id: 3, label: 'Nhận giải ngân', done: tcbLoan, fix: link('Đi tới Ứng vốn', ROUTES.ungVon) },
+    { id: 4, label: 'Trả hết khoản vay', done: tcbLoan && l.status === 'repaid', fix: link('Xem khoản vay', ROUTES.khoanVay) },
+    { id: 5, label: 'Góc nhìn cán bộ', done: 'officer:tra-cuu' in state.visited, fix: link('Đổi vai', ROUTES.doiVai) },
     {
       id: 6,
-      label: 'Thử tình huống: Đổi tài khoản nhận tiền',
+      label: 'Đổi tài khoản nhận tiền',
       optional: true,
       done: state.accountChangeResolved,
       fix: state.scenario.accountChange ? link('Xem khoản vay', ROUTES.khoanVay) : link('Mở bảng Mô phỏng', ROUTES.moPhong),
     },
     {
       id: 7,
-      label: 'Thử Giai đoạn 3: nhiều bên chào giá',
+      label: 'Nhiều bên chào giá',
       optional: true,
       done: state.scenario.phase3 && state.registry.length > 0,
       fix: state.scenario.phase3 ? link('Đi tới Ứng vốn', ROUTES.ungVon) : link('Mở bảng Mô phỏng', ROUTES.moPhong),
     },
-  ].map((t) => ({ optional: false, ...t, fix: t.done ? null : t.fix }))
+  ]
+  // Nhiệm vụ bắt buộc đi theo chuỗi: n chỉ xong khi n−1 xong; điều kiện của n thỏa trước thì
+  // hiện "đã xong" ngay khi n−1 xong. Nhiệm vụ tùy chọn đứng riêng.
+  let prevDone = true
+  const items = raw.map((t) => {
+    const done = t.optional ? t.done : t.done && prevDone
+    if (!t.optional) prevDone = done
+    return { optional: false, ...t, done, fix: done ? null : t.fix }
+  })
   const required = items.filter((t) => !t.optional)
   const requiredDone = required.filter((t) => t.done).length
   return { items, requiredDone, requiredTotal: required.length, allRequiredDone: requiredDone === required.length }
@@ -515,37 +531,51 @@ export function tasks(state) {
 // ─── Thẻ "Bước tiếp theo" (mục D.3) ──────────────────────────────────────────
 const OFFICER_PAGES = ['tra-cuu', 'danh-muc-khoa', 'canh-bao']
 const NOTHING = { text: 'Không cần làm gì ở trang này', action: null }
-const step = (text, action = null) => ({ text, action })
+// extra: { target } — hành động do một nút NGAY TRÊN TRANG thực hiện (tên availability, hoặc
+// 'repay:RU-03'): thẻ chỉ có liên kết "Đến bước này ↓", nút đó là nút đặc duy nhất của trang
+// (DESIGN.md "Thứ bậc nút", Vòng 28). { sim } — chữ cho SimHint (nhắc bảng Mô phỏng).
+const step = (text, action = null, extra = {}) => ({ text, action, ...extra })
+// Đường sửa trỏ bảng Mô phỏng → không thành nút của thẻ, mà thành SimHint
+const fromGate = (gate) =>
+  gate.fix?.href === ROUTES.moPhong ? step(gate.reason, null, { sim: gate.fix.label }) : step(gate.reason, gate.fix)
 
 function fundingStep(state) {
   const { consents, application, scenario } = state
   if (consents.A2 !== 'active')
-    return step('Techcombank cần quyền đánh giá tín dụng (A2).', link('Cấp A2 trên trang Techcombank', ROUTES.a2))
+    return step(
+      'Techcombank cần quyền đánh giá tín dụng (A2).',
+      link('Cấp A2 trên trang Techcombank', ROUTES.a2),
+      // Bước 1 của Ứng vốn có nút Cấp A2; đã ký A4 (A2 bị rút) thì thân trang là bước Gửi đề nghị
+      consents.A4 !== 'signed' ? { target: 'grantA2' } : {}
+    )
   if (scenario.phase3) {
-    if (!application.quoteRequest) return step('Chọn bên nhận yêu cầu chào giá.')
+    if (!application.quoteRequest) return step('Chọn bên nhận yêu cầu chào giá.', null, { target: 'requestQuotes' })
     if (!application.chosenLender) return step('So sánh chào giá và chọn một bên.')
-    return step(`Ký thỏa thuận với ${application.chosenLender}.`)
+    return step(`Ký thỏa thuận với ${application.chosenLender}.`, null, { target: 'signA4' })
   }
   if (!application.estimateViewed) return step('Xem ước tính giá trị khả dụng.')
   const sign = availability(state, 'signA4')
   if (consents.A4 !== 'signed')
     return sign.ok
-      ? step('Ký thỏa thuận A4 để dùng khoản phải thu làm tài sản bảo đảm.', link('Ký A4 trên trang Techcombank', ROUTES.a4))
-      : step(sign.reason, sign.fix)
+      ? step('Ký thỏa thuận A4 để dùng khoản phải thu làm tài sản bảo đảm.', link('Ký A4 trên trang Techcombank', ROUTES.a4), {
+          target: 'signA4',
+        })
+      : fromGate(sign)
   const submit = availability(state, 'submit')
-  return submit.ok ? step('Gửi đề nghị tới Techcombank.') : step(submit.reason, submit.fix)
+  return submit.ok ? step('Gửi đề nghị tới Techcombank.', null, { target: 'submit' }) : fromGate(submit)
 }
 
 function loanStep(state) {
   if (availability(state, 'resolveAccountChange').ok)
-    return step('RU-03 đứt gãy — xác nhận tài khoản nhận tiền và giải trình.')
+    return step('RU-03 đứt gãy — xác nhận tài khoản nhận tiền và giải trình.', null, { target: 'resolveAccountChange' })
   for (const u of NORMAL_UNITS) {
     if (availability(state, { type: 'repay', unit: u.code }).ok)
       return step(
         u.code === 'RU-03' && state.scenario.accountChange
           ? `Đã giải trình. Trả ${formatNumberVN(UNIT_AVAILABLE[u.code])} triệu cho ${u.code} từ nguồn khác trên Techcombank.`
           : `${u.channel} đã thanh toán ${u.code}. Trả ${formatNumberVN(UNIT_AVAILABLE[u.code])} triệu trên Techcombank.`,
-        link('Trả nợ trên Techcombank', ROUTES.traNo)
+        link('Trả nợ trên Techcombank', ROUTES.traNo),
+        { target: `repay:${u.code}` }
       )
   }
   if (availability(state, 'advance').ok)
@@ -575,10 +605,19 @@ function officerStep(state) {
 export function nextStep(state, page) {
   if (OFFICER_PAGES.includes(page)) return officerStep(state)
   const { consents } = state
+  // Tổng quan và Quyền & dữ liệu có sẵn nút Kết nối; Quyền & dữ liệu có nút Cấp lại A1
   if (consents.A1 === 'none')
-    return step('Kết nối tài khoản Techcombank để app đối soát tự động.', link('Kết nối Techcombank', ROUTES.a1))
+    return step(
+      'Kết nối tài khoản Techcombank để app đối soát tự động.',
+      link('Kết nối Techcombank', ROUTES.a1),
+      page === 'tong-quan' || page === 'quyen-du-lieu' ? { target: 'grantA1' } : {}
+    )
   if (consents.A1 === 'revoked' && loan(state).status !== 'repaid')
-    return step('Quyền đối soát A1 đã rút — cấp lại để app tiếp tục đồng bộ.', link('Cấp lại A1', ROUTES.a1))
+    return step(
+      'Quyền đối soát A1 đã rút — cấp lại để app tiếp tục đồng bộ.',
+      link('Cấp lại A1', ROUTES.a1),
+      page === 'quyen-du-lieu' ? { target: 'grantA1' } : {}
+    )
   if (state.eventIndex < E1)
     return step(`Tua tới ${ddmm(E_NORMAL[E1].date)} để xem 6 tuần đối soát.`, link('Tua tới sự kiện tiếp theo', ROUTES.tua))
 
@@ -588,7 +627,7 @@ export function nextStep(state, page) {
       const s = fundingStep(state)
       // Giai đoạn 3 không gợi ý mùa cao điểm: bật lên thì không ký được với bên nào
       return availability(state, 'togglePeakSeason').ok && !state.scenario.peakSeason && !state.scenario.phase3
-        ? { ...s, hint: 'Muốn xem mùa cao điểm? Bật ở bảng Mô phỏng' }
+        ? { ...s, sim: 'Muốn xem mùa cao điểm? Bật ở bảng Mô phỏng' }
         : s
     }
     if (page !== 'khoan-phai-thu' && !seenAfterE1(state, 'seller:khoan-phai-thu'))
@@ -599,8 +638,9 @@ export function nextStep(state, page) {
   // Ở Ứng vốn, thẻ kết có sẵn nút Chọn lại chào giá — không trỏ đường dẫn về chính trang
   if (l.lender !== TCB)
     return step(
-      'Dòng tất toán trong mô phỏng chỉ dựng cho Techcombank.',
-      page === 'ung-von' ? null : link('Chọn lại chào giá', ROUTES.ungVon)
+      `Đã ký thỏa thuận với ${l.lender}. Muốn đi tiếp tới trả nợ? Chọn lại chào giá.`,
+      page === 'ung-von' ? null : link('Chọn lại chào giá', ROUTES.ungVon),
+      { ...(page === 'ung-von' ? { target: 'rechooseQuote' } : {}), sim: 'Dòng tất toán trong mô phỏng dựng cho Techcombank' }
     )
   if (l.status === 'repaid')
     return 'officer:tra-cuu' in state.visited

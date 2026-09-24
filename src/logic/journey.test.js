@@ -250,6 +250,31 @@ describe('tasks', () => {
   it('nhiệm vụ 6: đã giải trình Đổi tài khoản', () => {
     expect(doneIds(run(accountChangeAt(4), 'resolveAccountChange'))).toContain(6)
   })
+  it('Vòng 28 — nhiệm vụ 2 xong khi đã tới bước ước tính ở Ứng vốn (không cần mở Khoản phải thu)', () => {
+    expect(doneIds(withA2())).toEqual([1])
+    expect(doneIds(estimated())).toEqual([1, 2])
+    // Giai đoạn 3 không có bước ước tính riêng: bảng chào giá là bước ước tính
+    expect(doneIds(phase3Quotes())).toEqual([1, 2])
+  })
+  it('Vòng 28 — nhiệm vụ n không xong khi n−1 chưa xong; điều kiện thỏa trước thì hiện xong ngay khi n−1 xong', () => {
+    const early = run(connected(), { type: 'visit', key: 'officer:tra-cuu' })
+    expect(doneIds(early)).toEqual([1]) // đã mở góc nhìn cán bộ nhưng nhiệm vụ 2–4 chưa xong
+    expect(doneIds(run(early, 'advance', 'grantA2', 'viewEstimate', 'signA4', 'submit'))).toEqual([1, 2, 3])
+    const end = run(fullyRepaid(), { type: 'visit', key: 'officer:tra-cuu' })
+    expect(doneIds(end)).toEqual([1, 2, 3, 4, 5])
+    expect(tasks(end).allRequiredDone).toBe(true)
+  })
+  it('Vòng 28 — một bộ nhãn ngắn duy nhất (thanh trái, ngăn Hướng dẫn, thẻ kết)', () => {
+    expect(tasks(start()).items.map((t) => t.label)).toEqual([
+      'Kết nối Techcombank',
+      'Xem khoản phải thu',
+      'Nhận giải ngân',
+      'Trả hết khoản vay',
+      'Góc nhìn cán bộ',
+      'Đổi tài khoản nhận tiền',
+      'Nhiều bên chào giá',
+    ])
+  })
   it('nhiệm vụ 7: có chứng thư khóa từ luồng chào giá', () => {
     const s = run(phase3Quotes(), { type: 'chooseQuote', lender: 'Ngân hàng B' }, 'signA4')
     expect(doneIds(s)).toContain(7)
@@ -262,6 +287,8 @@ describe('nextStep', () => {
     expect(nextStep(phase3Quotes(), 'ung-von')).toEqual({ text: 'So sánh chào giá và chọn một bên.', action: null })
     const s = run(phase3Quotes(), { type: 'chooseQuote', lender: 'Ngân hàng B' }, 'signA4')
     expect(nextStep(s, 'ung-von').action).toBeNull()
+    expect(nextStep(s, 'ung-von').target).toBe('rechooseQuote')
+    expect(nextStep(s, 'ung-von').sim).toBe('Dòng tất toán trong mô phỏng dựng cho Techcombank')
     expect(nextStep(s, 'tong-quan').action).toEqual({ label: 'Chọn lại chào giá', href: '#/nha-ban/ung-von' })
   })
   it('hành trình 2.8: sau giải trình, RU-03 trả từ nguồn khác — không nói Shopee đã thanh toán', () => {
@@ -269,6 +296,7 @@ describe('nextStep', () => {
     expect(nextStep(s, 'khoan-vay')).toEqual({
       text: 'Đã giải trình. Trả 46,75 triệu cho RU-03 từ nguồn khác trên Techcombank.',
       action: { label: 'Trả nợ trên Techcombank', href: '#/techcombank/tra-no' },
+      target: 'repay:RU-03',
     })
   })
   it('Đối soát, chưa kết nối → Kết nối Techcombank (D.3)', () => {
@@ -292,11 +320,12 @@ describe('nextStep', () => {
   it('trang khác ở 15/09 khi chưa xem Khoản phải thu → mở Khoản phải thu', () => {
     expect(nextStep(at1509(), 'tong-quan').action).toEqual({ label: 'Mở Khoản phải thu', href: '#/nha-ban/khoan-phai-thu' })
   })
-  it('Ứng vốn chưa có A2 → Cấp A2 trên trang Techcombank (1.10), kèm gợi ý mùa cao điểm', () => {
+  it('Ứng vốn chưa có A2 → Cấp A2 trên trang Techcombank (1.10), nút ngay trên trang, kèm SimHint mùa cao điểm', () => {
     expect(nextStep(at1509(), 'ung-von')).toEqual({
       text: 'Techcombank cần quyền đánh giá tín dụng (A2).',
       action: { label: 'Cấp A2 trên trang Techcombank', href: '#/techcombank/a2' },
-      hint: 'Muốn xem mùa cao điểm? Bật ở bảng Mô phỏng',
+      target: 'grantA2',
+      sim: 'Muốn xem mùa cao điểm? Bật ở bảng Mô phỏng',
     })
   })
   it('Khoản vay sau giải ngân → "Tua tới 19/09" (D.3)', () => {
@@ -309,6 +338,7 @@ describe('nextStep', () => {
     expect(nextStep(at1909(), 'khoan-vay')).toEqual({
       text: 'Shopee đã thanh toán RU-03. Trả 46,75 triệu trên Techcombank.',
       action: { label: 'Trả nợ trên Techcombank', href: '#/techcombank/tra-no' },
+      target: 'repay:RU-03',
     })
     expect(nextStep(at1909(), 'tong-quan').action).toEqual({ label: 'Xem khoản vay', href: '#/nha-ban/khoan-vay' })
   })
@@ -381,7 +411,7 @@ describe('availability — G.1 Nhà bán', () => {
   })
   it('Ký A4: Mùa cao điểm → Tắt Mùa cao điểm (bảng Mô phỏng)', () => {
     const a = blocked(run(estimated(), 'togglePeakSeason'), 'signA4')
-    expect(a.reason).toBe('Mô phỏng mùa cao điểm chỉ minh họa ước tính; chưa có dữ liệu khoản vay mùa cao điểm')
+    expect(a.reason).toBe('Ước tính mùa cao điểm chỉ để tham khảo; chưa có dữ liệu khoản vay mùa cao điểm')
     expect(a.fix).toEqual({ label: 'Tắt Mùa cao điểm', href: '#/mo-phong' })
   })
   it('Ký A4: đóng băng → Giải trình ở Khoản vay', () => {
@@ -628,6 +658,76 @@ describe('Giai đoạn 3', () => {
     expect(s.registry).toEqual([])
     expect(s.application.chosenLender).toBeNull()
     expect(availability(s, { type: 'chooseQuote', lender: 'Techcombank' }).ok).toBe(true)
+  })
+})
+
+// ─── Vòng 28: thứ bậc nút — mỗi trang đúng một nút đặc ────────────────────────
+// Thẻ Bước tiếp theo vẽ nút đặc khi hành động ở trang khác (action, không target); khi hành
+// động ngay trên trang (target) thẻ chỉ có liên kết "Đến bước này ↓" và nút đặc là nút đó.
+// Trạng thái trống dùng nút viền khi thẻ đã có nút đặc.
+const SELLER_PAGES = ['tong-quan', 'doi-soat', 'khoan-phai-thu', 'ung-von', 'khoan-vay', 'quyen-du-lieu']
+const JOURNEY1 = {
+  start, connected, at1509,
+  seenKPT: () => run(at1509(), { type: 'visit', key: 'seller:khoan-phai-thu' }),
+  withA2, estimated, signed, disbursed, at1909, repaidRU03, at2009, fullyRepaid,
+  officerSeen: () => run(fullyRepaid(), { type: 'visit', key: 'officer:tra-cuu' }),
+}
+const targetGate = (s, t) => availability(s, t.startsWith('repay:') ? { type: 'repay', unit: t.slice(6) } : t)
+const pageEmpty = (s, page) =>
+  ({
+    'doi-soat': !availability(s, 'viewReconciliation').ok,
+    'khoan-phai-thu': !availability(s, 'viewReconciliation').ok,
+    'ung-von': !availability(s, 'openFunding').ok,
+    'khoan-vay': loan(s).status === 'none',
+  })[page] ?? false
+
+describe('Vòng 28 — một nút đặc mỗi trang (hành trình 1)', () => {
+  it('mỗi trang ở mỗi trạng thái: ≤ 1 nút đặc; nút đặc trong thân trang luôn bấm được', () => {
+    for (const [name, make] of Object.entries(JOURNEY1)) {
+      const s = make()
+      for (const page of SELLER_PAGES) {
+        const step = nextStep(s, page)
+        const where = `${name} / ${page}`
+        const cardSolid = Boolean(step.action) && !step.target
+        const emptySolid = pageEmpty(s, page) && !cardSolid
+        const solids = Number(cardSolid) + Number(Boolean(step.target)) + Number(emptySolid)
+        expect(solids, where).toBeLessThanOrEqual(1)
+        if (step.target) expect(targetGate(s, step.target).ok, `${where}: ${step.target}`).toBe(true)
+        if (pageEmpty(s, page)) expect(step.target, where).toBeUndefined()
+      }
+    }
+  })
+  it('hành động trên cùng trang → thẻ chỉ dẫn xuống nút trong thân trang', () => {
+    expect(nextStep(start(), 'tong-quan').target).toBe('grantA1')
+    expect(nextStep(start(), 'doi-soat').target).toBeUndefined() // thẻ trống → nút viền
+    expect(nextStep(at1509(), 'ung-von').target).toBe('grantA2') // n21
+    expect(nextStep(estimated(), 'ung-von').target).toBe('signA4') // n22
+    expect(nextStep(signed(), 'ung-von').target).toBe('submit') // n25
+    expect(nextStep(at1909(), 'khoan-vay').target).toBe('repay:RU-03')
+    expect(nextStep(at1909(), 'tong-quan').target).toBeUndefined()
+    expect(nextStep(disbursed(), 'ung-von').target).toBeUndefined() // Tua ở bảng Mô phỏng
+    expect(nextStep(accountChangeAt(4), 'khoan-vay').target).toBe('resolveAccountChange') // t02
+  })
+})
+
+// Chữ "mô phỏng"/"prototype" chỉ ở SimHint (trường sim), không ở chữ sản phẩm (quy-tac, Vòng 28)
+describe('Vòng 28 — chữ sản phẩm không nhắc mô phỏng', () => {
+  it('nextStep (trang nhà bán) và lý do chặn của thao tác sản phẩm', () => {
+    const PANEL = ['advance', 'togglePeakSeason', 'toggleAccountChange', 'togglePhase3']
+    const days = [...Object.values(JOURNEY1).map((f) => f()), run(estimated(), 'togglePeakSeason'), run(at1509(), 'togglePeakSeason'),
+      accountChangeAt(4), phase3Quotes(), run(phase3Quotes(), { type: 'chooseQuote', lender: 'Ngân hàng B' }, 'signA4')]
+    const STAGED = /mô phỏng|prototype/i
+    for (const s of days) {
+      for (const page of SELLER_PAGES) {
+        const { text, action } = nextStep(s, page)
+        expect(STAGED.test(text), `${page}: ${text}`).toBe(false)
+        if (action) expect(STAGED.test(action.label), action.label).toBe(false)
+      }
+      for (const action of CHECKED.filter((a) => !PANEL.includes(a))) {
+        const a = availability(s, action)
+        if (!a.ok) expect(STAGED.test(a.reason), a.reason).toBe(false)
+      }
+    }
   })
 })
 
