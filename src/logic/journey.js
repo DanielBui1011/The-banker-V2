@@ -129,10 +129,15 @@ export function activeUnits(state) {
 }
 
 const isBroken = (state) => state.scenario.accountChange && state.eventIndex >= E5
+// RU-03 từng đứt gãy (lịch sử — điểm Shopee giữ mức sau chiết khấu, san-pham.md F)
+export const ru03Broke = isBroken
+// Đứt gãy đã xử lý: đã giải trình VÀ đã trả RU-03 từ nguồn khác (Vòng 29)
+export const breakResolved = (state) => isBroken(state) && state.accountChangeResolved && state.repaid['RU-03']
 
 export function unitStatus(state, code) {
   if (state.eventIndex < E1) return null // 01/08: chưa có lô, chưa có đơn vị (mục E)
-  if (code === 'RU-03' && isBroken(state)) return 'broken' // giữ trong lịch sử dù đã trả
+  // Đã trả từ nguồn khác: trạng thái hiện tại; "từng đứt gãy" giữ ở dòng phụ + dòng thời gian (Vòng 29)
+  if (code === 'RU-03' && isBroken(state)) return state.repaid[code] ? 'repaid-other' : 'broken'
   if (state.repaid[code]) return 'settled'
   if (state.registry.some((e) => e.unitId === code)) return 'locked'
   const unit = [...RECEIVABLE_UNITS, ...MEGA_SALE_UNITS].find((u) => u.code === code)
@@ -217,7 +222,9 @@ export function bankView(state) {
         .reduce((sum, u) => sum + Math.max(0, (u.availableValue ?? 0) - u.lockedAmount), 0)
     ),
     crossExposureExample: { otherLockedAmount: cross.lockedByOthers, remainingAvailable: cross.result },
-    alerts: isBroken(state) ? [{ unit: 'RU-03', date: E_ACCOUNT_CHANGE[E5].date }] : [],
+    // alerts = cảnh báo còn mở (chấm đếm ở mục Cảnh báo); đã xử lý chuyển sang resolvedAlerts
+    alerts: isBroken(state) && !breakResolved(state) ? [{ unit: 'RU-03', date: E_ACCOUNT_CHANGE[E5].date }] : [],
+    resolvedAlerts: breakResolved(state) ? [{ unit: 'RU-03', date: E_ACCOUNT_CHANGE[E5].date }] : [],
   }
 }
 
@@ -383,6 +390,8 @@ const RULES = {
   },
   switchRole: () => OK,
   reset: () => OK,
+  // Thẻ kết (Vòng 29): bật tình huống; bật ngay không được thì bắt đầu lại rồi bật
+  tryScenario: (s, { scenario }) => (TOGGLE[scenario] ? OK : no('Tình huống không xác định')),
   // Không có điều kiện: ghi nhận trang đã mở, màn chào, danh sách nhiệm vụ
   visit: () => OK,
   welcome: () => OK,
@@ -467,6 +476,9 @@ const APPLY = {
   }),
   switchRole: (s) => ({ ...s, role: s.role === 'seller' ? 'officer' : 'seller' }),
   reset: () => initialState(),
+  // Bắt đầu lại giữ lựa chọn hướng dẫn (không hiện lại màn chào)
+  tryScenario: (s, { scenario }) =>
+    APPLY[TOGGLE[scenario]](needsRestart(s, scenario) ? { ...initialState(), guide: s.guide } : s),
   visit: (s, { key }) => ({ ...s, visited: { ...s.visited, [key]: s.eventIndex } }),
   welcome: (s, { mode }) => ({ ...s, guide: { ...s.guide, welcomeDone: true, mode, checklistOpen: mode === 'guided' } }),
   toggleChecklist: (s) => ({ ...s, guide: { ...s.guide, checklistOpen: !s.guide.checklistOpen } }),
@@ -529,6 +541,24 @@ export function tasks(state) {
 }
 
 // ─── Thẻ "Bước tiếp theo" (mục D.3) ──────────────────────────────────────────
+const TOGGLE = { accountChange: 'toggleAccountChange', phase3: 'togglePhase3' }
+const needsRestart = (s, scenario) => s.scenario[scenario] || !availability(s, TOGGLE[scenario]).ok
+// Thẻ kết: 2 tình huống tùy chọn (nhiệm vụ 6, 7) chưa làm; bấm → tryScenario (hỏi xác nhận nếu restart)
+const TRY = [
+  { task: 6, label: 'Nhà bán đổi tài khoản nhận tiền', scenario: 'accountChange' },
+  { task: 7, label: 'Giai đoạn 3 — nhiều bên chào giá', scenario: 'phase3' },
+]
+function finishStep(state, items) {
+  const tryScenarios = TRY.filter((t) => !items.find((i) => i.id === t.task).done).map(({ label, scenario }) => ({
+    label,
+    scenario,
+    restart: needsRestart(state, scenario),
+  }))
+  return tryScenarios.length
+    ? step('Bạn đã hoàn thành hành trình chính. Thử thêm:', null, { tryScenarios })
+    : step('Bạn đã hoàn thành hành trình chính và cả hai tình huống.')
+}
+
 const OFFICER_PAGES = ['tra-cuu', 'danh-muc-khoa', 'canh-bao']
 const NOTHING = { text: 'Không cần làm gì ở trang này', action: null }
 // extra: { target } — hành động do một nút NGAY TRÊN TRANG thực hiện (tên availability, hoặc
@@ -604,6 +634,8 @@ function officerStep(state) {
 //       | 'tra-cuu' | 'danh-muc-khoa' | 'canh-bao'
 export function nextStep(state, page) {
   if (OFFICER_PAGES.includes(page)) return officerStep(state)
+  const t = tasks(state)
+  if (t.allRequiredDone) return finishStep(state, t.items)
   const { consents } = state
   // Tổng quan và Quyền & dữ liệu có sẵn nút Kết nối; Quyền & dữ liệu có nút Cấp lại A1
   if (consents.A1 === 'none')
