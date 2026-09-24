@@ -312,6 +312,9 @@ const RULES = {
     if (l.status === 'none') return no('Chưa có khoản vay', link('Đi tới Ứng vốn', ROUTES.ungVon))
     if (l.lender !== TCB)
       return no('Dòng tất toán trong mô phỏng chỉ dựng cho Techcombank', link('Chọn lại chào giá', ROUTES.ungVon))
+    // Đơn vị lấy từ hash (?don-vi=) — không thuộc khoản vay thì chặn, không tra tiếp
+    if (!s.registry.some((e) => e.unitId === code))
+      return no(`${code ?? 'Đơn vị này'} không gắn với khoản vay`, link('Xem khoản vay', ROUTES.khoanVay))
     if (s.repaid[code]) return no(`Đã trả ${code}`)
     if (code === 'RU-03' && isBroken(s) && !s.accountChangeResolved)
       return no('RU-03 đứt gãy — tiền Shopee không về tài khoản Techcombank', link('Giải trình ở Khoản vay', ROUTES.khoanVay))
@@ -611,12 +614,41 @@ export function nextStep(state, page) {
   return s
 }
 
-// ─── localStorage (mục F): mọi đọc/ghi bọc try/catch; hỏng/sai version → khởi đầu ──
+// ─── localStorage (mục F): mọi đọc/ghi bọc try/catch; hỏng/sai version/sai cấu trúc → khởi đầu ──
+const isObj = (v) => Boolean(v) && typeof v === 'object' && !Array.isArray(v)
+const isBool = (v) => typeof v === 'boolean'
+const LENDERS = LENDER_QUOTES.map((q) => q.lender)
+const LOAN_UNITS = NORMAL_UNITS.map((u) => u.code)
+const inEvents = (s, i) => Number.isInteger(i) && i >= 0 && i < events(s).length
+
+// Bản lưu bị sửa tay hoặc do bản build khác ghi: kiểm từng trường mà selector đọc tới
+function isValidState(s) {
+  const { scenario: sc, consents: c, application: a, guide: g } = s
+  return (
+    ['seller', 'officer'].includes(s.role) &&
+    isObj(sc) && isBool(sc.peakSeason) && isBool(sc.accountChange) && isBool(sc.phase3) &&
+    inEvents(s, s.eventIndex) &&
+    isObj(c) && ['none', 'active', 'revoked'].includes(c.A1) && ['none', 'active', 'revoked'].includes(c.A2) &&
+    ['none', 'signed'].includes(c.A4) &&
+    isObj(a) && isBool(a.estimateViewed) && isBool(a.submitted) && [null, ...LENDERS].includes(a.chosenLender) &&
+    (a.quoteRequest === null ||
+      (isObj(a.quoteRequest) && Array.isArray(a.quoteRequest.recipients) && a.quoteRequest.recipients.every((r) => LENDERS.includes(r)))) &&
+    Array.isArray(s.registry) &&
+    s.registry.every((e) => isObj(e) && LENDERS.includes(e.lenderId) && LOAN_UNITS.includes(e.unitId) && Number.isFinite(e.amount)) &&
+    isObj(s.repaid) && LOAN_UNITS.every((u) => isBool(s.repaid[u])) &&
+    isBool(s.accountChangeResolved) &&
+    Array.isArray(s.userLog) && s.userLog.every((l) => isObj(l) && inEvents(s, l.eventIndex)) &&
+    isObj(s.visited) &&
+    isObj(g) && isBool(g.welcomeDone) && ['guided', 'explore'].includes(g.mode) && isBool(g.checklistOpen)
+  )
+}
+
 export function loadState(storage = globalThis.localStorage) {
   try {
     const parsed = JSON.parse(storage.getItem(STORAGE_KEY))
-    if (!parsed || typeof parsed !== 'object' || parsed.version !== VERSION) return initialState()
-    return { ...initialState(), ...parsed }
+    if (!isObj(parsed) || parsed.version !== VERSION) return initialState()
+    const state = { ...initialState(), ...parsed }
+    return isValidState(state) ? state : initialState()
   } catch {
     return initialState()
   }

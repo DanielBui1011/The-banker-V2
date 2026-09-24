@@ -1,6 +1,10 @@
-import { useEffect, useRef, useState } from 'react'
+import { Component, useEffect, useRef, useState } from 'react'
 import { AppStateProvider, useApp } from './state/appState.jsx'
-import { useHashRoute } from './utils/route.js'
+import { useHashRoute, crossesBankSurface, DEFAULT_ROUTE } from './utils/route.js'
+import { STORAGE_KEY } from './logic/journey.js'
+import { FOOTER_NOTE } from './data/mockData.js'
+import Card from './components/ui/Card.jsx'
+import Button from './components/ui/Button.jsx'
 import { DISPLAY_NAME } from './config/brand.js'
 import AppShell from './components/ui/AppShell.jsx'
 import { HandoffScreen } from './components/ui/SurfaceFrame.jsx'
@@ -43,8 +47,7 @@ function useBankHandoff(space) {
   // Suy ra ngay trong lần render đổi trang, để trang đích không lóe lên trước màn chuyển tiếp
   if (lastSpace !== space) {
     setLastSpace(space)
-    const crossing = (lastSpace === 'techcombank') !== (space === 'techcombank')
-    if (crossing && !reducedMotion()) setHandoff({ toBank: space === 'techcombank' })
+    if (crossesBankSurface(`#/${lastSpace}`, `#/${space}`) && !reducedMotion()) setHandoff({ toBank: space === 'techcombank' })
   }
 
   useEffect(() => {
@@ -83,10 +86,44 @@ function useSixWeeksNotice(eventIndex, href) {
 
 export default function App() {
   return (
-    <AppStateProvider>
-      <AppRoutes />
-    </AppStateProvider>
+    <CrashGuard>
+      <AppStateProvider>
+        <AppRoutes />
+      </AppStateProvider>
+    </CrashGuard>
   )
+}
+
+// Lưới an toàn cuối (Vòng 26): lỗi hiển thị bất kỳ → màn "Bắt đầu lại" thay vì trang trắng
+class CrashGuard extends Component {
+  state = { crashed: false }
+  static getDerivedStateFromError() {
+    return { crashed: true }
+  }
+  restart = () => {
+    try {
+      localStorage.removeItem(STORAGE_KEY)
+    } catch {
+      // localStorage bị chặn: vẫn tải lại từ đầu
+    }
+    window.location.hash = DEFAULT_ROUTE.seller
+    window.location.reload()
+  }
+  render() {
+    if (!this.state.crashed) return this.props.children
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-white p-8">
+        <Card className="max-w-xl space-y-4">
+          <h1 className="text-screen-title font-bold text-slate-900">Mô phỏng gặp trạng thái không mong đợi</h1>
+          <p className="text-body text-slate-700">Bắt đầu lại để quay về đầu hành trình, trước khi kết nối Techcombank.</p>
+          <div className="flex justify-end">
+            <Button onClick={this.restart}>Bắt đầu lại</Button>
+          </div>
+          <p className="text-label text-slate-600">{FOOTER_NOTE}</p>
+        </Card>
+      </main>
+    )
+  }
 }
 
 function AppRoutes() {
