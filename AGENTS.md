@@ -63,6 +63,7 @@ Trả lời người dùng bằng tiếng Việt. Giữ nguyên dấu tiếng Vi
 - Mỗi trang: MỘT câu hỏi, MỘT con số chính. Nút chính không rộng hết trang; mỗi trang một nút chính, nút phụ kiểu viền.
 - Chuyển động (docs/san-pham.md mục L): cho người dùng biết mình vừa đi đâu và việc gì vừa xong. Token 150/200/300ms; không hiệu ứng nào > 400ms trừ màn chuyển tiếp ngân hàng 700ms. CSS transition + View Transitions API, không thư viện. `prefers-reduced-motion` → hiện ngay, bỏ màn chuyển tiếp (kể cả khi dùng setTimeout: kiểm matchMedia). KHÔNG tween số; không bounce/elastic.
 - Tối giản: không thêm dependency trừ khi DESIGN.md yêu cầu; không thêm thư viện UI/animation/router/tour; chỉ tách component dùng chung khi ≥3 trang dùng; ưu tiên sửa ở component dùng chung.
+- Ngoại lệ cho công cụ (Vòng 27): `playwright` là devDependency, chỉ dùng cho `npm run shots -- <nhan>` (scripts/shots.mjs — chụp toàn bộ giao diện để gửi feedback; hướng dẫn: docs/shots/HUONG-DAN.md). Không import vào src/, không dùng làm test của app.
 
 ## 7. Điều hướng và mô phỏng
 - Không còn thứ tự tuyến tính. Thanh điều hướng trái 6 trang (Tổng quan, Đối soát, Khoản phải thu, Ứng vốn, Khoản vay, Quyền & dữ liệu); danh sách nhiệm vụ đặt ở cuối thanh điều hướng trái. Điều hướng bằng URL hash (`#/nha-ban/…`, `#/techcombank/…`, `#/ngan-hang/…`; `#/mo-phong/…` là lệnh bảng Mô phỏng) — hằng `ROUTES` trong src/logic/journey.js.
