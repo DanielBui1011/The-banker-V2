@@ -189,3 +189,16 @@
 .animate-ru-card-glow {
   animation: ru-card-glow 400ms var(--ease-out);
 }
+
+/* Vòng 25 — drawer và hộp thoại đi ra 200ms (L.2: 250ms vào, 200ms ra), --ease-in. */
+@keyframes drawer-out {
+  to {
+    transform: translateX(100%);
+  }
+}
+@keyframes dialog-out {
+  to {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+}

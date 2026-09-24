@@ -560,6 +560,8 @@ function officerStep(state) {
     availability(state, 'resolveAccountChange').ok ||
     NORMAL_UNITS.some((u) => availability(state, { type: 'repay', unit: u.code }).ok)
   if (sellerPending) return step('Chờ nhà bán trả nợ', TO_SELLER)
+  // Thẻ kết (D.2) nằm ở thanh điều hướng của app nhà bán → dẫn người dùng về đó
+  if (tasks(state).allRequiredDone) return step('Bạn đã xong 5 nhiệm vụ. Về vai Nhà bán để xem tổng kết.', TO_SELLER)
   if (availability(state, 'advance').ok)
     return step(`Tua tới ${ddmm(events(state)[state.eventIndex + 1].date)} để xem sổ khóa cập nhật.`, link('Tua tới sự kiện tiếp theo', ROUTES.tua))
   return NOTHING

@@ -7,6 +7,7 @@ import StatusBadge from '../components/ui/StatusBadge.jsx'
 import GatedButton from '../components/ui/GatedButton.jsx'
 import EmptyState from '../components/ui/EmptyState.jsx'
 import DoneCheck from '../components/ui/DoneCheck.jsx'
+import Term from '../components/ui/Term.jsx'
 import Callout from '../components/ui/Callout.jsx'
 import Drawer from '../components/ui/Drawer.jsx'
 import ConfirmDialog from '../components/ui/ConfirmDialog.jsx'
@@ -71,7 +72,7 @@ function Loan() {
             {/* Đổi thẳng khi trả — không chạy số, không hiệu ứng (quyết định đã chốt) */}
             <Money value={l.debt} size="hero" className="mt-1 block text-ink" />
             <p className="mt-1 text-body text-ink-muted">
-              Khoản vay có bảo đảm bằng khoản phải thu · Techcombank giải ngân {formatNumberVN(l.principal)} triệu ngày {ddmm(SETTLEMENT_TIMELINE_NORMAL[0].isoDate)}
+              Khoản vay có bảo đảm bằng <Term name="Khoản phải thu">khoản phải thu</Term> · Techcombank giải ngân {formatNumberVN(l.principal)} triệu ngày {ddmm(SETTLEMENT_TIMELINE_NORMAL[0].isoDate)}
             </p>
             <button
               type="button"
@@ -137,7 +138,7 @@ function Settled({ interest }) {
           Khoản vay đã tất toán — tiền lãi khoảng <Money value={interest} unit="nghìn đồng" size="emphasis" />
         </p>
         <p className="mt-1 text-body text-ink-muted">
-          Điểm xác thực đã cập nhật sau lô tất toán. Thỏa thuận A4 đã chấm dứt — khoản vay đã tất toán.
+          Điểm xác thực đã cập nhật sau lô tất toán. <Term name="Thỏa thuận A4" /> đã chấm dứt — khoản vay đã tất toán.
         </p>
       </div>
     </Card>
@@ -190,7 +191,8 @@ function AccountChange() {
     return (
       <Card padding="p-4" className="flex items-center gap-3">
         <Clock size={22} className="flex-shrink-0 text-ink-muted" aria-hidden="true" />
-        <p className="text-body text-ink">Hết cửa sổ thanh toán RU-03 — đang trong 3 ngày ân hạn, tới {ddmm(LEAK['leak-broken'].isoDate)}.</p>
+        <p className="text-body text-ink">Hết <Term name="Cửa sổ thanh toán">cửa sổ thanh toán</Term> RU-03 — đang trong 3 ngày{' '}
+          <Term name="Ân hạn">ân hạn</Term>, tới {ddmm(LEAK['leak-broken'].isoDate)}.</p>
       </Card>
     )
   if (today >= LEAK['leak-no-payment'].isoDate)

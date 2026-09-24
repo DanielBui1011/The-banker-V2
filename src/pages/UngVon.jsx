@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { KeyRound, Link2, Hourglass } from 'lucide-react'
 import Card from '../components/ui/Card.jsx'
 import Money from '../components/ui/Money.jsx'
@@ -8,6 +8,7 @@ import StatusBadge from '../components/ui/StatusBadge.jsx'
 import GatedButton from '../components/ui/GatedButton.jsx'
 import EmptyState from '../components/ui/EmptyState.jsx'
 import DoneCheck from '../components/ui/DoneCheck.jsx'
+import Term from '../components/ui/Term.jsx'
 import Callout, { EstimateDisclaimer } from '../components/ui/Callout.jsx'
 import DataTable from '../components/ui/DataTable.jsx'
 import LockCertificate from '../components/LockCertificate.jsx'
@@ -57,15 +58,20 @@ export default function UngVon() {
   return <Funding />
 }
 
+// Hướng trượt (L.2): tiến từ phải, lùi từ trái (vd. rút A2 làm lùi về bước 1). Nhớ ngoài
+// component: quay về từ trang Techcombank (trang được dựng lại) vẫn biết bước trước; hướng chỉ
+// tính lại khi bước đổi nên lần vẽ lại sau đó không đổi lớp animation (không chạy lại hiệu ứng).
+// ponytail: không xóa khi Bắt đầu lại — lần mở Ứng vốn đầu tiên sau đó trượt từ trái một lần.
+const lastFunding = { step: null, direction: 'forward' }
+
 function Funding() {
   const { state } = useApp()
   const step = currentStep(state)
-  // Hướng trượt (L.2): tiến từ phải, lùi từ trái (vd. rút A2 làm lùi về bước 1)
-  const prevStep = useRef(step)
-  const direction = step >= prevStep.current ? 'forward' : 'back'
-  useEffect(() => {
-    prevStep.current = step
-  }, [step])
+  if (lastFunding.step !== step) {
+    lastFunding.direction = lastFunding.step != null && step < lastFunding.step ? 'back' : 'forward'
+    lastFunding.step = step
+  }
+  const direction = lastFunding.direction
 
   const units = activeUnits(state)
   const params = state.scenario.peakSeason ? PRICING_PARAMS.megaSale : PRICING_PARAMS.normal
@@ -104,7 +110,7 @@ function NeedA2() {
       <div className="flex items-start gap-4">
         <KeyRound size={28} className="flex-shrink-0 text-primary" aria-hidden="true" />
         <div>
-          <h2 className="text-section-title font-semibold text-ink">Techcombank cần quyền đánh giá tín dụng (A2)</h2>
+          <h2 className="text-section-title font-semibold text-ink">Techcombank cần quyền đánh giá tín dụng (<Term name="Quyền A2">A2</Term>)</h2>
           <p className="mt-1 text-body text-ink-muted">
             Bạn cấp quyền trên trang của Techcombank. Techcombank nhận: {A2_CONSENT.dataScopes.join(', ').toLowerCase()}.{' '}
             {A2_CONSENT.independenceNote}
@@ -168,7 +174,9 @@ function StaircaseCard({ staircase, units, className }) {
 
   return (
     <Card padding="p-6" className={className}>
-      <h2 className="text-emphasis font-semibold text-ink">Bảng tính giá trị khả dụng</h2>
+      <h2 className="text-emphasis font-semibold text-ink">
+        Bảng tính <Term name="Giá trị khả dụng">giá trị khả dụng</Term>
+      </h2>
       <div className="mt-3 flex h-8 w-full overflow-hidden rounded-lg" role="img" aria-label="Cơ cấu giá trị ròng dự phóng">
         <div className="bg-primary" style={{ width: pct(formula) }} />
         <div className="bg-slate-400" style={{ width: pct(returns) }} />
@@ -176,12 +184,15 @@ function StaircaseCard({ staircase, units, className }) {
         <div className="bg-slate-200" style={{ width: pct(discount) }} />
       </div>
       <div className="mt-4 divide-y divide-line rounded-lg border border-line">
-        <CalcRow label={`Giá trị ròng dự phóng (${units.map((u) => `${u.code} ${formatNumberVN(u.projectedNetValue)}`).join(" + ")})`} value={projected} />
-        <CalcRow label={`− Tỷ lệ hoàn gia quyền (${formatPercentVN(returns / projected)})`} value={returns} />
-        <CalcRow label={`− Biên an toàn (${formatPercentVN(safety / projected)})`} value={safety} />
-        <CalcRow label="− Chiết khấu xác thực" value={discount} />
-        <CalcRow label={`= Theo công thức (tỷ lệ ứng ${formatPercentVN(formula / projected)})`} value={formula} strong />
-        <CalcRow label="Trần dư nợ" value={staircase.debtCap} />
+        <CalcRow
+          label={<><Term name="Giá trị ròng dự phóng" /> ({units.map((u) => `${u.code} ${formatNumberVN(u.projectedNetValue)}`).join(" + ")})</>}
+          value={projected}
+        />
+        <CalcRow label={<>− <Term name="Tỷ lệ hoàn gia quyền" /> ({formatPercentVN(returns / projected)})</>} value={returns} />
+        <CalcRow label={<>− <Term name="Biên an toàn" /> ({formatPercentVN(safety / projected)})</>} value={safety} />
+        <CalcRow label={<>− <Term name="Chiết khấu xác thực" /></>} value={discount} />
+        <CalcRow label={<>= Theo công thức (<Term name="Tỷ lệ ứng">tỷ lệ ứng</Term> {formatPercentVN(formula / projected)})</>} value={formula} strong />
+        <CalcRow label={<Term name="Trần dư nợ" />} value={staircase.debtCap} />
         <CalcRow label="− Đã bị bên khác khóa" value={staircase.lockedByOthers} />
       </div>
       <p className="mt-3 text-body font-semibold text-ink">
@@ -233,13 +244,15 @@ function Submit({ staircase }) {
         </div>
         <ul className="space-y-1 text-body text-ink">
           <li>Quyền đánh giá tín dụng A2: {state.consents.A2 === 'active' ? 'đang hoạt động' : 'đã rút'}</li>
-          <li>Thỏa thuận A4: đã ký với Techcombank</li>
+          <li>
+            <Term name="Thỏa thuận A4" />: đã ký với Techcombank
+          </li>
           <li>Techcombank tự thẩm định và giải ngân vào tài khoản của bạn</li>
         </ul>
       </div>
       {reviewing ? (
         <div role="status" className="flex items-center justify-end gap-3 text-body font-semibold text-ink">
-          <span className="h-3 w-3 animate-pulse rounded-full bg-primary" aria-hidden="true" />
+          <span className="h-3 w-3 rounded-full bg-primary" aria-hidden="true" />
           Techcombank đang thẩm định…
         </div>
       ) : (
@@ -449,7 +462,7 @@ function OtherLenderEnd() {
         <div className="flex items-start gap-3 text-primary">
           <DoneCheck />
           <p className="text-emphasis font-semibold text-ink">
-            Đã ký thỏa thuận với {l.lender}. Sổ đăng ký đã ghi khóa {formatNumberVN(l.principal)} triệu.
+            Đã ký thỏa thuận với {l.lender}. <Term name="Sổ đăng ký khoản phải thu">Sổ đăng ký</Term> đã ghi khóa {formatNumberVN(l.principal)} triệu.
           </p>
         </div>
         <LockedUnits amounts={amounts} />

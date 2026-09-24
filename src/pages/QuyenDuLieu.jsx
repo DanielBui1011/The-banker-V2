@@ -5,6 +5,7 @@ import Card from '../components/ui/Card.jsx'
 import StatusBadge from '../components/ui/StatusBadge.jsx'
 import GatedButton from '../components/ui/GatedButton.jsx'
 import SurfaceFrame from '../components/ui/SurfaceFrame.jsx'
+import Term from '../components/ui/Term.jsx'
 import { GRANTED_PERMISSIONS, A1_TOKEN_TTL_SECONDS } from '../data/mockData.js'
 import { LEGAL_NAME, TPP_CODE } from '../config/brand.js'
 import { ROUTES, availability, accessLog, loan } from '../logic/journey.js'
@@ -16,6 +17,7 @@ import { useApp } from '../state/appState.jsx'
 // bảo đảm: không rút được khi còn dư nợ (availability 'revokeA4', quy-tac mục 3).
 const NATURE = { A1: 'Xử lý dữ liệu', A2: 'Xử lý dữ liệu', A4: 'Biện pháp bảo đảm' }
 const RECIPIENT = { A2: 'Techcombank (bên đánh giá tín dụng)' }
+const TERM = { A1: 'Quyền A1', A2: 'Quyền A2', A4: 'Thỏa thuận A4' }
 const PERMISSION = Object.fromEntries(GRANTED_PERMISSIONS.map((p) => [p.code, p]))
 // Mọi vị trí pháp lý dùng LEGAL_NAME + TPP_CODE (docs/thiet-ke.md mục 3)
 const displayActor = (actor) => (actor === LEGAL_NAME ? `${LEGAL_NAME} — mã TPP ${TPP_CODE}` : actor)
@@ -79,7 +81,7 @@ export default function QuyenDuLieu() {
           return (
             <Card key={code} padding="p-5" className="flex flex-col gap-2">
               <div className="text-emphasis font-semibold text-ink">
-                {code} — {p.purpose}
+                <Term name={TERM[code]}>{code}</Term> — {p.purpose}
               </div>
               <StatusBadge status={status} className="self-start" />
               <div className="text-label text-ink-muted">Bản chất: {NATURE[code]}</div>

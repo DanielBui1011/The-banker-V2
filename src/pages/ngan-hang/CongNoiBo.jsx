@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Eye, EyeOff, Lock, FileBadge, ArrowRight } from 'lucide-react'
+import { Eye, EyeOff, Lock, FileBadge, ArrowRight, CircleHelp } from 'lucide-react'
 import SurfaceFrame from '../../components/ui/SurfaceFrame.jsx'
 import Card from '../../components/ui/Card.jsx'
 import Money from '../../components/ui/Money.jsx'
@@ -7,6 +7,7 @@ import ToggleSwitch from '../../components/ui/ToggleSwitch.jsx'
 import Callout from '../../components/ui/Callout.jsx'
 import DataTable from '../../components/ui/DataTable.jsx'
 import Drawer from '../../components/ui/Drawer.jsx'
+import Term from '../../components/ui/Term.jsx'
 import StatusBadge from '../../components/ui/StatusBadge.jsx'
 import LockCertificate from '../../components/LockCertificate.jsx'
 import {
@@ -39,7 +40,7 @@ const SECTIONS = [
 const RESEND_MS = 6000
 const LOCKED_AT = `${formatDateVN(LOCK_CERTIFICATE.lockedAt.slice(0, 10))} ${LOCK_CERTIFICATE.lockedAt.slice(11)}`
 
-export default function CongNoiBo({ page }) {
+export default function CongNoiBo({ page, onHelp }) {
   const { state } = useApp()
   const view = bankView(state)
   const [resent, setResent] = useState(null)
@@ -76,8 +77,19 @@ export default function CongNoiBo({ page }) {
           <h1 className="text-screen-title font-bold text-slate-900">
             {title} — {SELLER_PROFILE.shopName}
           </h1>
-          <span className="text-body text-slate-700">
-            Ngày mô phỏng <span className="font-semibold tabular-nums text-slate-900">{formatDateVN(simDate(state))}</span>
+          <span className="flex items-center gap-4 text-body text-slate-700">
+            <span>
+              Ngày mô phỏng <span className="font-semibold tabular-nums text-slate-900">{formatDateVN(simDate(state))}</span>
+            </span>
+            {/* Nút ? mở ngăn Hướng dẫn (san-pham.md D.5) — trung tính, không màu Nền tảng */}
+            <button
+              type="button"
+              onClick={onHelp}
+              aria-label="Hướng dẫn và phím tắt"
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-300 text-slate-900 transition duration-fast hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-slate-900"
+            >
+              <CircleHelp size={22} aria-hidden="true" />
+            </button>
           </span>
         </div>
 
@@ -149,7 +161,9 @@ function Lookup({ view }) {
       <Card>
         <div className="grid grid-cols-3 gap-6">
           <div className="col-span-2">
-            <div className="text-label font-medium text-slate-600">Tổng phơi nhiễm hợp nhất</div>
+            <div className="text-label font-medium text-slate-600">
+              Tổng <Term name="Phơi nhiễm hợp nhất">phơi nhiễm hợp nhất</Term>
+            </div>
             <Money value={view.totalConsolidatedExposure} size="hero" className="text-slate-900" />
             <div className="mt-1 text-body text-slate-700">
               trên <span className="font-semibold tabular-nums">{view.lenderCount}</span> bên cho vay
@@ -159,20 +173,24 @@ function Lookup({ view }) {
             <div>
               Khả dụng còn lại để khóa: <Money value={view.remainingAvailable} size="body" className="font-semibold text-slate-900" />
             </div>
-            <div>Truy cập theo quyền A2 của nhà bán — hiệu lực đến {formatDateVN(A2_PERMISSION.expiryDate)}</div>
+            <div>
+              Truy cập theo <Term name="Quyền A2">quyền A2</Term> của nhà bán — hiệu lực đến {formatDateVN(A2_PERMISSION.expiryDate)}
+            </div>
           </div>
         </div>
       </Card>
 
       <Card>
-        <h2 className="mb-3 text-emphasis font-semibold text-slate-900">Đơn vị khoản phải thu</h2>
+        <h2 className="mb-3 text-emphasis font-semibold text-slate-900">
+          <Term name="Đơn vị khoản phải thu" />
+        </h2>
         <DataTable
           columns={[
             { key: 'code', header: 'Đơn vị', render: (u) => <span className="font-semibold text-slate-900">{u.code}</span> },
-            { key: 'projected', header: 'Giá trị ròng dự phóng', align: 'right', render: (u) => `${formatNumberVN(u.projectedNetValue)} triệu` },
+            { key: 'projected', header: <Term name="Giá trị ròng dự phóng" />, align: 'right', render: (u) => `${formatNumberVN(u.projectedNetValue)} triệu` },
             {
               key: 'available',
-              header: 'Giá trị khả dụng',
+              header: <Term name="Giá trị khả dụng" />,
               align: 'right',
               render: (u) => (u.availableValue == null ? 'Chưa đủ điều kiện' : `${formatNumberVN(u.availableValue)} triệu`),
             },
@@ -248,7 +266,7 @@ function Portfolio() {
           columns={[
             { key: 'code', header: 'Đơn vị', render: (e) => <span className="font-semibold text-slate-900">{e.unitId}</span> },
             { key: 'amount', header: 'Giá trị khóa', align: 'right', render: (e) => `${formatNumberVN(e.amount)} triệu` },
-            { key: 'priority', header: 'Thứ tự ưu tiên', render: () => `#${LOCK_CERTIFICATE.priority}` },
+            { key: 'priority', header: <Term name="Thứ tự ưu tiên" />, render: () => `#${LOCK_CERTIFICATE.priority}` },
             { key: 'lockedAt', header: 'Thời điểm khóa', render: () => LOCKED_AT },
             {
               key: 'status',

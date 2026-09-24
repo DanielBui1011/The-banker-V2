@@ -364,3 +364,45 @@ export const FOOTER_NOTE = 'Giao diện mô phỏng — dữ liệu giả địn
 
 // Dòng bắt buộc mọi màn liên quan giá trị ứng ước tính (CLAUDE.md mục #4, quy-tac.md mục 4)
 export const ESTIMATE_DISCLAIMER = 'Ước tính, chưa phải đề nghị cấp tín dụng'
+
+// Thuật ngữ (docs/san-pham.md mục H) — chú giải tại chỗ (Term) và bảng đầy đủ trong ngăn Hướng dẫn.
+const pct = (rate) => `${Math.round(rate * 100)}%`
+export const GLOSSARY = {
+  'Đối soát': 'Khớp từng khoản tiền về tài khoản ngân hàng với đơn hàng hoặc lô thanh toán của sàn.',
+  'Ngoại lệ': 'Khoản tiền về không tự khớp được với đơn nào, cần chị Lan tra tay.',
+  'Sai lệch phí': 'Chênh lệch giữa tiền sàn dự kiến trả và tiền thực nhận; cảnh báo khi quá 1,5%.',
+  'Khoản phải thu': 'Tiền sàn còn nợ chị Lan cho những đơn đã giao xong.',
+  'Đơn vị khoản phải thu': 'Một nhóm khoản phải thu cùng kênh và cùng cửa sổ thanh toán, được theo dõi như một tài sản (vd. RU-03).',
+  'Giá trị ròng dự phóng': 'Số tiền dự kiến sàn sẽ trả cho một đơn vị, sau phí và hoàn.',
+  'Cửa sổ thanh toán': 'Khoảng ngày sàn dự kiến trả tiền cho một đơn vị.',
+  'Lô tất toán': 'Một lần sàn trả tiền cho một đơn vị và tiền đó đã về tài khoản.',
+  'Điểm xác thực': `Điểm 0–100 đo mức dự phóng khớp với tiền thật về tài khoản; chỉ tính khi có từ ${MIN_LOTS_FOR_SCORE} lô.`,
+  'Dự phóng': 'Trạng thái đơn vị mới được ước tính, chưa đủ căn cứ để tin.',
+  'Chưa đủ lịch sử': `Kênh có dưới ${MIN_LOTS_FOR_SCORE} lô tất toán nên chưa có điểm xác thực.`,
+  'Đã xác thực': 'Đơn vị thuộc kênh có điểm xác thực, đủ điều kiện làm tài sản bảo đảm.',
+  'Đã khóa': 'Đơn vị đang làm tài sản bảo đảm cho một khoản vay, được ghi trong sổ đăng ký.',
+  'Đã tất toán': 'Tiền sàn của đơn vị đã về và phần nợ gắn với đơn vị đã được trả.',
+  'Tất toán thiếu': 'Tiền về ít hơn phần nợ gắn với đơn vị.',
+  'Đứt gãy': 'Hết cửa sổ thanh toán và thời gian ân hạn mà tiền không về tài khoản nhận tiền đã đăng ký.',
+  'Tài khoản nhận tiền': 'Tài khoản Techcombank chị Lan đăng ký để sàn chuyển tiền hàng về.',
+  'Ân hạn': 'Số ngày chờ thêm sau cửa sổ thanh toán trước khi coi là đứt gãy (3 ngày).',
+  'Tỷ lệ hoàn gia quyền': 'Tỷ lệ hàng bị trả lại, gộp từ lịch sử của nhà bán, của kênh và theo mùa.',
+  'Biên an toàn': `Phần giữ lại để phòng rủi ro (${pct(PRICING_PARAMS.normal.safetyMargin)} kỳ thường, ${pct(PRICING_PARAMS.megaSale.safetyMargin)} mùa cao điểm).`,
+  'Chiết khấu xác thực': 'Phần trừ thêm khi điểm xác thực dưới 90.',
+  'Tỷ lệ ứng': 'Phần trăm giá trị đơn vị có thể dùng để vay sau khi trừ hoàn, biên an toàn và chiết khấu.',
+  'Giá trị khả dụng': 'Số tiền tối đa có thể vay dựa trên các đơn vị đã xác thực, sau khi áp trần và trừ phần đã bị khóa.',
+  'Trần dư nợ': 'Mức dư nợ tối đa: một nửa doanh thu qua sàn bình quân 3 tháng.',
+  'Sổ đăng ký khoản phải thu': 'Sổ dùng chung ghi đơn vị nào đã bị khóa, bởi bao nhiêu bên, theo thứ tự nào.',
+  'Chứng thư khóa': 'Bản ghi có ký số xác nhận một lần khóa đơn vị; ai cũng kiểm chứng độc lập được.',
+  'Thứ tự ưu tiên': 'Thứ tự các bên được thu tiền từ một đơn vị khi có nhiều bên cùng khóa.',
+  'Phơi nhiễm hợp nhất': 'Tổng số tiền mọi bên cho vay đang khóa trên khoản phải thu của một nhà bán.',
+  'Quyền A1': 'Quyền cho Nền tảng đọc giao dịch tài khoản để đối soát.',
+  'Quyền A2': 'Quyền cho Nền tảng chia sẻ hồ sơ doanh thu đã xác thực với Techcombank để đánh giá tín dụng.',
+  'Quyền A3': 'Ủy quyền trích nợ — điều khoản trong hợp đồng tín dụng với Techcombank.',
+  'Thỏa thuận A4': 'Thỏa thuận chuyển giao quyền đòi nợ với Techcombank, đăng ký theo Nghị định 99/2022.',
+  TPP: 'Bên thứ ba được ngân hàng cấp quyền truy cập dữ liệu qua Open API.',
+  'Tầng 1 / 2 / 3': 'Doanh thu đã xác thực / Sổ đăng ký khoản phải thu / Giao thức cấp vốn mở.',
+  'Mùa cao điểm': 'Đợt sale lớn, doanh thu sàn gấp 3 nên tỷ lệ hoàn và biên an toàn cao hơn.',
+  'Giai đoạn 3': 'Giai đoạn nhiều bên cho vay cùng chào giá trên một sổ đăng ký.',
+  'Ký số JWS': 'Chữ ký số chuẩn mở gắn vào chứng thư, kiểm chứng được mà không cần hỏi Nền tảng.',
+}

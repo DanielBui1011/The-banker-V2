@@ -323,6 +323,13 @@ describe('nextStep', () => {
       action: { label: 'Đổi sang vai Nhà bán', href: '#/mo-phong/doi-vai' },
     })
   })
+  it('cán bộ, đã xong 5 nhiệm vụ → về vai Nhà bán xem thẻ kết (D.2)', () => {
+    const done = run(fullyRepaid(), { type: 'visit', key: 'seller:khoan-phai-thu' }, { type: 'visit', key: 'officer:tra-cuu' })
+    expect(nextStep(done, 'tra-cuu')).toEqual({
+      text: 'Bạn đã xong 5 nhiệm vụ. Về vai Nhà bán để xem tổng kết.',
+      action: { label: 'Đổi sang vai Nhà bán', href: '#/mo-phong/doi-vai' },
+    })
+  })
   it('cán bộ, chờ nhà bán trả nợ (3.8)', () => {
     expect(nextStep(at1909(), 'tra-cuu')).toEqual({
       text: 'Chờ nhà bán trả nợ',
