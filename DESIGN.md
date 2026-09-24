@@ -130,7 +130,7 @@ nhãn chữ, không bao giờ chỉ màu.
 - `StatusBadge` — icon + nhãn chữ, đọc `src/ui/status.js`.
 - `Callout` — 3 biến thể `info/warn/danger`; `EstimateDisclaimer` là biến thể cố định bọc `ESTIMATE_DISCLAIMER`.
 - `SurfaceFrame` — 4 biến thể `platform/bank/bankOps/tech`, là cơ chế DUY NHẤT phân biệt 3 khung vai trò (xem mục 6).
-- `Stepper`, `Timeline`, `DataTable`, `Drawer`, `ConfirmDialog`, `SegmentedControl`, `ToggleSwitch`, `LayerTag`, `TopBar`, `ActProgress`, `Stat`, `KeyHint`.
+- `Stepper`, `Timeline`, `DataTable`, `Drawer`, `ConfirmDialog`, `SegmentedControl`, `ToggleSwitch`, `LayerTag`, `TopBar`, `Stat`, `KeyHint`.
 - `src/components/LockCertificate.jsx`, `src/components/ScenarioPanel.jsx` — component riêng cho một màn/chức năng, không thuộc `ui/`.
 
 ## 5. Khung vai trò (`SurfaceFrame`)

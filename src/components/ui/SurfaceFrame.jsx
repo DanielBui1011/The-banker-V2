@@ -113,20 +113,22 @@ export function BankAccent({ bankName }) {
 }
 
 // Màn chuyển tiếp 700ms (san-pham.md L.2): sang Techcombank = nền #141414 + vạch đỏ
-// chạy một lần; về app = nền app + vạch cobalt. Là trạng thái giao diện; nơi gọi
-// quyết định thời lượng và bỏ qua khi prefers-reduced-motion.
-export function HandoffScreen({ toBank, text }) {
+// chạy một lần; sang bên cho vay khác = nền trung tính như khung bank của họ; về app =
+// nền app + vạch cobalt. Là trạng thái giao diện; nơi gọi quyết định thời lượng và bỏ
+// qua khi prefers-reduced-motion.
+export function HandoffScreen({ toBank, bankName = TCB, text }) {
+  const tcb = toBank && bankName === TCB
   return (
     <div
       role="status"
       aria-live="polite"
       className={`fixed inset-0 z-[300] flex flex-col items-center justify-center gap-6 ${
-        toBank ? 'bg-tcb-bar text-tcb-on-bar' : 'bg-app-bg text-ink'
+        tcb ? 'bg-tcb-bar text-tcb-on-bar' : toBank ? 'bg-slate-800 text-slate-50' : 'bg-app-bg text-ink'
       }`}
     >
       <p className="text-section-title font-semibold">{text}</p>
       <div className="h-1 w-80 overflow-hidden rounded-full">
-        <div className={`h-full w-full animate-handoff-bar ${toBank ? 'bg-tcb-stripe' : 'bg-primary'}`} />
+        <div className={`h-full w-full animate-handoff-bar ${tcb ? 'bg-tcb-stripe' : toBank ? 'bg-slate-50' : 'bg-primary'}`} />
       </div>
     </div>
   )

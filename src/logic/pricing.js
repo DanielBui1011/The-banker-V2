@@ -111,13 +111,12 @@ export function computeAvailableValueStaircase({ units, params, lockedByOthers =
   }
 }
 
-// Màn 10 — so sánh chào giá cùng một khoản vay và cùng số ngày (quy-tac.md mục 4:
-// "Chào giá hiện cả lãi suất năm lẫn tiền lãi ước tính theo số ngày thực tế").
-// quotes: [{ lender, annualRate, ... }]. Trả về mỗi chào giá kèm tiền lãi ước tính
-// cho cùng principal/days, để so sánh công bằng dù các bên chào giá trị gốc khác nhau.
-export function computeQuoteComparison(quotes, principal, days) {
+// Giai đoạn 3 — chào giá (quy-tac.md mục 4: "Chào giá hiện cả lãi suất năm lẫn tiền lãi
+// ước tính theo số ngày thực tế"). quotes: [{ lender, value, annualRate, ... }]. Tiền lãi
+// tính trên đúng giá trị chào của từng bên (du-lieu.md mục 12: C 80 triệu → 0,17).
+export function computeQuoteComparison(quotes, days) {
   return quotes.map((q) => ({
     ...q,
-    estimatedCost: computeAdvanceInterest(principal, q.annualRate, days),
+    estimatedCost: computeAdvanceInterest(q.value, q.annualRate, days),
   }))
 }

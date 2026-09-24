@@ -107,11 +107,14 @@ describe('computeAvailableValueStaircase', () => {
 })
 
 describe('computeQuoteComparison', () => {
-  it('so sánh cùng khoản vay, cùng số ngày cho mọi chào giá', () => {
-    const out = computeQuoteComparison(LENDER_QUOTES, 85, 5)
-    const techcombank = out.find((q) => q.lender === 'Techcombank')
-    expect(techcombank.estimatedCost).toBeCloseTo(0.14, 2)
-    out.forEach((q) => expect(q.estimatedCost).toBeCloseTo(computeAdvanceInterest(85, q.annualRate, 5), 6))
+  // Vòng 24: tiền lãi mỗi chào giá tính trên đúng giá trị chào của bên đó (C 80 triệu → ≈171 nghìn, không phải 182)
+  it('tiền lãi theo giá trị chào của từng bên, cùng số ngày', () => {
+    const out = computeQuoteComparison(LENDER_QUOTES, 5)
+    const cost = (lender) => out.find((q) => q.lender === lender).estimatedCost
+    expect(cost('Techcombank')).toBeCloseTo(0.1397, 4)
+    expect(cost('Ngân hàng B')).toBeCloseTo(0.1537, 4)
+    expect(cost('Công ty tài chính C')).toBeCloseTo(0.171, 3)
+    out.forEach((q) => expect(q.estimatedCost).toBeCloseTo(computeAdvanceInterest(q.value, q.annualRate, 5), 6))
   })
 })
 

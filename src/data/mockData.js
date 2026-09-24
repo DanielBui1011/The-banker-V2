@@ -234,7 +234,7 @@ export const ACCESS_LOG = [
 ]
 
 // Mục 10 — Dòng thời gian tất toán. Số dư nợ KHÔNG lưu tĩnh ở đây — Màn 6 tính từ
-// src/logic/pricing.js (qua src/state/settlementState.jsx) để không lặp số liệu
+// src/logic/journey.js (loan) để không lặp số liệu
 // đã có ở nơi khác (khóa RU-03/RU-04 = kết quả T1 của computeAvailableValue).
 export const SETTLEMENT_TIMELINE_NORMAL = [
   { id: 'disburse', date: '15/09', isoDate: '2027-09-15', kind: 'disburse' },

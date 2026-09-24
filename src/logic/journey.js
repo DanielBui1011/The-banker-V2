@@ -93,14 +93,21 @@ const UNIT_AVAILABLE = Object.fromEntries(NORMAL_PRICING.unitBreakdown.map((u) =
 const TOTAL_AVAILABLE = NORMAL_PRICING.result
 
 // Khóa theo tỷ lệ giá trị khả dụng (du-lieu.md mục 12): khoản = giá trị chào × khả dụng đơn vị / 85
+export const lockPlan = (value) =>
+  NORMAL_UNITS.map((u) => ({
+    code: u.code,
+    channel: u.channel,
+    amount: round2((value * UNIT_AVAILABLE[u.code]) / TOTAL_AVAILABLE),
+  }))
+
 function lockAll(registry, lender, value) {
-  return NORMAL_UNITS.reduce(
+  return lockPlan(value).reduce(
     (reg, u) =>
       lockUnit(reg, {
         lenderId: lender,
         unitId: u.code,
         requestId: `${LOCK_CERTIFICATE.certificateId}-${u.code.replace('-', '')}`,
-        amount: round2((value * UNIT_AVAILABLE[u.code]) / TOTAL_AVAILABLE),
+        amount: u.amount,
         availableValue: UNIT_AVAILABLE[u.code],
       }).registry,
     registry
@@ -574,7 +581,8 @@ export function nextStep(state, page) {
   if (l.status === 'none') {
     if (page === 'ung-von') {
       const s = fundingStep(state)
-      return availability(state, 'togglePeakSeason').ok && !state.scenario.peakSeason
+      // Giai đoạn 3 không gợi ý mùa cao điểm: bật lên thì không ký được với bên nào
+      return availability(state, 'togglePeakSeason').ok && !state.scenario.peakSeason && !state.scenario.phase3
         ? { ...s, hint: 'Muốn xem mùa cao điểm? Bật ở bảng Mô phỏng' }
         : s
     }
@@ -583,8 +591,12 @@ export function nextStep(state, page) {
     const codes = activeUnits(state).map((u) => u.code).join(' và ')
     return step(`${codes} đã xác thực. Xem bạn được ứng bao nhiêu.`, link('Đi tới Ứng vốn', ROUTES.ungVon))
   }
+  // Ở Ứng vốn, thẻ kết có sẵn nút Chọn lại chào giá — không trỏ đường dẫn về chính trang
   if (l.lender !== TCB)
-    return step('Dòng tất toán trong mô phỏng chỉ dựng cho Techcombank.', link('Chọn lại chào giá', ROUTES.ungVon))
+    return step(
+      'Dòng tất toán trong mô phỏng chỉ dựng cho Techcombank.',
+      page === 'ung-von' ? null : link('Chọn lại chào giá', ROUTES.ungVon)
+    )
   if (l.status === 'repaid')
     return 'officer:tra-cuu' in state.visited
       ? NOTHING

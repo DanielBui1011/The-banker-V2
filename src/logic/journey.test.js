@@ -13,6 +13,7 @@ import {
   availability,
   nextStep,
   resendLock,
+  lockPlan,
   loadState,
   saveState,
   STORAGE_KEY,
@@ -257,6 +258,12 @@ describe('tasks', () => {
 })
 
 describe('nextStep', () => {
+  it('Giai đoạn 3: không gợi ý mùa cao điểm; ký với B → ở Ứng vốn không có đường dẫn trỏ về chính trang', () => {
+    expect(nextStep(phase3Quotes(), 'ung-von')).toEqual({ text: 'So sánh chào giá và chọn một bên.', action: null })
+    const s = run(phase3Quotes(), { type: 'chooseQuote', lender: 'Ngân hàng B' }, 'signA4')
+    expect(nextStep(s, 'ung-von').action).toBeNull()
+    expect(nextStep(s, 'tong-quan').action).toEqual({ label: 'Chọn lại chào giá', href: '#/nha-ban/ung-von' })
+  })
   it('hành trình 2.8: sau giải trình, RU-03 trả từ nguồn khác — không nói Shopee đã thanh toán', () => {
     const s = run(accountChangeAt(4), { type: 'repay', unit: 'RU-04' }, 'resolveAccountChange')
     expect(nextStep(s, 'khoan-vay')).toEqual({
@@ -581,6 +588,10 @@ describe('Hành trình 2 — Đổi tài khoản nhận tiền', () => {
 })
 
 describe('Giai đoạn 3', () => {
+  it('lockPlan: phân bổ khóa theo tỷ lệ giá trị khả dụng (du-lieu mục 12) — trang ký A4 dùng', () => {
+    expect(lockPlan(80).map((u) => [u.code, u.amount])).toEqual([['RU-03', 44], ['RU-04', 36]])
+    expect(lockPlan(85).map((u) => u.amount)).toEqual([46.75, 38.25])
+  })
   it('chọn bên nhận: chưa chọn ai → "Chọn ít nhất một bên nhận" (3.13)', () => {
     const s = run(at1509(), 'togglePhase3', 'grantA2')
     const a = blocked(s, { type: 'requestQuotes', recipients: [] })

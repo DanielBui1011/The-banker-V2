@@ -6,7 +6,7 @@ import { ROUTES, availability } from '../../logic/journey.js'
 import { go, returnHref } from '../../utils/route.js'
 import { formatDateVN } from '../../utils/format.js'
 import { useApp } from '../../state/appState.jsx'
-import { FUNDING_STEPS } from '../UngVon.jsx'
+import { fundingSteps } from '../UngVon.jsx'
 
 // Trang Techcombank A2 — quyền đánh giá tín dụng, trang riêng (không chung cờ với A4).
 // Quay về Ứng vốn (bước 2) hoặc Quyền & dữ liệu khi cấp lại từ đó ('ve').
@@ -20,7 +20,7 @@ export default function A2({ params }) {
 
   return (
     <ConsentPage
-      steps={params.ve ? undefined : FUNDING_STEPS}
+      steps={params.ve ? undefined : fundingSteps(state)}
       stepperId="ung-von"
       currentStep={1}
       heading="Yêu cầu cấp quyền đánh giá tín dụng"
