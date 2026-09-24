@@ -37,7 +37,7 @@ base = base.split('#')[0]
 let browser
 const baoCao = []
 try {
-  browser = await chromium.launch()
+  browser = await moTrinhDuyet()
   for (const canh of CANH) {
     baoCao.push(await chupCanh(canh))
     const r = baoCao.at(-1)
@@ -59,6 +59,7 @@ async function chupCanh(canh) {
   const console_ = []
   page.on('console', (m) => m.type() === 'error' && console_.push(m.text()))
   page.on('pageerror', (e) => console_.push(String(e)))
+  page.on('response', (r) => r.status() >= 400 && console_.push(`HTTP ${r.status()} ${r.url()}`))
   const loi = []
   const files = []
   try {
@@ -75,6 +76,11 @@ async function chupCanh(canh) {
       }
     }
     await page.waitForLoadState('networkidle')
+    // Thông báo ngắn (tự tắt sau 4 giây) của bước Tua trước đó che nội dung — chờ tắt, trừ cảnh cần chụp nó
+    if (!canh.giuThongBao)
+      await page
+        .waitForFunction(() => !document.querySelector('[role="status"][aria-live="polite"]')?.textContent.trim(), null, { timeout: 5000 })
+        .catch(() => {})
     await page.waitForTimeout(300)
     if (!(await page.evaluate(() => document.body.innerText.trim()))) loi.push('Trang trắng')
 
@@ -171,11 +177,26 @@ async function vachGap(page, bat) {
       const d = document.createElement('div')
       d.id = '__vach-gap'
       d.textContent = 'Hết màn hình đầu (1366×768)'
-      d.style.cssText = `position:absolute;left:0;right:0;top:${y}px;border-top:3px dashed #e00;z-index:2147483647;pointer-events:none;font:bold 14px sans-serif;color:#e00;text-align:right;padding-right:8px;background:transparent`
+      // Nhãn nằm trên vạch, vạch kết thúc đúng y — không làm ảnh cao thêm
+      d.style.cssText = `position:absolute;left:0;right:0;top:${y - 21}px;height:18px;border-bottom:3px dashed #e00;z-index:2147483647;pointer-events:none;font:bold 14px/18px sans-serif;color:#e00;text-align:right;padding-right:8px;box-sizing:content-box`
       document.body.appendChild(d)
     },
     { bat, y: H }
   )
+}
+
+// Chromium của Playwright; mạng chặn tải Chromium → dùng Chrome hoặc Edge đã cài trên máy (cùng lõi Chromium)
+async function moTrinhDuyet() {
+  for (const channel of [undefined, 'chrome', 'msedge']) {
+    try {
+      const b = await chromium.launch({ channel })
+      console.log(`Trình duyệt: ${channel ?? 'Chromium của Playwright'} ${b.version()}`)
+      return b
+    } catch (e) {
+      if (!/Executable doesn't exist|is not found|not installed/i.test(e.message)) throw e
+    }
+  }
+  throw new Error('Không có Chromium, Chrome hay Edge. Chạy: npx playwright install chromium')
 }
 
 async function choServer(url) {

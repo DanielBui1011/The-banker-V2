@@ -1,8 +1,8 @@
 # Chụp toàn bộ giao diện — hướng dẫn chạy trên máy của bạn
 
-Công cụ: `scripts/shots.mjs` (Playwright + Chromium), danh sách cảnh: `scripts/shots.scenes.js` (50 cảnh).
-Môi trường của Claude Code không tải được Chromium (hết thời gian chờ khi kết nối tới cdn.playwright.dev),
-nên bước chụp phải chạy trên máy của bạn.
+Công cụ: `scripts/shots.mjs` (Playwright), danh sách cảnh: `scripts/shots.scenes.js` (50 cảnh).
+Trình duyệt: Chromium của Playwright nếu đã tải; nếu không (mạng chặn cdn.playwright.dev), công cụ tự dùng
+Google Chrome hoặc Microsoft Edge đã cài trên máy — cùng lõi Chromium, không phải tải gì thêm.
 
 ## 1. Cài đặt (một lần)
 
@@ -59,7 +59,8 @@ trên ảnh và ghi các vấn đề tìm được.
 - Mỗi cảnh bắt đầu từ trạng thái sạch: xóa localStorage rồi tải lại trang, sau đó làm các bước của cảnh.
   Các bước gồm: `goto` (đặt hash), `press` (phím tắt), `click` (theo tên nút/liên kết/ô chọn hoặc bộ chọn CSS), `wait`.
 - Bật reducedMotion `reduce`, nên màn chuyển tiếp 700ms sang trang Techcombank bị bỏ qua (đúng như hành vi thật của app).
-  Trước khi chụp, công cụ chờ networkidle và thêm 300ms.
+  Trước khi chụp, công cụ chờ networkidle, chờ thông báo ngắn (4 giây) của bước Tua trước đó tự tắt — trừ cảnh
+  có `giuThongBao: true` — rồi thêm 300ms.
 - App chỉ cao đúng một màn hình và cuộn bên trong. Để chụp được phần nằm dưới màn hình đầu, công cụ tăng chiều cao
   khung nhìn tới khi không còn vùng nào phải cuộn. Phần nằm trên vạch đỏ là phần thấy được ở 1366×768. Riêng chân trang
   "Giao diện mô phỏng…" (cao khoảng 40px) lúc chụp nằm dưới đáy ảnh, còn trên màn thật nó che đáy màn hình đầu.

@@ -6,6 +6,7 @@
 //                                   hoặc theo bộ chọn CSS khi có css
 //   { wait: ms }
 // man1920: true → chụp thêm ảnh khung nhìn 1920×1080 (trang chính).
+// giuThongBao: true → chụp cả thông báo ngắn (mặc định chờ thông báo tự tắt rồi mới chụp).
 
 const CHAO = [{ click: 'Bắt đầu có hướng dẫn' }]
 const DONG_Y = { click: 'Tôi đã đọc', role: 'checkbox' }
@@ -50,6 +51,7 @@ export default [
     id: 'n04',
     tieuDe: 'Đối soát — trống (chưa kết nối) + thông báo phím Space bị chặn',
     buoc: [...CHAO, { goto: '#/nha-ban/doi-soat' }, { press: 'Space' }],
+    giuThongBao: true,
     man1920: true,
   },
   { id: 'n05', tieuDe: 'Khoản phải thu — trống (chưa kết nối)', buoc: [...CHAO, { goto: '#/nha-ban/khoan-phai-thu' }], man1920: true },
@@ -70,6 +72,7 @@ export default [
     id: 'n15',
     tieuDe: 'Đối soát — ngay sau khi tua tới 15/09 (thẻ 6 tuần sau + thông báo)',
     buoc: [...DA_KET_NOI, { goto: '#/nha-ban/doi-soat' }, TUA],
+    giuThongBao: true,
     man1920: true,
   },
   { id: 'n16', tieuDe: 'Đối soát — ngăn Ngoại lệ', buoc: [...DEN_1509, { goto: '#/nha-ban/doi-soat' }, { click: 'Xử lý ngoại lệ' }] },
@@ -125,8 +128,8 @@ export default [
   {
     id: 'n35',
     tieuDe: 'Tổng quan — thẻ kết "Bạn đã đi hết hành trình"',
-    buoc: [...DA_TRA_HET, DOI_VAI, { wait: 300 }, DOI_VAI, { goto: '#/nha-ban/tong-quan' }],
-    ghiChu: 'Đổi sang vai cán bộ rồi đổi lại để xong nhiệm vụ 5',
+    buoc: [...DA_TRA_HET, { goto: '#/nha-ban/khoan-phai-thu' }, DOI_VAI, { wait: 300 }, DOI_VAI, { goto: '#/nha-ban/tong-quan' }],
+    ghiChu: 'Mở Khoản phải thu (nhiệm vụ 2), đổi sang vai cán bộ rồi đổi lại (nhiệm vụ 5)',
   },
 
   // ─── Vai Cán bộ Techcombank ──────────────────────────────────────────────
@@ -137,13 +140,14 @@ export default [
     id: 'c04',
     tieuDe: 'Cán bộ — Danh mục khóa + gửi lại lệnh khóa (phím D)',
     buoc: [...DA_VAY, DOI_VAI, { goto: '#/ngan-hang/danh-muc-khoa' }, { press: 'd' }],
+    giuThongBao: true,
     man1920: true,
   },
   { id: 'c05', tieuDe: 'Cán bộ — ngăn Chứng thư', buoc: [...DA_VAY, DOI_VAI, { goto: '#/ngan-hang/danh-muc-khoa' }, { click: 'Xem chứng thư' }] },
   { id: 'c06', tieuDe: 'Cán bộ — Cảnh báo (không có)', buoc: [...DA_VAY, DOI_VAI, { goto: '#/ngan-hang/canh-bao' }] },
 
   // ─── Tình huống Đổi tài khoản nhận tiền ──────────────────────────────────
-  { id: 't01', tieuDe: 'Đổi TK — Khoản vay 20/09, Shopee không thanh toán về Techcombank', buoc: [...DOI_TK, TUA, { goto: '#/nha-ban/khoan-vay' }] },
+  { id: 't01', tieuDe: 'Đổi TK — Khoản vay 19/09, Shopee không thanh toán về Techcombank', buoc: [...DOI_TK, TUA, { goto: '#/nha-ban/khoan-vay' }] },
   { id: 't02', tieuDe: 'Đổi TK — Khoản vay, RU-03 đứt gãy', buoc: [...DUT_GAY, { goto: '#/nha-ban/khoan-vay' }], man1920: true },
   {
     id: 't03',
