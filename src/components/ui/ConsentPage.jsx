@@ -102,6 +102,9 @@ export default function ConsentPage({
 
               <p className="text-label text-slate-600">{withdrawalText}</p>
 
+              {/* Vòng 25 (critique, mức Cao): ô xác nhận + nút dính đáy vùng cuộn — ở 1366×768
+                  nút Đồng ý không còn nằm dưới màn hình đầu (san-pham.md K.5). */}
+              <div className="sticky bottom-0 -mx-6 -mb-6 space-y-4 rounded-b-xl border-t border-slate-200 bg-white px-6 pb-6 pt-4">
               <label className="flex cursor-pointer items-start gap-3 text-body text-slate-800">
                 <input
                   type="checkbox"
@@ -121,6 +124,7 @@ export default function ConsentPage({
                 <Button type="button" variant="primary" onClick={onApprove} disabled={!confirmed}>
                   {approveLabel}
                 </Button>
+              </div>
               </div>
             </Card>
           </div>
