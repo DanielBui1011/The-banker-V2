@@ -112,7 +112,8 @@ bằng ảnh chụp. Việc đầu tiên trong Antigravity là Vòng 15 — đ�
 | Thanh bên cổng nội bộ ngân hàng `#141414` (Vòng 20) | Nhận ra "phía Techcombank" mà không mang đỏ/vàng kim |
 | Sau tất toán: "Đã cập nhật sau lô tất toán", không kèm điểm mới (Vòng 20) | du-lieu.md không có điểm sau tất toán |
 | Danh sách nhiệm vụ ở cuối thanh điều hướng trái, không nổi đè (Vòng 20) | Không che nội dung ở 1366×768 |
-| `DISPLAY_NAME` = "[TÊN APP]" (Vòng 20) | Tên sản phẩm chưa chốt |
+| ~~`DISPLAY_NAME` = "[TÊN APP]" (Vòng 20)~~ → thay bởi Vòng 19b | Tên sản phẩm đã chốt |
+| Tên sản phẩm: Capix — thay Đừng Đóng Vai Anh / Settlebank (Vòng 19b). `DISPLAY_NAME` = "Capix", `LEGAL_NAME` = "Công ty Capix", `TPP_CODE` giữ nguyên | Một nguồn duy nhất: `src/config/brand.js` |
 | Bật "Đổi tài khoản nhận tiền" không xóa sổ khóa; Mùa cao điểm chỉ minh họa ước tính (không ký A4); tua qua 15/09 cần giải ngân (Vòng 19–20, `src/logic/journey.js`) | Sửa lỗi ngầm định 0.4.5, 0.4.6 trong san-pham.md; không có số cho nhánh không vay |
 
 ## 6. Vòng 15 — Đối chiếu (việc đầu tiên trong Antigravity, CHỈ ĐỌC + CHỤP, không sửa)

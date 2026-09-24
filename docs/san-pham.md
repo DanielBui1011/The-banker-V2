@@ -112,7 +112,7 @@ chị Lan, và có thể đổi vai bất cứ lúc nào.
 | **Khoản vay** | "Còn nợ bao nhiêu, trả khi nào?" | Dư nợ (85 → 38,25 → 0) | Tầng 2 (khóa) |
 | **Quyền & dữ liệu** | "Ai được xem dữ liệu của tôi?" | Số quyền đang hiệu lực | — |
 
-Thanh trên cùng app: tên hiển thị (`DISPLAY_NAME` = "[TÊN APP]", Vòng 20), dòng chữ "Đối tác: Techcombank",
+Thanh trên cùng app: tên hiển thị (`DISPLAY_NAME` = "Capix", Vòng 19b), dòng chữ "Đối tác: Techcombank",
 ngày mô phỏng, nút "?" (hướng dẫn). Chân trang mọi trang: "Giao diện mô phỏng — dữ liệu
 giả định".
 
@@ -295,7 +295,7 @@ bằng hàm thuần** (đặt ở `src/logic/journey.js`, có test Vitest). Lưu
 mọi đọc/ghi bọc `try/catch`; hỏng hoặc thiếu → trạng thái khởi đầu.
 
 ```js
-// Lưu bền — khóa localStorage: 'ddva-app-v1'
+// Lưu bền — khóa localStorage: 'capix-app-v1'
 {
   version: 1,
   role: 'seller' | 'officer',
@@ -650,7 +650,7 @@ chạy số tiền (giữ quyết định đã chốt "không tween dư nợ").
 3. Thanh bên cổng nội bộ ngân hàng: `#141414`.
 4. Sau tất toán: "Đã cập nhật sau lô tất toán", không kèm điểm mới.
 5. Danh sách nhiệm vụ đặt ở cuối thanh điều hướng trái (không nổi đè).
-6. `DISPLAY_NAME` = "[TÊN APP]".
+6. `DISPLAY_NAME` = "Capix", `LEGAL_NAME` = "Công ty Capix" (Vòng 19b; trước là "[TÊN APP]").
 
 ### Câu hỏi mở cũ (Vòng 19)
 1. Sửa `docs/quy-tac.md` mục 7 để cho phép màu Techcombank xấp xỉ **chỉ** trên khung trang

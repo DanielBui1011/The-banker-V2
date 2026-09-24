@@ -1,4 +1,4 @@
-# ĐỪNG ĐÓNG VAI ANH — Prototype mô phỏng
+# Capix — Prototype mô phỏng
 
 ## Mục đích
 Giao diện mô phỏng hành trình khách hàng cho đề án Open Banking (cuộc thi FTU, Vòng 3).

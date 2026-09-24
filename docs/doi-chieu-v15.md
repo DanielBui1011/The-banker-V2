@@ -23,7 +23,7 @@
 
 | STT | Tiêu chí kiểm tra | Đánh giá | Bằng chứng cụ thể (File:dòng hoặc Ảnh) | Ghi chú |
 |---|---|:---:|---|---|
-| 1 | `LEGAL_NAME`, `TPP_CODE` không còn `[`, `]`, `xxx`; có test kiểm tra | **Đạt** | `src/config/brand.js:7-8`<br>`src/config/brand.test.js:1-25` | `LEGAL_NAME = 'Công ty Settlebank'`; `TPP_CODE = '0318 000 001 (giả định)'`. Test tự động bảo đảm không tái phát. |
+| 1 | `LEGAL_NAME`, `TPP_CODE` không còn `[`, `]`, `xxx`; có test kiểm tra | **Đạt** | `src/config/brand.js:7-8`<br>`src/config/brand.test.js:1-25` | `LEGAL_NAME = 'Công ty Capix'` (đổi tên Vòng 19b); `TPP_CODE = '0318 000 001 (giả định)'`. Test tự động bảo đảm không tái phát. |
 | 2 | `src/components/StatusBadge.jsx` (bản cũ) đã bị xóa, không còn import | **Đạt** | File cũ đã xóa sạch; toàn bộ import trỏ về `src/components/ui/StatusBadge.jsx` | Không còn component trùng lặp hoặc xung đột style. |
 | 3 | `ConsentPage` dùng ở A1, A2, A4; có dải "Bạn đang ở trang của Techcombank"; thanh bước Nền tảng nằm ngoài khung; ô xác nhận mặc định chưa tích; nút đồng ý vô hiệu tới khi tích; nhãn nút không xuống dòng | **Đạt** | `src/components/ui/ConsentPage.jsx:45, 117-124`<br>`m02b_consent_1920.png`<br>`m05a_consent_a2_1920.png`<br>`m05c_consent_a4_1920.png`<br>`ConsentPage.test.js` | Dải nhận diện slate-800 đúng quy tắc; Stepper nằm ngoài `SurfaceFrame variant="bank"`; nút đồng ý `disabled={!confirmed}`. |
 | 4 | Test quét `src/screens` chặn class màu ngữ nghĩa rời tồn tại và pass | **Đạt** | `tests/quy-tac.test.js:146-170` | Quét regex phát hiện và cấm class màu ngữ nghĩa Tailwind tự do ngoài `StatusBadge` và `status.js`. |

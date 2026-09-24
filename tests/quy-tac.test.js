@@ -262,3 +262,30 @@ describe('Quy tắc 9 — token Techcombank và token tầng đúng chỗ', () =
     for (const part of [platform, tech, bankOps]) expect(TCB_TOKEN_RE.test(part)).toBe(false)
   })
 })
+
+// ─── 10. Tên sản phẩm Capix — một nguồn duy nhất (Vòng 19b) ─────────────────────
+// Tên cũ không còn trong src/, tests/, index.html; bề mặt hiển thị lấy tên từ brand.js.
+const OLD_NAMES = ['đừng đóng vai anh', 'dung dong vai anh', 'dung-dong-vai-anh', 'ddva', 'settlebank', '[tên app]']
+const SRC_FILES = collectJsxFiles(join(ROOT, 'src'))
+const SELF = fileURLToPath(import.meta.url)
+
+describe('Quy tắc 10 — tên sản phẩm đi qua src/config/brand.js', () => {
+  it('không còn tên cũ trong src/, tests/, index.html', () => {
+    const files = [...SRC_FILES, ...collectJsxFiles(join(ROOT, 'tests')), join(ROOT, 'index.html')]
+    const violations = []
+    for (const file of files) {
+      if (file === SELF) continue
+      const lower = readFileSync(file, 'utf-8').toLowerCase()
+      for (const name of OLD_NAMES) if (lower.includes(name)) violations.push(`${relative(ROOT, file)}: "${name}"`)
+    }
+    expect(violations).toEqual([])
+  })
+
+  // Chỉ bề mặt hiển thị; khóa localStorage 'capix-app-v1' ở src/logic không phải chuỗi hiển thị.
+  it('không gõ trực tiếp "Capix" trong src/pages, src/components, App.jsx', () => {
+    const violations = [...allFiles, join(ROOT, 'src', 'App.jsx')]
+      .filter((f) => /capix/i.test(readFileSync(f, 'utf-8')))
+      .map((f) => relative(ROOT, f))
+    expect(violations).toEqual([])
+  })
+})

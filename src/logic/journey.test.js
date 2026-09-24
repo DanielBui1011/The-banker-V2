@@ -701,7 +701,7 @@ describe('loadState / saveState', () => {
     const storage = memoryStorage()
     saveState(disbursed(), storage)
     expect(loadState(storage)).toEqual(disbursed())
-    expect(STORAGE_KEY).toBe('ddva-app-v1')
+    expect(STORAGE_KEY).toBe('capix-app-v1')
   })
   it('chưa có gì → trạng thái khởi đầu', () => {
     expect(loadState(memoryStorage())).toEqual(initialState())

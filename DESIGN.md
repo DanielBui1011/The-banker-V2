@@ -37,7 +37,7 @@ không cuộn ngang ở 1366×768; nhãn 16px (sàn), thân 18px, nhấn 20px, t
 số chính 48px; 1920×1080 giới hạn nội dung 1440px, căn giữa.
 
 **Điều hướng:** thanh điều hướng trái 6 trang; **danh sách nhiệm vụ ở cuối thanh điều hướng
-trái** (không nổi đè); thanh trên: `DISPLAY_NAME` ("[TÊN APP]"), "Đối tác: Techcombank", ngày
+trái** (không nổi đè); thanh trên: `DISPLAY_NAME` ("Capix"), "Đối tác: Techcombank", ngày
 mô phỏng, nút "?".
 
 **Chuyển động (thay ràng buộc khóa #5):** token `--dur-fast` 150ms, `--dur-standard` 200ms,
@@ -226,7 +226,7 @@ chiếu 1920×1080 > ít code (CLAUDE.md mục "Quy ước plugin").
    tảng ở đó, kể cả trên thanh tiêu đề khi đang ở khung Techcombank. Cơ chế:
    `LEGAL_NAME` trong `src/config/brand.js`, dùng ở Screen2/Screen5
    (`Bên yêu cầu`) — đã điền `'Công ty [Tên giải pháp]'` (Vòng 8), không còn
-   placeholder `<...>`. Không dùng `DISPLAY_NAME` ("Đừng Đóng Vai Anh") ở các
+   placeholder `<...>`. Không dùng `DISPLAY_NAME` ("Capix") ở các
    vị trí pháp lý; `TopBar` (mang `DISPLAY_NAME`) không render bên trong
    `SurfaceFrame` variant `bank`/`bankOps` ở bất kỳ màn nào (rà `src/screens/`).
 
