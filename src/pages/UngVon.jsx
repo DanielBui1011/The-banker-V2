@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { KeyRound, Link2, Hourglass } from 'lucide-react'
 import Card from '../components/ui/Card.jsx'
 import Money from '../components/ui/Money.jsx'
@@ -58,15 +58,20 @@ export default function UngVon() {
   return <Funding />
 }
 
+// Hướng trượt (L.2): tiến từ phải, lùi từ trái (vd. rút A2 làm lùi về bước 1). Nhớ ngoài
+// component: quay về từ trang Techcombank (trang được dựng lại) vẫn biết bước trước; hướng chỉ
+// tính lại khi bước đổi nên lần vẽ lại sau đó không đổi lớp animation (không chạy lại hiệu ứng).
+// ponytail: không xóa khi Bắt đầu lại — lần mở Ứng vốn đầu tiên sau đó trượt từ trái một lần.
+const lastFunding = { step: null, direction: 'forward' }
+
 function Funding() {
   const { state } = useApp()
   const step = currentStep(state)
-  // Hướng trượt (L.2): tiến từ phải, lùi từ trái (vd. rút A2 làm lùi về bước 1)
-  const prevStep = useRef(step)
-  const direction = step >= prevStep.current ? 'forward' : 'back'
-  useEffect(() => {
-    prevStep.current = step
-  }, [step])
+  if (lastFunding.step !== step) {
+    lastFunding.direction = lastFunding.step != null && step < lastFunding.step ? 'back' : 'forward'
+    lastFunding.step = step
+  }
+  const direction = lastFunding.direction
 
   const units = activeUnits(state)
   const params = state.scenario.peakSeason ? PRICING_PARAMS.megaSale : PRICING_PARAMS.normal
@@ -247,7 +252,7 @@ function Submit({ staircase }) {
       </div>
       {reviewing ? (
         <div role="status" className="flex items-center justify-end gap-3 text-body font-semibold text-ink">
-          <span className="h-3 w-3 animate-pulse rounded-full bg-primary" aria-hidden="true" />
+          <span className="h-3 w-3 rounded-full bg-primary" aria-hidden="true" />
           Techcombank đang thẩm định…
         </div>
       ) : (
