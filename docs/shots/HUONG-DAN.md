@@ -1,6 +1,6 @@
 # Chụp toàn bộ giao diện — hướng dẫn chạy trên máy của bạn
 
-Công cụ: `scripts/shots.mjs` (Playwright), danh sách cảnh: `scripts/shots.scenes.js` (57 cảnh, Vòng 28).
+Công cụ: `scripts/shots.mjs` (Playwright), danh sách cảnh: `scripts/shots.scenes.js` (69 cảnh, Vòng 29).
 Trình duyệt: Chromium của Playwright nếu đã tải; nếu không (mạng chặn cdn.playwright.dev), công cụ tự dùng
 Google Chrome hoặc Microsoft Edge đã cài trên máy — cùng lõi Chromium, không phải tải gì thêm.
 
