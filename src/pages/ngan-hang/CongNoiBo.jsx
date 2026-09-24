@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
-import { Eye, EyeOff, Lock, FileBadge, ArrowRight, CircleHelp } from 'lucide-react'
+import { Eye, EyeOff, Lock, FileBadge, ArrowRight, CircleHelp, RotateCw } from 'lucide-react'
+import SimHint from '../../components/ui/SimHint.jsx'
 import SurfaceFrame from '../../components/ui/SurfaceFrame.jsx'
 import Card from '../../components/ui/Card.jsx'
 import Money from '../../components/ui/Money.jsx'
@@ -45,12 +46,16 @@ export default function CongNoiBo({ page, onHelp }) {
   const view = bankView(state)
   const [resent, setResent] = useState(null)
 
-  // Phím D: Techcombank gửi lại lệnh khóa — lũy đẳng, sổ khóa không thêm sự kiện (3.6)
+  // Nút "Thử gửi lại lệnh khóa" ở Danh mục khóa; phím D là lối tắt — lũy đẳng, sổ khóa không thêm
+  // sự kiện (3.6). Thông báo chỉ hiện SAU khi bấm (Vòng 28).
+  function resend() {
+    const gate = availability(state, 'resendLock')
+    setResent(gate.ok && resendLock(state)?.status === 'DA_GHI_NHAN' ? 'ok' : gate.reason)
+  }
   useEffect(() => {
     function onKeyDown(e) {
       if (isTypingTarget(e.target) || e.ctrlKey || e.metaKey || e.altKey || e.key.toLowerCase() !== 'd') return
-      const gate = availability(state, 'resendLock')
-      setResent(gate.ok && resendLock(state)?.status === 'DA_GHI_NHAN' ? 'ok' : gate.reason)
+      resend()
     }
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
@@ -78,9 +83,9 @@ export default function CongNoiBo({ page, onHelp }) {
             {title} — {SELLER_PROFILE.shopName}
           </h1>
           <span className="flex items-center gap-4 text-body text-slate-700">
-            <span>
-              Ngày mô phỏng <span className="font-semibold tabular-nums text-slate-900">{formatDateVN(simDate(state))}</span>
-            </span>
+            <SimHint className="whitespace-nowrap">
+              Ngày mô phỏng <span className="text-body font-semibold tabular-nums">{formatDateVN(simDate(state))}</span>
+            </SimHint>
             {/* Nút ? mở ngăn Hướng dẫn (san-pham.md D.5) — trung tính, không màu Nền tảng */}
             <button
               type="button"
@@ -104,7 +109,7 @@ export default function CongNoiBo({ page, onHelp }) {
         )}
 
         {page === 'tra-cuu' && <Lookup view={view} />}
-        {page === 'danh-muc-khoa' && <Portfolio />}
+        {page === 'danh-muc-khoa' && <Portfolio onResend={resend} />}
         {page === 'canh-bao' && <Alerts alerts={view.alerts} />}
       </div>
     </SurfaceFrame>
@@ -252,7 +257,7 @@ function Lookup({ view }) {
   )
 }
 
-function Portfolio() {
+function Portfolio({ onResend }) {
   const { state } = useApp()
   const [certOpen, setCertOpen] = useState(false)
   const gate = availability(state, 'viewCertificate')
@@ -277,7 +282,19 @@ function Portfolio() {
           rows={own}
           rowKey={(e) => e.unitId}
         />
-        <div className="mt-4 flex justify-end">
+        <div className="mt-4 flex flex-wrap items-center justify-end gap-3">
+          <p className="mr-auto text-label text-slate-700">
+            Lệnh trùng không tạo khóa mới và không đổi thứ tự ưu tiên (lũy đẳng).
+          </p>
+          <button
+            type="button"
+            onClick={onResend}
+            className="inline-flex items-center gap-2 rounded-lg border border-slate-900 px-4 py-2 text-body font-semibold text-slate-900 transition duration-fast hover:bg-slate-100"
+          >
+            <RotateCw size={20} aria-hidden="true" />
+            Thử gửi lại lệnh khóa
+            <kbd className="rounded border border-slate-300 px-1.5 font-mono text-label">D</kbd>
+          </button>
           <button
             type="button"
             onClick={() => setCertOpen(true)}

@@ -116,6 +116,20 @@
   animation: step-in-back 250ms var(--ease-out) both;
 }
 
+/* "Đến bước này ↓" (Vòng 28): viền nổi quanh nút của bước tiếp theo, tắt dần trong 800ms. */
+@keyframes step-flash {
+  0%,
+  50% {
+    box-shadow: 0 0 0 4px var(--color-app-bg), 0 0 0 7px var(--color-primary);
+  }
+  100% {
+    box-shadow: 0 0 0 4px transparent, 0 0 0 7px transparent;
+  }
+}
+.step-flash {
+  animation: step-flash 800ms var(--ease-standard);
+}
+
 /* Dấu tích tự vẽ (L.2: hoàn tất hành động) — stroke-dashoffset 300ms. */
 @keyframes check-draw {
   from {

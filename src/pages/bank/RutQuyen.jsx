@@ -10,7 +10,7 @@ import { useApp } from '../../state/appState.jsx'
 const CONSEQUENCE = {
   A1: [
     'Nền tảng ngừng đọc giao dịch tài khoản — đối soát tự động dừng cập nhật.',
-    'Mô phỏng không tua tiếp được cho tới khi bạn cấp lại A1.',
+    'Hồ sơ doanh thu đã xác thực không có dữ liệu mới cho tới khi bạn cấp lại A1.',
   ],
   A2: [
     'Nền tảng không gửi đề nghị ứng vốn mới; Techcombank không xem được hồ sơ doanh thu đã xác thực.',

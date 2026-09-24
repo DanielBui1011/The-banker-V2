@@ -179,7 +179,8 @@ function Reconciliation({ revoked }) {
                 setExpanded(false)
               }}
               className={`rounded-full border px-3 py-1.5 text-label font-medium transition duration-fast ${
-                filter === f.key ? 'border-primary bg-primary text-white' : 'border-line bg-app-bg text-ink hover:bg-app-surface'
+                // Chip đang chọn: nền nhạt + viền, không nền đặc (mỗi trang một nút đặc — Vòng 28)
+                filter === f.key ? 'border-primary bg-primary-soft font-semibold text-primary' : 'border-line bg-app-bg text-ink hover:bg-app-surface'
               }`}
             >
               {f.label} ({f.count})

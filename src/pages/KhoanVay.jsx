@@ -22,7 +22,8 @@ import {
 } from '../data/mockData.js'
 import { computeAdvanceInterest } from '../logic/pricing.js'
 import { computeVerificationScore, computeLeakAdjustedScore } from '../logic/verification.js'
-import { ROUTES, availability, loan, simDate, unitStatus, fundingFrozen } from '../logic/journey.js'
+import SimHint from '../components/ui/SimHint.jsx'
+import { ROUTES, availability, loan, nextStep, simDate, unitStatus, fundingFrozen } from '../logic/journey.js'
 import { go } from '../utils/route.js'
 import { formatNumberVN } from '../utils/format.js'
 import { useApp } from '../state/appState.jsx'
@@ -51,10 +52,17 @@ export default function KhoanVay() {
   }
   if (l.lender !== TCB_QUOTE.lender) {
     const repay = availability(state, { type: 'repay', unit: 'RU-03' })
-    return <EmptyState icon={ReceiptText} title={repay.reason} gate={repay} />
+    return (
+      <EmptyState icon={ReceiptText} title={repay.reason} gate={repay}>
+        <SimHint>Dòng tất toán trong mô phỏng dựng cho Techcombank</SimHint>
+      </EmptyState>
+    )
   }
   return <Loan />
 }
+
+// Mỗi trang đúng một nút đặc (DESIGN.md "Thứ bậc nút"): nút là đích của thẻ Bước tiếp theo → đặc
+const variantFor = (state, target) => (nextStep(state, 'khoan-vay').target === target ? 'primary' : 'secondary')
 
 function Loan() {
   const { state } = useApp()
@@ -62,9 +70,12 @@ function Loan() {
   const l = loan(state)
   const amounts = Object.fromEntries(state.registry.map((e) => [e.unitId, e.amount]))
   const interest = Math.round(computeAdvanceInterest(l.principal, TCB_QUOTE.annualRate, INTEREST_DAYS) * 1000)
+  const broken = state.scenario.accountChange && unitStatus(state, 'RU-03') === 'broken'
 
   return (
     <>
+      {/* Đứt gãy là việc gấp nhất → lên đầu trang, nút giải trình trong màn hình đầu ở 1366×768 (Vòng 28) */}
+      {broken && <AccountChange />}
       <Card padding="p-6">
         <div className="grid grid-cols-5 gap-6">
           <div className="col-span-2">
@@ -92,7 +103,7 @@ function Loan() {
       </Card>
 
       {l.status === 'repaid' && <Settled interest={interest} />}
-      <AccountChange />
+      {!broken && <AccountChange />}
       <LoanTimeline />
 
       <Drawer open={certOpen} onClose={() => setCertOpen(false)} title="Chứng thư khóa">
@@ -118,7 +129,12 @@ function RepayRow({ code, amount }) {
       </div>
       {!repaid && (
         <div className="mt-3">
-          <GatedButton gate={gate} onClick={() => go(`${ROUTES.traNo}?don-vi=${code}`)}>
+          <GatedButton
+            gate={gate}
+            variant={variantFor(state, `repay:${code}`)}
+            stepTarget={`repay:${code}`}
+            onClick={() => go(`${ROUTES.traNo}?don-vi=${code}`)}
+          >
             Trả {formatNumberVN(amount)} triệu trên Techcombank
           </GatedButton>
         </div>
@@ -161,18 +177,25 @@ function AccountChange() {
           <h2 className="text-emphasis font-semibold text-ink">RU-03 — tiền không về tài khoản neo</h2>
           <StatusBadge status="broken" />
         </div>
-        <p className="text-body text-ink">
-          Điểm xác thực Shopee: {base} → {computeLeakAdjustedScore(base, LEAK_BATCH_RATE)}.{' '}
-          {fundingFrozen(state) ? 'Cấp vốn mới đang tạm dừng.' : 'Cấp vốn mới đã mở lại.'}
-        </p>
-        {resolve.ok && (
-          <>
-            <p className="text-body text-ink-muted">Vui lòng xác nhận tài khoản nhận tiền trên sàn.</p>
-            <div className="flex justify-end">
-              <Button onClick={() => setConfirmOpen(true)}>Tôi đã đổi tài khoản — giải trình</Button>
-            </div>
-          </>
-        )}
+        {/* Chữ bên trái, nút bên phải cùng hàng: gọn chiều cao để nút nằm trong màn hình đầu */}
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div className="space-y-1">
+            <p className="text-body text-ink">
+              Điểm xác thực Shopee: {base} → {computeLeakAdjustedScore(base, LEAK_BATCH_RATE)}.{' '}
+              {fundingFrozen(state) ? 'Cấp vốn mới đang tạm dừng.' : 'Cấp vốn mới đã mở lại.'}
+            </p>
+            {resolve.ok && <p className="text-body text-ink-muted">Vui lòng xác nhận tài khoản nhận tiền trên sàn.</p>}
+          </div>
+          {resolve.ok && (
+            <Button
+              variant={variantFor(state, 'resolveAccountChange')}
+              data-step-target="resolveAccountChange"
+              onClick={() => setConfirmOpen(true)}
+            >
+              Tôi đã đổi tài khoản — giải trình
+            </Button>
+          )}
+        </div>
         <ConfirmDialog
           open={confirmOpen}
           title="Giải trình tài khoản nhận tiền"

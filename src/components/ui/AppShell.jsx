@@ -5,7 +5,6 @@ import {
   HandCoins,
   ReceiptText,
   ShieldCheck,
-  CalendarDays,
   CircleHelp,
   ArrowRight,
 } from 'lucide-react'
@@ -15,6 +14,7 @@ import { ROUTES, simDate, nextStep } from '../../logic/journey.js'
 import { formatDateVN } from '../../utils/format.js'
 import { useApp } from '../../state/appState.jsx'
 import { TaskChecklist } from '../Guide.jsx'
+import SimHint from './SimHint.jsx'
 
 // Khung app nhà bán (docs/san-pham.md B.1, K.2, K.5): thanh trên, thanh điều hướng trái
 // 6 trang + khu nhiệm vụ ở cuối, chân trang. Mục đang chọn mang nền nhạt của Tầng nó
@@ -83,21 +83,43 @@ function PageBand({ nav }) {
   )
 }
 
+// Cuộn tới nút của bước tiếp theo trong thân trang và viền nổi nó ≤800ms (DESIGN.md "Thứ bậc nút")
+function goToStep(target) {
+  const el = document.querySelector(`[data-step-target="${target}"]`)
+  if (!el) return
+  const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+  el.scrollIntoView({ block: 'center', behavior: reduce ? 'auto' : 'smooth' })
+  el.focus({ preventScroll: true })
+  el.classList.remove('step-flash')
+  void el.offsetWidth // chạy lại hiệu ứng khi bấm liên tiếp
+  el.classList.add('step-flash')
+}
+
 // Thẻ "Bước tiếp theo" (san-pham.md D.3): một câu + một nút, đọc nextStep(state, trang).
+// Hành động ngay trên trang (step.target) → chỉ liên kết "Đến bước này ↓"; nút đặc là nút
+// trong thân trang (mỗi trang đúng một nút đặc — Vòng 28).
 function NextStepCard({ page }) {
   const { state } = useApp()
   const step = nextStep(state, page)
   return (
     <section aria-label="Bước tiếp theo" className="flex items-center gap-4 rounded-xl border border-primary bg-primary-soft px-5 py-3">
       <ArrowRight size={22} className="flex-shrink-0 text-primary" aria-hidden="true" />
-      <div className="min-w-0 flex-1">
+      <div className="min-w-0 flex-1 space-y-1.5">
         <p className="text-body text-ink">
           <span className="font-semibold text-primary">Bước tiếp theo: </span>
           {step.text}
         </p>
-        {step.hint && <p className="text-label text-ink-muted">{step.hint}</p>}
+        {step.sim && <SimHint>{step.sim}</SimHint>}
       </div>
-      {step.action && (
+      {step.target ? (
+        <button
+          type="button"
+          onClick={() => goToStep(step.target)}
+          className="flex-shrink-0 whitespace-nowrap rounded-lg px-2 py-2 text-body font-semibold text-primary underline underline-offset-4 transition duration-fast hover:bg-app-surface focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+        >
+          Đến bước này ↓
+        </button>
+      ) : step.action && (
         <a
           href={step.action.href}
           className="flex-shrink-0 rounded-lg bg-primary px-4 py-2 text-body font-semibold text-white transition duration-fast hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
@@ -117,12 +139,13 @@ function TopBar({ onHelp }) {
         <span className="text-emphasis font-bold text-primary">{DISPLAY_NAME}</span>
         <span className="text-body">Đối tác: Techcombank</span>
         <span className="ml-auto flex items-center gap-2 text-body">
-          <CalendarDays size={20} aria-hidden="true" className="text-ink-muted" />
-          <span className="text-ink-muted">Ngày mô phỏng</span>
-          {/* key: ngày mới mờ dần vào 200ms khi tua (hanh-trinh 1.7) */}
-          <span key={state.eventIndex} className="animate-[page-in_200ms_var(--ease-out)] font-semibold tabular-nums">
-            {formatDateVN(simDate(state))}
-          </span>
+          {/* Ngày là của mô phỏng → SimHint (bấm mở bảng Mô phỏng). key: ngày mới mờ dần vào 200ms khi tua (hanh-trinh 1.7) */}
+          <SimHint className="whitespace-nowrap">
+            Ngày mô phỏng
+            <span key={state.eventIndex} className="animate-[page-in_200ms_var(--ease-out)] text-body font-semibold tabular-nums">
+              {formatDateVN(simDate(state))}
+            </span>
+          </SimHint>
         </span>
         <button
           type="button"

@@ -189,7 +189,8 @@ export default function ScenarioPanel({ route, onHelp }) {
                 type="button"
                 disabled={!advance.ok}
                 onClick={() => dispatch({ type: 'advance' })}
-                className="mt-3 w-full rounded-lg bg-slate-50 px-4 py-2.5 text-body font-semibold text-slate-900 transition duration-fast hover:bg-white disabled:cursor-not-allowed disabled:border disabled:border-slate-600 disabled:bg-slate-800 disabled:text-slate-50"
+                // Vô hiệu: kiểu chuẩn DESIGN.md (nền #ECE8E0, chữ #545B69 = 5,58:1), nét đứt để khác hẳn nút bật
+                className="mt-3 w-full rounded-lg bg-slate-50 px-4 py-2.5 text-body font-semibold text-slate-900 transition duration-fast hover:bg-white disabled:cursor-not-allowed disabled:border-2 disabled:border-dashed disabled:border-ink-muted disabled:bg-[#ECE8E0] disabled:text-ink-muted disabled:hover:bg-[#ECE8E0]"
               >
                 Tua tới sự kiện tiếp theo
               </button>

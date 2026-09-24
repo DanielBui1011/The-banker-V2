@@ -76,7 +76,10 @@ function ConnectPrompt({ onConnect }) {
         Kết nối tài khoản Techcombank để app tự đối soát tiền sàn về với đơn hàng. Bạn cấp quyền trên trang của Techcombank.
       </p>
       <div className="mt-auto pt-5">
-        <Button onClick={onConnect}>Kết nối Techcombank</Button>
+        {/* Chỉ hiện khi chưa kết nối — lúc đó đây là đích của thẻ Bước tiếp theo (target grantA1) → nút đặc */}
+        <Button onClick={onConnect} data-step-target="grantA1">
+          Kết nối Techcombank
+        </Button>
       </div>
     </>
   )
@@ -98,14 +101,18 @@ function ConnectedAccount() {
           <Term name="Điểm xác thực">điểm xác thực</Term>)
         </div>
         <ul className="mt-2 space-y-1 text-body">
-          {Object.entries(VERIFICATION_METRICS).map(([channel, m]) => (
-            <li key={channel} className="flex justify-between gap-4">
-              <span>{channel}</span>
-              <span className="font-semibold tabular-nums">
-                {state.eventIndex >= 1 ? m.settledLots : 0}/{MIN_LOTS_FOR_SCORE} lô
-              </span>
-            </li>
-          ))}
+          {Object.entries(VERIFICATION_METRICS).map(([channel, m]) => {
+            const lots = state.eventIndex >= 1 ? m.settledLots : 0
+            return (
+              <li key={channel} className="flex justify-between gap-4">
+                <span>{channel}</span>
+                {/* Đủ ngưỡng → "Đủ · 7 lô" (không viết 7/6); chưa đủ giữ "4/6 lô" (Vòng 28) */}
+                <span className="whitespace-nowrap font-semibold tabular-nums">
+                  {lots >= MIN_LOTS_FOR_SCORE ? `Đủ · ${lots} lô` : `${lots}/${MIN_LOTS_FOR_SCORE} lô`}
+                </span>
+              </li>
+            )
+          })}
         </ul>
       </div>
     </>
@@ -196,7 +203,7 @@ function BankPicker() {
       ))}
       {noted && (
         <Callout variant="info">
-          Tiền sàn của {SELLER_PROFILE.ownerName.replace(/^Chị/, 'chị')} về Techcombank — mô phỏng đi theo tài khoản này, không theo {noted}.
+          Tiền sàn của {SELLER_PROFILE.ownerName.replace(/^Chị/, 'chị')} về tài khoản Techcombank.
         </Callout>
       )}
     </div>
