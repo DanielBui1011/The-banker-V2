@@ -4,7 +4,7 @@ import { useHashRoute } from './utils/route.js'
 import { DISPLAY_NAME } from './config/brand.js'
 import AppShell from './components/ui/AppShell.jsx'
 import { HandoffScreen } from './components/ui/SurfaceFrame.jsx'
-import KeyHint from './components/ui/KeyHint.jsx'
+import { WelcomeDialog, HelpDrawer } from './components/Guide.jsx'
 import ScenarioPanel from './components/ScenarioPanel.jsx'
 import TongQuan, { SixWeeksSummary } from './pages/TongQuan.jsx'
 import DoiSoat from './pages/DoiSoat.jsx'
@@ -93,6 +93,7 @@ function AppRoutes() {
   const { state, dispatch } = useApp()
   const route = useHashRoute(state.role)
   const [helpOpen, setHelpOpen] = useState(false)
+  const [replayWelcome, setReplayWelcome] = useState(false)
   const handoff = useBankHandoff(route.space)
   const [sixWeeks, closeSixWeeks] = useSixWeeksNotice(state.eventIndex, route.href)
 
@@ -102,6 +103,12 @@ function AppRoutes() {
   }, [dispatch, state.role, route.page, state.eventIndex])
 
   const openHelp = () => setHelpOpen((v) => !v)
+  // Đi tới trang khác từ ngăn Hướng dẫn (nút Đi tới) → đóng ngăn
+  useEffect(() => setHelpOpen(false), [route.href])
+  const chooseMode = (mode) => {
+    dispatch({ type: 'welcome', mode })
+    setReplayWelcome(false)
+  }
   // Giai đoạn 3: trang ký A4 là trang của bên được chọn (có thể không phải Techcombank)
   const bankName = (route.page === 'a4' && state.scenario.phase3 && state.application.chosenLender) || 'Techcombank'
 
@@ -116,17 +123,26 @@ function AppRoutes() {
           notice={sixWeeks && route.page !== 'tong-quan' && <SixWeeksSummary onClose={closeSixWeeks} />}
         >
           {/* Ba mục cổng ngân hàng dùng chung một trang → không remount khi đổi mục */}
-          <Page key={route.space === 'ngan-hang' ? route.space : route.page} route={route} />
+          <Page key={route.space === 'ngan-hang' ? route.space : route.page} route={route} onHelp={openHelp} />
         </AppShell>
       )}
       <ScenarioPanel route={route} onHelp={openHelp} />
-      {helpOpen && <KeyHint onClose={() => setHelpOpen(false)} />}
+      <HelpDrawer
+        open={helpOpen}
+        onClose={() => setHelpOpen(false)}
+        onReplayWelcome={() => {
+          setHelpOpen(false)
+          setReplayWelcome(true)
+        }}
+      />
+      {/* Màn chào (D.1): lần đầu hoặc sau Bắt đầu lại (reset → welcomeDone false) */}
+      <WelcomeDialog open={!state.guide.welcomeDone || replayWelcome} onChoose={chooseMode} />
     </>
   )
 }
 
-function Page({ route }) {
-  if (route.space === 'ngan-hang') return <CongNoiBo page={route.page} />
+function Page({ route, onHelp }) {
+  if (route.space === 'ngan-hang') return <CongNoiBo page={route.page} onHelp={onHelp} />
   if ((route.page === 'a1' || route.page === 'a2') && route.params['thao-tac'] === 'rut') {
     return <RutQuyen code={route.page.toUpperCase()} />
   }

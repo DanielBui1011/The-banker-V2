@@ -7,16 +7,14 @@ import {
   ShieldCheck,
   CalendarDays,
   CircleHelp,
-  CheckCircle2,
-  Circle,
-  ChevronDown,
   ArrowRight,
 } from 'lucide-react'
 import { DISPLAY_NAME } from '../../config/brand.js'
 import { FOOTER_NOTE } from '../../data/mockData.js'
-import { ROUTES, simDate, tasks, nextStep } from '../../logic/journey.js'
+import { ROUTES, simDate, nextStep } from '../../logic/journey.js'
 import { formatDateVN } from '../../utils/format.js'
 import { useApp } from '../../state/appState.jsx'
+import { TaskChecklist } from '../Guide.jsx'
 
 // Khung app nhà bán (docs/san-pham.md B.1, K.2, K.5): thanh trên, thanh điều hướng trái
 // 6 trang + khu nhiệm vụ ở cuối, chân trang. Mục đang chọn mang nền nhạt của Tầng nó
@@ -161,50 +159,7 @@ function SideNav({ active }) {
           )
         })}
       </ul>
-      <TaskList />
+      <TaskChecklist />
     </nav>
-  )
-}
-
-// Tạm hiện tasks(state) — giao diện đầy đủ ở Vòng 26 (san-pham.md D.2)
-function TaskList() {
-  const { state, dispatch } = useApp()
-  const { items, requiredDone, requiredTotal } = tasks(state)
-  const open = state.guide.checklistOpen
-  return (
-    <section aria-label="Nhiệm vụ" className="mt-auto border-t border-line p-3">
-      <button
-        type="button"
-        onClick={() => dispatch({ type: 'toggleChecklist' })}
-        aria-expanded={open}
-        className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-label font-semibold transition duration-fast hover:bg-app-bg"
-      >
-        Nhiệm vụ {requiredDone}/{requiredTotal}
-        <ChevronDown size={18} aria-hidden="true" className={`transition duration-fast ${open ? 'rotate-180' : ''}`} />
-      </button>
-      {open && (
-        <ol className="mt-1 space-y-1">
-          {items.map((t) => (
-            <li key={t.id} className="flex gap-2 px-3 py-1 text-label">
-              {t.done ? (
-                <CheckCircle2 size={18} aria-label="Đã xong" className="mt-0.5 flex-shrink-0 text-primary" />
-              ) : (
-                <Circle size={18} aria-label="Chưa xong" className="mt-0.5 flex-shrink-0 text-ink-muted" />
-              )}
-              <span className={t.done ? 'text-ink-muted line-through' : ''}>
-                {t.fix ? (
-                  <a href={t.fix.href} className="hover:text-primary hover:underline">
-                    {t.label}
-                  </a>
-                ) : (
-                  t.label
-                )}
-                {t.optional && <span className="text-ink-muted"> (tùy chọn)</span>}
-              </span>
-            </li>
-          ))}
-        </ol>
-      )}
-    </section>
   )
 }

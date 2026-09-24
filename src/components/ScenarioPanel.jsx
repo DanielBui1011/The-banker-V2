@@ -49,7 +49,7 @@ const SCENARIOS = [
   },
 ]
 
-const SHORTCUTS = [
+export const SHORTCUTS = [
   ['Space', 'Tua tới sự kiện tiếp theo'],
   ['M', 'Mùa cao điểm'],
   ['L', 'Đổi tài khoản nhận tiền'],
@@ -99,6 +99,7 @@ export default function ScenarioPanel({ route, onHelp }) {
   useEffect(() => {
     function onKeyDown(event) {
       if (isTypingTarget(event.target) || event.ctrlKey || event.metaKey || event.altKey) return
+      if (document.querySelector('dialog[open]')) return // màn chào đang mở: chưa nhận phím tắt
       const key = event.key.toLowerCase()
       const scenario = SCENARIOS.find((s) => s.hint.toLowerCase() === key)
       if (event.key === ' ') {

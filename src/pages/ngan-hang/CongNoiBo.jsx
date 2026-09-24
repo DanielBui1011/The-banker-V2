@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Eye, EyeOff, Lock, FileBadge, ArrowRight } from 'lucide-react'
+import { Eye, EyeOff, Lock, FileBadge, ArrowRight, CircleHelp } from 'lucide-react'
 import SurfaceFrame from '../../components/ui/SurfaceFrame.jsx'
 import Card from '../../components/ui/Card.jsx'
 import Money from '../../components/ui/Money.jsx'
@@ -39,7 +39,7 @@ const SECTIONS = [
 const RESEND_MS = 6000
 const LOCKED_AT = `${formatDateVN(LOCK_CERTIFICATE.lockedAt.slice(0, 10))} ${LOCK_CERTIFICATE.lockedAt.slice(11)}`
 
-export default function CongNoiBo({ page }) {
+export default function CongNoiBo({ page, onHelp }) {
   const { state } = useApp()
   const view = bankView(state)
   const [resent, setResent] = useState(null)
@@ -76,8 +76,19 @@ export default function CongNoiBo({ page }) {
           <h1 className="text-screen-title font-bold text-slate-900">
             {title} — {SELLER_PROFILE.shopName}
           </h1>
-          <span className="text-body text-slate-700">
-            Ngày mô phỏng <span className="font-semibold tabular-nums text-slate-900">{formatDateVN(simDate(state))}</span>
+          <span className="flex items-center gap-4 text-body text-slate-700">
+            <span>
+              Ngày mô phỏng <span className="font-semibold tabular-nums text-slate-900">{formatDateVN(simDate(state))}</span>
+            </span>
+            {/* Nút ? mở ngăn Hướng dẫn (san-pham.md D.5) — trung tính, không màu Nền tảng */}
+            <button
+              type="button"
+              onClick={onHelp}
+              aria-label="Hướng dẫn và phím tắt"
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-300 text-slate-900 transition duration-fast hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-slate-900"
+            >
+              <CircleHelp size={22} aria-hidden="true" />
+            </button>
           </span>
         </div>
 

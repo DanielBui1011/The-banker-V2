@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { X } from 'lucide-react'
 
@@ -6,7 +7,14 @@ import { X } from 'lucide-react'
 // chung hàng với tiêu đề.
 // Vòng 22: vẽ qua portal vào <body> — vùng nội dung trang có view-transition-name (tạo
 // stacking context) nên lớp phủ bên trong nó bị mấu "Mô phỏng" đè. Trượt vào 250ms (L.2).
+// Esc đóng; focus chuyển vào nút Đóng khi mở (người dùng bàn phím).
 export default function Drawer({ open, onClose, title, children }) {
+  useEffect(() => {
+    if (!open) return
+    const onKey = (e) => e.key === 'Escape' && onClose()
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [open, onClose])
   if (!open) return null
   return createPortal(
     <div className="fixed inset-0 z-[150] flex justify-end bg-slate-950/50" onClick={onClose}>
@@ -18,6 +26,7 @@ export default function Drawer({ open, onClose, title, children }) {
         aria-label={title}
       >
         <button
+          autoFocus
           onClick={onClose}
           aria-label="Đóng"
           className="absolute right-4 top-4 rounded-lg p-2 text-slate-600 transition hover:bg-slate-100 hover:text-slate-800"
