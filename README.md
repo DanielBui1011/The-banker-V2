@@ -1,4 +1,4 @@
-# Đừng Đóng Vai Anh — Prototype Open Banking
+# Capix — Prototype Open Banking
 
 Giao diện mô phỏng hành trình khách hàng cho đề án Open Banking, cuộc thi FTU Vòng 3.  
 **Không phải sản phẩm thật** — không backend, không gọi API bên ngoài, không lưu dữ liệu thật.

@@ -139,7 +139,7 @@ bậc thị giác, một việc một lúc, trí nhớ làm việc).
 |---|---|---|---|---|
 | Trang Techcombank A1/A2/A4 | Nút "Đồng ý cấp quyền" nằm ở y≈1001 ở 1366×768 — dưới màn hình đầu, đúng lúc người dùng lo nhất (vi phạm K.5) | Cao | A | **Đã xử lý** — `ConsentPage.jsx`: ô xác nhận + nút dính đáy vùng cuộn (đo lại: đáy nút 703/768) |
 | Danh sách nhiệm vụ | Nhiệm vụ 1 "Đi tới" trỏ về Tổng quan — bấm khi đang ở Tổng quan không đi đâu (kẹt ngay bước đầu của người mới) | Cao | A | **Đã xử lý** — `Guide.jsx` `guideTasks`: đường trỏ đúng trang đang mở thì dùng hành động của thẻ Bước tiếp theo (→ A1). Không sửa `journey.js` (test ghim href) |
-| Toàn cục | Thanh trên hiện `[TÊN APP]` (placeholder) ở mọi trang và màn "Quay về …" | Cao | A | **Chưa xử lý — cần người dùng quyết**: `DISPLAY_NAME` là quyết định Vòng 20 (docs/san-pham.md), không tự đặt tên |
+| Toàn cục | Thanh trên hiện `[TÊN APP]` (placeholder) ở mọi trang và màn "Quay về …" | Cao | A | **Đã xử lý (Vòng 19b)** — `DISPLAY_NAME` = "Capix", `LEGAL_NAME` = "Công ty Capix" (src/config/brand.js) |
 | Ứng vốn bước 1 | Nút chính là "Xem ước tính" vô hiệu trong khi việc cần làm là cấp A2 | Trung bình | A | Chuyển vòng sau: đổi nút chính thành "Cấp A2 trên trang Techcombank" |
 | Tổng quan / Đối soát | Cùng một hành động lặp 2–3 lần trên màn (thẻ Bước tiếp theo, nút trong trang, danh sách nhiệm vụ) | Trung bình | A | Chuyển vòng sau (distill): giữ một lời gọi hành động chính |
 | Phím tắt | Space/M/L/3 một phím đổi trạng thái mô phỏng — Space hay dùng để cuộn trên laptop (WCAG 2.1.4) | Trung bình | A | Chuyển vòng sau: chỉ nhận Space khi không có vùng cuộn đang focus, hoặc liệt kê phím trên màn chào |

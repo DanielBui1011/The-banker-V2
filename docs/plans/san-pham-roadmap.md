@@ -30,7 +30,7 @@ khung mới, không để nhánh gãy giữa chừng.
   danh sách nhiệm vụ ở cuối thanh điều hướng trái, `DISPLAY_NAME` = "[TÊN APP]").
 - `src/logic/journey.js` (TDD): reducer + action, chuỗi sự kiện E0–E5, selector `simDate`,
   `unitStatus`, `activeUnits`, `loan`, `fundingFrozen`, `accessLog`, `bankView`, `tasks`,
-  `availability`, `nextStep`; `loadState`/`saveState` (khóa `ddva-app-v1`, try/catch, sai
+  `availability`, `nextStep`; `loadState`/`saveState` (khóa `capix-app-v1`, try/catch, sai
   phiên bản → khởi đầu). Dùng lại pricing.js, verification.js, registry.js — không đổi công thức.
 
 **File**: mới `src/logic/journey.js`, `src/logic/journey.test.js`; sửa `src/config/brand.js`

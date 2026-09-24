@@ -42,7 +42,7 @@ Trả lời người dùng bằng tiếng Việt. Giữ nguyên dấu tiếng Vi
 - Cổng nội bộ ngân hàng (vai Cán bộ Techcombank; trước là Màn 8) chỉ hiện SỐ bên đang khóa, không bao giờ hiện tên. Số liệu đọc `bankView(state)` (src/logic/journey.js).
 - Bên cho vay ngoài Techcombank dùng tên giả (Ngân hàng B, CTTC C) và khung `bank` trung tính. Công ty tài chính KHÔNG xuất hiện trong danh sách ngân hàng nhận tiền/AIS (không mở tài khoản thanh toán).
 - Tên thương hiệu chỉ dạng chữ: không logo, không kiểu chữ, không bộ nhận diện. Ngoại lệ duy nhất (quy-tac mục 7, Vòng 20): khung trang Techcombank dùng màu xấp xỉ — thanh đen `#141414`, vạch đỏ 4px `#E3262B`, vàng kim `#D4AF37` — luôn kèm chữ "Mô phỏng".
-- `DISPLAY_NAME` (hiện là "[TÊN APP]", Vòng 20) chỉ ở thanh trên cùng của khung Nền tảng và màn chuyển tiếp "Quay về …". Mọi vị trí pháp lý dùng `LEGAL_NAME` và `TPP_CODE` (src/config/brand.js).
+- `DISPLAY_NAME` (hiện là "Capix", Vòng 19b) chỉ ở thanh trên cùng của khung Nền tảng và màn chuyển tiếp "Quay về …". Mọi vị trí pháp lý dùng `LEGAL_NAME` và `TPP_CODE` (src/config/brand.js).
 - Không hiện ngôn ngữ dàn dựng ("Màn 5", "kịch bản", "Giai đoạn 2") trong giao diện sản phẩm; thứ mô phỏng chỉ ở bảng điều khiển Mô phỏng (nền tối, ghi "Mô phỏng").
 
 ## 5. Số liệu và trạng thái
@@ -68,7 +68,7 @@ Trả lời người dùng bằng tiếng Việt. Giữ nguyên dấu tiếng Vi
 - Không còn thứ tự tuyến tính. Thanh điều hướng trái 6 trang (Tổng quan, Đối soát, Khoản phải thu, Ứng vốn, Khoản vay, Quyền & dữ liệu); danh sách nhiệm vụ đặt ở cuối thanh điều hướng trái. Điều hướng bằng URL hash (`#/nha-ban/…`, `#/techcombank/…`, `#/ngan-hang/…`; `#/mo-phong/…` là lệnh bảng Mô phỏng) — hằng `ROUTES` trong src/logic/journey.js.
 - Bảng điều khiển Mô phỏng (cạnh phải, nền tối): Vai · Ngày mô phỏng + "Tua tới sự kiện tiếp theo" · Tình huống (Mùa cao điểm, Đổi tài khoản nhận tiền, Giai đoạn 3) · Bắt đầu lại (có xác nhận).
 - Phím tắt giữ làm lối tắt, CÙNG điều kiện với nút (qua `availability`): Space = Tua; M = Mùa cao điểm; L = Đổi tài khoản nhận tiền; 3 = Giai đoạn 3; R = Bắt đầu lại (qua hộp xác nhận); D = gửi lại lệnh khóa (cổng ngân hàng); F = toàn màn hình; ? = hướng dẫn. Phím bị chặn → thông báo ngắn nêu lý do, không đổi state. ← / → không còn chuyển trang.
-- Tiến trình lưu `localStorage` (khóa `ddva-app-v1`, try/catch, sai phiên bản → khởi đầu). Bấm mọi tổ hợp phím, tua quá số sự kiện không được làm vỡ trạng thái hay hiện NaN/undefined.
+- Tiến trình lưu `localStorage` (khóa `capix-app-v1`, try/catch, sai phiên bản → khởi đầu). Bấm mọi tổ hợp phím, tua quá số sự kiện không được làm vỡ trạng thái hay hiện NaN/undefined.
 
 ## 8. Khi các ưu tiên xung đột
 Đúng pháp lý (quy-tac.md) > đọc rõ trên laptop 1366×768 > ít code > thẩm mỹ.

@@ -19,7 +19,7 @@ import { computeAvailableValue } from './pricing.js'
 import { lockUnit } from './registry.js'
 import { formatNumberVN } from '../utils/format.js'
 
-export const STORAGE_KEY = 'ddva-app-v1'
+export const STORAGE_KEY = 'capix-app-v1'
 const VERSION = 1
 const TCB = LOCK_CERTIFICATE.secured // 'Techcombank'
 

@@ -2,6 +2,11 @@ import { describe, it, expect } from 'vitest'
 import { DISPLAY_NAME, LEGAL_NAME, TPP_CODE } from './brand.js'
 
 describe('LEGAL_NAME', () => {
+  it('là tên pháp nhân đã chốt (Vòng 19b)', () => {
+    expect(DISPLAY_NAME).toBe('Capix')
+    expect(LEGAL_NAME).toBe('Công ty Capix')
+  })
+
   it('không còn placeholder dạng "<...>" chưa điền', () => {
     expect(LEGAL_NAME).not.toContain('<')
   })
