@@ -1,0 +1,797 @@
+{
+  "base": "http://localhost:4173/",
+  "ngay": "2026-09-24T13:46:15.855Z",
+  "canh": [
+    {
+      "id": "n01",
+      "tieuDe": "Màn chào (lần đầu mở app)",
+      "ghiChu": "Hộp thoại chào, 01/08",
+      "files": [
+        "n01-1366.png"
+      ],
+      "cao1366": 768,
+      "loi": [],
+      "console": []
+    },
+    {
+      "id": "n02",
+      "tieuDe": "Tổng quan — chưa kết nối",
+      "ghiChu": "",
+      "files": [
+        "n02-1366.png",
+        "n02-1920.png"
+      ],
+      "cao1366": 839,
+      "loi": [],
+      "console": []
+    },
+    {
+      "id": "n03",
+      "tieuDe": "Tổng quan — ngăn chọn ngân hàng nhận tiền",
+      "ghiChu": "Đã bấm một ngân hàng khác để hiện ghi chú \"Tiền sàn của chị Lan về tài khoản Techcombank.\"",
+      "files": [
+        "n03-1366.png"
+      ],
+      "cao1366": 768,
+      "loi": [],
+      "console": []
+    },
+    {
+      "id": "n04",
+      "tieuDe": "Đối soát — trống (chưa kết nối) + thông báo phím Space bị chặn",
+      "ghiChu": "",
+      "files": [
+        "n04-1366.png",
+        "n04-1920.png"
+      ],
+      "cao1366": 768,
+      "loi": [],
+      "console": []
+    },
+    {
+      "id": "n05",
+      "tieuDe": "Khoản phải thu — trống (chưa kết nối)",
+      "ghiChu": "",
+      "files": [
+        "n05-1366.png",
+        "n05-1920.png"
+      ],
+      "cao1366": 768,
+      "loi": [],
+      "console": []
+    },
+    {
+      "id": "n06",
+      "tieuDe": "Ứng vốn — trống (chưa có khoản phải thu)",
+      "ghiChu": "",
+      "files": [
+        "n06-1366.png",
+        "n06-1920.png"
+      ],
+      "cao1366": 768,
+      "loi": [],
+      "console": []
+    },
+    {
+      "id": "n07",
+      "tieuDe": "Khoản vay — trống (chưa có khoản vay)",
+      "ghiChu": "",
+      "files": [
+        "n07-1366.png",
+        "n07-1920.png"
+      ],
+      "cao1366": 768,
+      "loi": [],
+      "console": []
+    },
+    {
+      "id": "n08",
+      "tieuDe": "Quyền & dữ liệu — chưa kết nối",
+      "ghiChu": "",
+      "files": [
+        "n08-1366.png",
+        "n08-1920.png"
+      ],
+      "cao1366": 959,
+      "loi": [],
+      "console": []
+    },
+    {
+      "id": "n09",
+      "tieuDe": "Trang Techcombank — cấp quyền A1",
+      "ghiChu": "",
+      "files": [
+        "n09-1366.png",
+        "n09-1920.png"
+      ],
+      "cao1366": 1224,
+      "loi": [],
+      "console": []
+    },
+    {
+      "id": "n10",
+      "tieuDe": "Ngăn Hướng dẫn (phím ?)",
+      "ghiChu": "",
+      "files": [
+        "n10-1366.png"
+      ],
+      "cao1366": 768,
+      "loi": [],
+      "console": []
+    },
+    {
+      "id": "n11",
+      "tieuDe": "Bảng Mô phỏng mở — 01/08, các nút bị chặn",
+      "ghiChu": "",
+      "files": [
+        "n11-1366.png"
+      ],
+      "cao1366": 1039,
+      "loi": [],
+      "console": []
+    },
+    {
+      "id": "n12",
+      "tieuDe": "Hộp xác nhận Bắt đầu lại (phím R)",
+      "ghiChu": "",
+      "files": [
+        "n12-1366.png"
+      ],
+      "cao1366": 768,
+      "loi": [],
+      "console": []
+    },
+    {
+      "id": "n13",
+      "tieuDe": "Đối soát — đang tích lũy lịch sử, 01/08",
+      "ghiChu": "",
+      "files": [
+        "n13-1366.png"
+      ],
+      "cao1366": 768,
+      "loi": [],
+      "console": []
+    },
+    {
+      "id": "n14",
+      "tieuDe": "Tổng quan — 15/09 (thẻ 6 tuần sau)",
+      "ghiChu": "",
+      "files": [
+        "n14-1366.png",
+        "n14-1920.png"
+      ],
+      "cao1366": 934,
+      "loi": [],
+      "console": []
+    },
+    {
+      "id": "n15",
+      "tieuDe": "Đối soát — ngay sau khi tua tới 15/09 (thẻ 6 tuần sau + thông báo)",
+      "ghiChu": "",
+      "files": [
+        "n15-1366.png",
+        "n15-1920.png"
+      ],
+      "cao1366": 1414,
+      "loi": [],
+      "console": []
+    },
+    {
+      "id": "n16",
+      "tieuDe": "Đối soát — ngăn Ngoại lệ",
+      "ghiChu": "",
+      "files": [
+        "n16-1366.png"
+      ],
+      "cao1366": 768,
+      "loi": [],
+      "console": []
+    },
+    {
+      "id": "n17",
+      "tieuDe": "Đối soát — ngăn Sai lệch phí",
+      "ghiChu": "",
+      "files": [
+        "n17-1366.png"
+      ],
+      "cao1366": 768,
+      "loi": [],
+      "console": []
+    },
+    {
+      "id": "n18",
+      "tieuDe": "Đối soát — xem tất cả giao dịch + ngăn chi tiết giao dịch",
+      "ghiChu": "",
+      "files": [
+        "n18-1366.png"
+      ],
+      "cao1366": 768,
+      "loi": [],
+      "console": []
+    },
+    {
+      "id": "n19",
+      "tieuDe": "Khoản phải thu — 15/09",
+      "ghiChu": "",
+      "files": [
+        "n19-1366.png",
+        "n19-1920.png"
+      ],
+      "cao1366": 1118,
+      "loi": [],
+      "console": []
+    },
+    {
+      "id": "n20",
+      "tieuDe": "Khoản phải thu — ngăn phân rã điểm xác thực Shopee",
+      "ghiChu": "",
+      "files": [
+        "n20-1366.png"
+      ],
+      "cao1366": 768,
+      "loi": [],
+      "console": []
+    },
+    {
+      "id": "n21",
+      "tieuDe": "Ứng vốn bước 1 — cần quyền A2",
+      "ghiChu": "",
+      "files": [
+        "n21-1366.png",
+        "n21-1920.png"
+      ],
+      "cao1366": 768,
+      "loi": [],
+      "console": []
+    },
+    {
+      "id": "n22",
+      "tieuDe": "Ứng vốn bước 2 — ước tính giá trị khả dụng",
+      "ghiChu": "",
+      "files": [
+        "n22-1366.png",
+        "n22-1920.png"
+      ],
+      "cao1366": 989,
+      "loi": [],
+      "console": []
+    },
+    {
+      "id": "n23",
+      "tieuDe": "Ứng vốn — ước tính mùa cao điểm (phím M)",
+      "ghiChu": "",
+      "files": [
+        "n23-1366.png",
+        "n23-1920.png"
+      ],
+      "cao1366": 1017,
+      "loi": [],
+      "console": []
+    },
+    {
+      "id": "n24",
+      "tieuDe": "Trang Techcombank — ký thỏa thuận A4",
+      "ghiChu": "",
+      "files": [
+        "n24-1366.png",
+        "n24-1920.png"
+      ],
+      "cao1366": 1196,
+      "loi": [],
+      "console": []
+    },
+    {
+      "id": "n25",
+      "tieuDe": "Ứng vốn bước 4 — gửi đề nghị",
+      "ghiChu": "",
+      "files": [
+        "n25-1366.png"
+      ],
+      "cao1366": 768,
+      "loi": [],
+      "console": []
+    },
+    {
+      "id": "n26",
+      "tieuDe": "Ứng vốn bước 5 — đã giải ngân",
+      "ghiChu": "",
+      "files": [
+        "n26-1366.png"
+      ],
+      "cao1366": 907,
+      "loi": [],
+      "console": []
+    },
+    {
+      "id": "n27",
+      "tieuDe": "Khoản vay — 15/09, chờ sàn thanh toán",
+      "ghiChu": "",
+      "files": [
+        "n27-1366.png",
+        "n27-1920.png"
+      ],
+      "cao1366": 1023,
+      "loi": [],
+      "console": []
+    },
+    {
+      "id": "n28",
+      "tieuDe": "Khoản vay — ngăn Chứng thư khóa",
+      "ghiChu": "",
+      "files": [
+        "n28-1366.png"
+      ],
+      "cao1366": 768,
+      "loi": [],
+      "console": []
+    },
+    {
+      "id": "n29",
+      "tieuDe": "Trang Techcombank — trả nợ một chạm RU-03",
+      "ghiChu": "",
+      "files": [
+        "n29-1366.png",
+        "n29-1920.png"
+      ],
+      "cao1366": 859,
+      "loi": [],
+      "console": []
+    },
+    {
+      "id": "n30",
+      "tieuDe": "Khoản vay — đã trả hết",
+      "ghiChu": "",
+      "files": [
+        "n30-1366.png"
+      ],
+      "cao1366": 957,
+      "loi": [],
+      "console": []
+    },
+    {
+      "id": "n31",
+      "tieuDe": "Trang Techcombank — bị chặn (trả nợ khi chưa có khoản vay)",
+      "ghiChu": "",
+      "files": [
+        "n31-1366.png"
+      ],
+      "cao1366": 768,
+      "loi": [],
+      "console": []
+    },
+    {
+      "id": "n32",
+      "tieuDe": "Quyền & dữ liệu — sau khi trả hết (nhật ký đầy đủ)",
+      "ghiChu": "",
+      "files": [
+        "n32-1366.png",
+        "n32-1920.png"
+      ],
+      "cao1366": 1321,
+      "loi": [],
+      "console": []
+    },
+    {
+      "id": "n33",
+      "tieuDe": "Quyền & dữ liệu — hộp Hậu trường kỹ thuật",
+      "ghiChu": "",
+      "files": [
+        "n33-1366.png"
+      ],
+      "cao1366": 768,
+      "loi": [],
+      "console": []
+    },
+    {
+      "id": "n34",
+      "tieuDe": "Trang Techcombank — rút quyền A2",
+      "ghiChu": "",
+      "files": [
+        "n34-1366.png"
+      ],
+      "cao1366": 768,
+      "loi": [],
+      "console": []
+    },
+    {
+      "id": "n35",
+      "tieuDe": "Tổng quan — trạng thái kết thúc (thẻ Bước tiếp theo + 2 SimHint tình huống)",
+      "ghiChu": "Vòng 28: KHÔNG mở Khoản phải thu — nhiệm vụ 2 xong nhờ bước ước tính; đổi vai cán bộ rồi đổi lại (nhiệm vụ 5)",
+      "files": [
+        "n35-1366.png",
+        "n35-1920.png"
+      ],
+      "cao1366": 1010,
+      "loi": [],
+      "console": []
+    },
+    {
+      "id": "c01",
+      "tieuDe": "Cán bộ — Tra cứu nhà bán khi chưa có A2",
+      "ghiChu": "",
+      "files": [
+        "c01-1366.png"
+      ],
+      "cao1366": 768,
+      "loi": [],
+      "console": []
+    },
+    {
+      "id": "c02",
+      "tieuDe": "Cán bộ — Tra cứu nhà bán sau giải ngân",
+      "ghiChu": "",
+      "files": [
+        "c02-1366.png",
+        "c02-1920.png"
+      ],
+      "cao1366": 1208,
+      "loi": [],
+      "console": []
+    },
+    {
+      "id": "c03",
+      "tieuDe": "Cán bộ — Minh họa bên khác khóa (bật)",
+      "ghiChu": "",
+      "files": [
+        "c03-1366.png"
+      ],
+      "cao1366": 1340,
+      "loi": [],
+      "console": []
+    },
+    {
+      "id": "c04",
+      "tieuDe": "Cán bộ — Danh mục khóa, TRƯỚC khi bấm \"Thử gửi lại lệnh khóa\"",
+      "ghiChu": "Vòng 28: thông báo lũy đẳng chưa hiện",
+      "files": [
+        "c04-1366.png",
+        "c04-1920.png"
+      ],
+      "cao1366": 768,
+      "loi": [],
+      "console": []
+    },
+    {
+      "id": "c07",
+      "tieuDe": "Cán bộ — Danh mục khóa, SAU khi bấm \"Thử gửi lại lệnh khóa\"",
+      "ghiChu": "",
+      "files": [
+        "c07-1366.png"
+      ],
+      "cao1366": 768,
+      "loi": [],
+      "console": []
+    },
+    {
+      "id": "c05",
+      "tieuDe": "Cán bộ — ngăn Chứng thư",
+      "ghiChu": "",
+      "files": [
+        "c05-1366.png"
+      ],
+      "cao1366": 768,
+      "loi": [],
+      "console": []
+    },
+    {
+      "id": "c06",
+      "tieuDe": "Cán bộ — Cảnh báo (không có)",
+      "ghiChu": "",
+      "files": [
+        "c06-1366.png"
+      ],
+      "cao1366": 768,
+      "loi": [],
+      "console": []
+    },
+    {
+      "id": "t01",
+      "tieuDe": "Đổi TK — Khoản vay 19/09, Shopee không thanh toán về Techcombank",
+      "ghiChu": "",
+      "files": [
+        "t01-1366.png"
+      ],
+      "cao1366": 1141,
+      "loi": [],
+      "console": []
+    },
+    {
+      "id": "t02",
+      "tieuDe": "Đổi TK — Khoản vay, RU-03 đứt gãy",
+      "ghiChu": "",
+      "files": [
+        "t02-1366.png",
+        "t02-1920.png"
+      ],
+      "cao1366": 1143,
+      "loi": [],
+      "console": []
+    },
+    {
+      "id": "t03",
+      "tieuDe": "Đổi TK — hộp xác nhận giải trình",
+      "ghiChu": "",
+      "files": [
+        "t03-1366.png"
+      ],
+      "cao1366": 768,
+      "loi": [],
+      "console": []
+    },
+    {
+      "id": "t04",
+      "tieuDe": "Đổi TK — Cán bộ, trang Cảnh báo có cảnh báo đứt gãy",
+      "ghiChu": "",
+      "files": [
+        "t04-1366.png"
+      ],
+      "cao1366": 768,
+      "loi": [],
+      "console": []
+    },
+    {
+      "id": "t05",
+      "tieuDe": "Đổi TK — sau giải trình, đã trả RU-03 từ nguồn khác",
+      "ghiChu": "Vòng 29: khối trung tính \"Đã xử lý\" (thu gọn), RU-03 \"Đã trả từ nguồn khác\", dòng thời gian 24/09",
+      "files": [
+        "t05-1366.png",
+        "t05-1920.png"
+      ],
+      "cao1366": 1015,
+      "loi": [],
+      "console": []
+    },
+    {
+      "id": "g01",
+      "tieuDe": "GĐ3 — chọn bên nhận yêu cầu chào giá",
+      "ghiChu": "",
+      "files": [
+        "g01-1366.png"
+      ],
+      "cao1366": 768,
+      "loi": [],
+      "console": []
+    },
+    {
+      "id": "g02",
+      "tieuDe": "GĐ3 — bảng chào giá",
+      "ghiChu": "",
+      "files": [
+        "g02-1366.png"
+      ],
+      "cao1366": 855,
+      "loi": [],
+      "console": []
+    },
+    {
+      "id": "g03",
+      "tieuDe": "GĐ3 — trang ký A4 của Ngân hàng B (khung trung tính)",
+      "ghiChu": "",
+      "files": [
+        "g03-1366.png"
+      ],
+      "cao1366": 1177,
+      "loi": [],
+      "console": []
+    },
+    {
+      "id": "g04",
+      "tieuDe": "GĐ3 — đã chọn chào giá, chờ ký",
+      "ghiChu": "",
+      "files": [
+        "g04-1366.png"
+      ],
+      "cao1366": 768,
+      "loi": [],
+      "console": []
+    },
+    {
+      "id": "g05",
+      "tieuDe": "GĐ3 — đã ký với Ngân hàng B (kết thúc nhánh bên khác)",
+      "ghiChu": "",
+      "files": [
+        "g05-1366.png"
+      ],
+      "cao1366": 969,
+      "loi": [],
+      "console": []
+    },
+    {
+      "id": "g06",
+      "tieuDe": "GĐ3 — chọn Techcombank, ký tới giải ngân",
+      "ghiChu": "",
+      "files": [
+        "g06-1366.png"
+      ],
+      "cao1366": 907,
+      "loi": [],
+      "console": []
+    },
+    {
+      "id": "g07",
+      "tieuDe": "GĐ3 — trang ký của Công ty tài chính C (khóa 44 + 36)",
+      "ghiChu": "",
+      "files": [
+        "g07-1366.png"
+      ],
+      "cao1366": 1205,
+      "loi": [],
+      "console": []
+    },
+    {
+      "id": "n36",
+      "tieuDe": "Chế độ \"Tự khám phá\" (bỏ qua hướng dẫn)",
+      "ghiChu": "",
+      "files": [
+        "n36-1366.png"
+      ],
+      "cao1366": 839,
+      "loi": [],
+      "console": []
+    },
+    {
+      "id": "n37",
+      "tieuDe": "Bong bóng chú giải thuật ngữ (Lô tất toán, Tổng quan 15/09)",
+      "ghiChu": "",
+      "files": [
+        "n37-1366.png"
+      ],
+      "cao1366": 934,
+      "loi": [],
+      "console": []
+    },
+    {
+      "id": "n38",
+      "tieuDe": "Ứng vốn bước 1 — bấm \"Đến bước này ↓\" (viền nổi quanh nút chính)",
+      "ghiChu": "",
+      "files": [
+        "n38-1366.png"
+      ],
+      "cao1366": 768,
+      "loi": [],
+      "console": []
+    },
+    {
+      "id": "n39",
+      "tieuDe": "Tổng quan — 15/09 sau khi kết nối (Đối soát tự động · 76%)",
+      "ghiChu": "",
+      "files": [
+        "n39-1366.png",
+        "n39-1920.png"
+      ],
+      "cao1366": 934,
+      "loi": [],
+      "console": []
+    },
+    {
+      "id": "n40",
+      "tieuDe": "Tổng quan — 20/09 sau khi trả hết (trước → sau: Đối soát + Vốn)",
+      "ghiChu": "",
+      "files": [
+        "n40-1366.png",
+        "n40-1920.png"
+      ],
+      "cao1366": 988,
+      "loi": [],
+      "console": []
+    },
+    {
+      "id": "n41",
+      "tieuDe": "Thẻ kết — bấm \"Nhà bán đổi tài khoản nhận tiền\" → hộp xác nhận bắt đầu lại",
+      "ghiChu": "",
+      "files": [
+        "n41-1366.png"
+      ],
+      "cao1366": 768,
+      "loi": [],
+      "console": []
+    },
+    {
+      "id": "n42",
+      "tieuDe": "Đối soát — bộ lọc Đã khớp",
+      "ghiChu": "",
+      "files": [
+        "n42-1366.png",
+        "n42-1920.png"
+      ],
+      "cao1366": 1414,
+      "loi": [],
+      "console": []
+    },
+    {
+      "id": "n43",
+      "tieuDe": "Đối soát — bộ lọc Ngoại lệ",
+      "ghiChu": "",
+      "files": [
+        "n43-1366.png",
+        "n43-1920.png"
+      ],
+      "cao1366": 1136,
+      "loi": [],
+      "console": []
+    },
+    {
+      "id": "n44",
+      "tieuDe": "Đối soát — bộ lọc Hoàn",
+      "ghiChu": "",
+      "files": [
+        "n44-1366.png",
+        "n44-1920.png"
+      ],
+      "cao1366": 1192,
+      "loi": [],
+      "console": []
+    },
+    {
+      "id": "n45",
+      "tieuDe": "Đối soát — bộ lọc Chi ra",
+      "ghiChu": "",
+      "files": [
+        "n45-1366.png",
+        "n45-1920.png"
+      ],
+      "cao1366": 1080,
+      "loi": [],
+      "console": []
+    },
+    {
+      "id": "n46",
+      "tieuDe": "Quyền & dữ liệu — sau khi rút rồi cấp lại A2",
+      "ghiChu": "",
+      "files": [
+        "n46-1366.png",
+        "n46-1920.png"
+      ],
+      "cao1366": 1280,
+      "loi": [],
+      "console": []
+    },
+    {
+      "id": "n47",
+      "tieuDe": "Quyền & dữ liệu — ngăn Chi tiết truy cập (mã TPP đầy đủ)",
+      "ghiChu": "",
+      "files": [
+        "n47-1366.png"
+      ],
+      "cao1366": 768,
+      "loi": [],
+      "console": []
+    },
+    {
+      "id": "c08",
+      "tieuDe": "Cán bộ — Tra cứu 24/09, RU-03 đứt gãy (trước khi xử lý)",
+      "ghiChu": "",
+      "files": [
+        "c08-1366.png",
+        "c08-1920.png"
+      ],
+      "cao1366": 1222,
+      "loi": [],
+      "console": []
+    },
+    {
+      "id": "c09",
+      "tieuDe": "Cán bộ — Tra cứu 24/09 sau khi nhà bán xử lý",
+      "ghiChu": "",
+      "files": [
+        "c09-1366.png",
+        "c09-1920.png"
+      ],
+      "cao1366": 1246,
+      "loi": [],
+      "console": []
+    },
+    {
+      "id": "c10",
+      "tieuDe": "Cán bộ — Cảnh báo 24/09 sau khi xử lý (\"Đã xử lý\", hết chấm đếm)",
+      "ghiChu": "",
+      "files": [
+        "c10-1366.png",
+        "c10-1920.png"
+      ],
+      "cao1366": 768,
+      "loi": [],
+      "console": []
+    }
+  ]
+}

@@ -21,6 +21,7 @@
 | Ngày kết nối | 01/08/2027 |
 | Giờ đối soát thủ công trước khi dùng | 9 giờ/tháng |
 | Lựa chọn vốn hiện tại | Vay tín chấp từ 2%/tháng |
+| Lãi vay tín chấp quy năm (số dẫn xuất, Vòng 29) | 2% × 12 = **24%/năm**, danh nghĩa, không lãi kép — chỉ dùng cho dòng "Trước:" ở Tổng quan |
 
 | Kênh | Doanh thu tháng | Chu kỳ thanh toán |
 |---|---|---|

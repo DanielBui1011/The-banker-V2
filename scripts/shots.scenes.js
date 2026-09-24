@@ -27,6 +27,14 @@ const DA_TRA_HET = [...DA_VAY, TUA, ...TRA('RU-03'), TUA, ...TRA('RU-04')]
 // Tình huống Đổi tài khoản nhận tiền: bật trước 20/09, tua tới hết ân hạn (E5)
 const DOI_TK = [...DA_VAY, { press: 'l' }]
 const DUT_GAY = [...DOI_TK, TUA, TUA, TUA, TUA]
+const DA_XU_LY = [
+  ...DUT_GAY,
+  { goto: '#/nha-ban/khoan-vay' },
+  { click: 'Tôi đã đổi tài khoản — giải trình' },
+  { click: 'Xác nhận' },
+  ...TRA('RU-03'),
+]
+const LOC = (ten) => [...DEN_1509, { goto: '#/nha-ban/doi-soat' }, { click: `button[aria-pressed]:has-text("${ten}")`, css: true }]
 // Giai đoạn 3: bật ở 15/09, cấp A2, gửi yêu cầu cho cả ba bên
 const GD3 = [...DEN_1509, { press: '3' }, ...CAP_A2, { goto: '#/nha-ban/ung-von' }]
 const GD3_CHAO_GIA = [
@@ -96,6 +104,7 @@ export default [
     id: 'n23',
     tieuDe: 'Ứng vốn — ước tính mùa cao điểm (phím M)',
     buoc: [...DA_A2, { goto: '#/nha-ban/ung-von' }, { press: 'm' }],
+    man1920: true,
   },
   {
     id: 'n24',
@@ -127,8 +136,9 @@ export default [
   { id: 'n34', tieuDe: 'Trang Techcombank — rút quyền A2', buoc: [...DA_A2, { goto: '#/techcombank/a2?thao-tac=rut' }] },
   {
     id: 'n35',
-    tieuDe: 'Tổng quan — thẻ kết "Bạn đã đi hết hành trình"',
+    tieuDe: 'Tổng quan — trạng thái kết thúc (thẻ Bước tiếp theo + 2 SimHint tình huống)',
     buoc: [...DA_TRA_HET, DOI_VAI, { wait: 300 }, DOI_VAI, { goto: '#/nha-ban/tong-quan' }],
+    man1920: true,
     ghiChu: 'Vòng 28: KHÔNG mở Khoản phải thu — nhiệm vụ 2 xong nhờ bước ước tính; đổi vai cán bộ rồi đổi lại (nhiệm vụ 5)',
   },
 
@@ -173,6 +183,7 @@ export default [
       { goto: '#/nha-ban/khoan-vay' },
     ],
     man1920: true,
+    ghiChu: 'Vòng 29: khối trung tính "Đã xử lý" (thu gọn), RU-03 "Đã trả từ nguồn khác", dòng thời gian 24/09',
   },
 
   // ─── Tình huống Giai đoạn 3 ──────────────────────────────────────────────
@@ -216,4 +227,31 @@ export default [
     tieuDe: 'Ứng vốn bước 1 — bấm "Đến bước này ↓" (viền nổi quanh nút chính)',
     buoc: [...DEN_1509, { goto: '#/nha-ban/ung-von' }, { click: 'Đến bước này ↓' }],
   },
+
+  // ─── Vòng 29: trước → sau, đứt gãy đã xử lý, thẻ kết, cảnh còn thiếu ở v28 ──
+  { id: 'n39', tieuDe: 'Tổng quan — 15/09 sau khi kết nối (Đối soát tự động · 76%)', buoc: [...DEN_1509, { goto: '#/nha-ban/tong-quan' }], man1920: true },
+  { id: 'n40', tieuDe: 'Tổng quan — 20/09 sau khi trả hết (trước → sau: Đối soát + Vốn)', buoc: [...DA_TRA_HET, { goto: '#/nha-ban/tong-quan' }], man1920: true },
+  {
+    id: 'n41',
+    tieuDe: 'Thẻ kết — bấm "Nhà bán đổi tài khoản nhận tiền" → hộp xác nhận bắt đầu lại',
+    buoc: [...DA_TRA_HET, DOI_VAI, { wait: 300 }, DOI_VAI, { goto: '#/nha-ban/tong-quan' }, { click: 'Nhà bán đổi tài khoản nhận tiền' }],
+  },
+  { id: 'n42', tieuDe: 'Đối soát — bộ lọc Đã khớp', buoc: LOC('Đã khớp'), man1920: true },
+  { id: 'n43', tieuDe: 'Đối soát — bộ lọc Ngoại lệ', buoc: LOC('Ngoại lệ'), man1920: true },
+  { id: 'n44', tieuDe: 'Đối soát — bộ lọc Hoàn', buoc: LOC('Hoàn'), man1920: true },
+  { id: 'n45', tieuDe: 'Đối soát — bộ lọc Chi ra', buoc: LOC('Chi ra'), man1920: true },
+  {
+    id: 'n46',
+    tieuDe: 'Quyền & dữ liệu — sau khi rút rồi cấp lại A2',
+    buoc: [...DA_A2, { goto: '#/techcombank/a2?thao-tac=rut' }, { click: 'Rút quyền A2' }, ...CAP_A2, { goto: '#/nha-ban/quyen-du-lieu' }],
+    man1920: true,
+  },
+  {
+    id: 'n47',
+    tieuDe: 'Quyền & dữ liệu — ngăn Chi tiết truy cập (mã TPP đầy đủ)',
+    buoc: [...DA_TRA_HET, { goto: '#/nha-ban/quyen-du-lieu' }, { click: 'tbody tr td:nth-child(2) button', css: true }],
+  },
+  { id: 'c08', tieuDe: 'Cán bộ — Tra cứu 24/09, RU-03 đứt gãy (trước khi xử lý)', buoc: [...DUT_GAY, DOI_VAI], man1920: true },
+  { id: 'c09', tieuDe: 'Cán bộ — Tra cứu 24/09 sau khi nhà bán xử lý', buoc: [...DA_XU_LY, DOI_VAI], man1920: true },
+  { id: 'c10', tieuDe: 'Cán bộ — Cảnh báo 24/09 sau khi xử lý ("Đã xử lý", hết chấm đếm)', buoc: [...DA_XU_LY, DOI_VAI, { goto: '#/ngan-hang/canh-bao' }], man1920: true },
 ]

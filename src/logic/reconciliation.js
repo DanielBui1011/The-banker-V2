@@ -28,3 +28,8 @@ export function summarizeTransactions(transactions) {
   )
   return summary
 }
+
+// Tỷ lệ giao dịch tự khớp (Đối soát; Tổng quan "trước → sau" dùng cùng số, Vòng 29)
+export function autoMatchRate(transactions) {
+  return transactions.length === 0 ? 0 : summarizeTransactions(transactions).matchedCount / transactions.length
+}

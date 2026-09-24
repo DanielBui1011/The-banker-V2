@@ -155,7 +155,12 @@ function Estimate({ staircase }) {
           <Money value={staircase.result} size="hero" className="mt-1 block text-ink" />
           <EstimateDisclaimer className="mt-3" />
         </Card>
-        <GatedButton gate={sign} variant={variantFor(state, 'signA4')} stepTarget="signA4" onClick={() => go(ROUTES.a4)}>
+        <GatedButton
+          gate={state.scenario.peakSeason ? { ...sign, fix: null } : sign}
+          variant={variantFor(state, 'signA4')}
+          stepTarget="signA4"
+          onClick={() => go(ROUTES.a4)}
+        >
           Tiếp: ký thỏa thuận A4
         </GatedButton>
         <Card padding="px-6 py-3">
@@ -181,8 +186,17 @@ function StaircaseCard({ staircase, units, className }) {
   const discount = minus('verificationDiscount')
   const formula = staircase.formulaValueTotal
   const pct = (v) => `${projected > 0 ? Math.max(0, Math.min(100, (v / projected) * 100)) : 0}%`
+  // Vượt trần dư nợ (mùa cao điểm, Vòng 29): phần trong trần đặc, phần vượt trần sọc + nhãn "Bị chặn",
+  // vạch dọc ở mức trần
+  const capped = staircase.cappedByDebtCap
+  const cap = staircase.capAfterLock
   const segments = [
-    { label: 'Khả dụng theo công thức', value: formula, fill: 'bg-primary' },
+    ...(capped
+      ? [
+          { label: 'Trong trần', value: staircase.result, fill: 'bg-primary' },
+          { label: 'Bị chặn', value: formula - staircase.result, fill: 'bg-primary-soft', style: STRIPES },
+        ]
+      : [{ label: 'Khả dụng theo công thức', value: formula, fill: 'bg-primary' }]),
     { label: 'Tỷ lệ hoàn', value: returns, fill: 'bg-slate-500' },
     { label: 'Biên an toàn', value: safety, fill: 'bg-slate-300' },
     { label: 'Chiết khấu xác thực', value: discount, fill: 'bg-slate-200' },
@@ -193,10 +207,20 @@ function StaircaseCard({ staircase, units, className }) {
       <h2 className="text-emphasis font-semibold text-ink">
         Bảng tính <Term name="Giá trị khả dụng">giá trị khả dụng</Term>
       </h2>
-      <div className="mt-3 flex h-8 w-full overflow-hidden rounded-lg" role="img" aria-label="Cơ cấu giá trị ròng dự phóng">
-        {segments.map((s) => (
-          <div key={s.label} className={s.fill} style={{ width: pct(s.value) }} />
-        ))}
+      <div className={`relative ${capped ? 'mt-10' : 'mt-3'}`}>
+        <div className="flex h-8 w-full overflow-hidden rounded-lg" role="img" aria-label="Cơ cấu giá trị ròng dự phóng">
+          {segments.map((s) => (
+            <div key={s.label} className={s.fill} style={{ width: pct(s.value), ...s.style }} />
+          ))}
+        </div>
+        {capped && (
+          <div className="absolute -top-7 bottom-0 flex -translate-x-1/2 flex-col items-center" style={{ left: pct(cap) }}>
+            <span className="whitespace-nowrap text-label font-semibold text-ink">
+              <Term name="Trần dư nợ" /> {formatNumberVN(cap)}
+            </span>
+            <span className="w-0.5 flex-1 bg-ink" aria-hidden="true" />
+          </div>
+        )}
       </div>
       {/* Chú thích từng đoạn (Vòng 28) — chấm màu + tên + số, không chỉ dựa vào màu */}
       <ul className="mt-2 flex flex-wrap gap-x-5 gap-y-1 text-label text-ink">
@@ -204,7 +228,7 @@ function StaircaseCard({ staircase, units, className }) {
           .filter((s) => s.value > 0)
           .map((s) => (
             <li key={s.label} className="flex items-center gap-1.5 whitespace-nowrap">
-              <span className={`h-3 w-3 rounded-sm ${s.fill}`} aria-hidden="true" />
+              <span className={`h-3 w-3 rounded-sm ${s.fill}`} style={s.style} aria-hidden="true" />
               {s.label} <Money value={s.value} size="label" className="font-semibold" />
             </li>
           ))}
@@ -230,6 +254,10 @@ function StaircaseCard({ staircase, units, className }) {
   )
 }
 
+
+const STRIPES = {
+  backgroundImage: 'repeating-linear-gradient(135deg, var(--color-primary) 0 2px, transparent 2px 7px)',
+}
 
 function CalcRow({ label, value, strong }) {
   return (

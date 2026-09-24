@@ -61,6 +61,7 @@ export const SHORTCUTS = [
 ]
 
 const START_DATE = formatDateVN(simDate(initialState()))
+const ROLE_TOAST_MS = 3000
 const ROLE_LABEL = { seller: 'Nhà bán', officer: 'Cán bộ Techcombank' }
 
 export default function ScenarioPanel({ route, onHelp }) {
@@ -73,10 +74,11 @@ export default function ScenarioPanel({ route, onHelp }) {
   const next = events(state)[state.eventIndex + 1]
   const today = formatDateVN(simDate(state))
 
-  function showToast(text) {
+  // hanh-trinh 2.1: tự tắt sau 4 giây; "Đã đổi sang vai…" 3 giây (Vòng 29)
+  function showToast(text, ms = 4000) {
     clearTimeout(toastTimer.current)
     setToast(text)
-    toastTimer.current = setTimeout(() => setToast(null), 4000) // hanh-trinh 2.1: tự tắt sau 4 giây
+    toastTimer.current = setTimeout(() => setToast(null), ms)
   }
 
   // Chạy một hành động qua availability; trả về thông báo cho phím tắt / lệnh hash
@@ -130,7 +132,7 @@ export default function ScenarioPanel({ route, onHelp }) {
       window.history.replaceState(null, '', route.href)
       if (hash === ROUTES.tua) showToast(advanceMessage())
       else if (hash === ROUTES.batDauLai) setConfirmOpen(true)
-      else if (hash === ROUTES.doiVai) showToast(switchRole())
+      else if (hash === ROUTES.doiVai) showToast(switchRole(), ROLE_TOAST_MS)
       else setOpen(true)
     }
     window.addEventListener('hashchange', onHashChange)
@@ -172,7 +174,7 @@ export default function ScenarioPanel({ route, onHelp }) {
                     key={role}
                     type="button"
                     aria-pressed={state.role === role}
-                    onClick={() => state.role !== role && switchRole()}
+                    onClick={() => state.role !== role && showToast(switchRole(), ROLE_TOAST_MS)}
                     className={`rounded-md px-2 py-2 text-label font-semibold transition duration-fast ${
                       state.role === role ? 'bg-slate-50 text-slate-900' : 'text-slate-50 hover:bg-slate-800'
                     }`}

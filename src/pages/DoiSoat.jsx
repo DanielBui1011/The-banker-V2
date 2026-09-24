@@ -17,7 +17,7 @@ import {
   VERIFICATION_METRICS,
   MIN_LOTS_FOR_SCORE,
 } from '../data/mockData.js'
-import { summarizeTransactions, isFeeDeviationFlagged } from '../logic/reconciliation.js'
+import { summarizeTransactions, isFeeDeviationFlagged, autoMatchRate as matchRate } from '../logic/reconciliation.js'
 import { availability } from '../logic/journey.js'
 import { formatNumberVN, formatDateVN, formatPercentVN } from '../utils/format.js'
 import { useApp } from '../state/appState.jsx'
@@ -100,7 +100,7 @@ function Reconciliation({ revoked }) {
 
   const summary = summarizeTransactions(BANK_TRANSACTIONS)
   const total = BANK_TRANSACTIONS.length
-  const autoMatchRate = total === 0 ? 0 : summary.matchedCount / total
+  const autoMatchRate = matchRate(BANK_TRANSACTIONS)
   const flagged = FEE_DEVIATIONS.filter((fd) => isFeeDeviationFlagged(fd.deviationRate))
 
   const filters = [

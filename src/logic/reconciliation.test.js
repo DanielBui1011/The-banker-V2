@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { summarizeTransactions, isFeeDeviationFlagged } from './reconciliation.js'
+import { summarizeTransactions, isFeeDeviationFlagged, autoMatchRate } from './reconciliation.js'
 import { BANK_TRANSACTIONS, FEE_DEVIATIONS } from '../data/mockData.js'
 
 describe('summarizeTransactions', () => {
@@ -22,5 +22,12 @@ describe('isFeeDeviationFlagged', () => {
   it('RU-02 chênh 1,1% → trong ngưỡng', () => {
     const ru02 = FEE_DEVIATIONS.find((f) => f.unit === 'RU-02')
     expect(isFeeDeviationFlagged(ru02.deviationRate)).toBe(false)
+  })
+})
+
+describe('autoMatchRate', () => {
+  it('19 / 25 giao dịch tự khớp = 76% (Đối soát, Tổng quan)', () => {
+    expect(autoMatchRate(BANK_TRANSACTIONS)).toBe(0.76)
+    expect(autoMatchRate([])).toBe(0)
   })
 })

@@ -17,6 +17,9 @@ import {
   loadState,
   saveState,
   STORAGE_KEY,
+  ROUTES,
+  breakResolved,
+  ru03Broke,
 } from './journey.js'
 
 // Chạy lần lượt các action từ một trạng thái. Action dạng chuỗi = { type }.
@@ -95,9 +98,11 @@ describe('unitStatus', () => {
     expect(unitStatus(s, 'RU-M1')).toBe('verified')
     expect(unitStatus(s, 'RU-M2')).toBe('verified')
   })
-  it('RU-03 giữ "Đứt gãy" trong lịch sử dù đã giải trình và trả', () => {
+  // Vòng 29: trạng thái hiện tại "Đã trả từ nguồn khác"; lịch sử đứt gãy giữ qua ru03Broke (điểm 58, dòng phụ)
+  it('RU-03 sau giải trình và trả: "Đã trả từ nguồn khác", vẫn giữ lịch sử đứt gãy', () => {
     const s = run(accountChangeAt(4), { type: 'repay', unit: 'RU-04' }, 'resolveAccountChange', { type: 'repay', unit: 'RU-03' })
-    expect(unitStatus(s, 'RU-03')).toBe('broken')
+    expect(unitStatus(s, 'RU-03')).toBe('repaid-other')
+    expect(ru03Broke(s)).toBe(true)
     expect(loan(s).debt).toBe(0)
   })
 })
@@ -342,10 +347,10 @@ describe('nextStep', () => {
     })
     expect(nextStep(at1909(), 'tong-quan').action).toEqual({ label: 'Xem khoản vay', href: '#/nha-ban/khoan-vay' })
   })
-  it('trả xong → xem góc nhìn cán bộ (1.21); xem rồi → không cần làm gì', () => {
+  it('trả xong → xem góc nhìn cán bộ (1.21); xem rồi → thẻ kết (Vòng 29)', () => {
     expect(nextStep(fullyRepaid(), 'khoan-vay').action).toEqual({ label: 'Đổi vai', href: '#/mo-phong/doi-vai' })
     const done = run(fullyRepaid(), { type: 'visit', key: 'officer:tra-cuu' })
-    expect(nextStep(done, 'khoan-vay')).toEqual({ text: 'Không cần làm gì ở trang này', action: null })
+    expect(nextStep(done, 'khoan-vay').text).toBe('Bạn đã hoàn thành hành trình chính. Thử thêm:')
   })
   it('cán bộ, A2 chưa cấp → Đổi sang vai Nhà bán', () => {
     expect(nextStep(at1509(), 'tra-cuu')).toEqual({
@@ -688,7 +693,8 @@ describe('Vòng 28 — một nút đặc mỗi trang (hành trình 1)', () => {
       for (const page of SELLER_PAGES) {
         const step = nextStep(s, page)
         const where = `${name} / ${page}`
-        const cardSolid = Boolean(step.action) && !step.target
+        // Tua là thao tác mô phỏng → SimHint, không phải nút đặc (Vòng 29)
+        const cardSolid = Boolean(step.action) && !step.target && step.action.href !== ROUTES.tua
         const emptySolid = pageEmpty(s, page) && !cardSolid
         const solids = Number(cardSolid) + Number(Boolean(step.target)) + Number(emptySolid)
         expect(solids, where).toBeLessThanOrEqual(1)
@@ -948,5 +954,80 @@ describe('Vòng 26 — chống vỡ', () => {
       saveState(s, storage)
       expect(loadState(storage)).toEqual(s)
     }
+  })
+})
+
+// ─── Vòng 29: đứt gãy đã xử lý (t05) ─────────────────────────────────────────
+describe('Vòng 29 — đứt gãy → giải trình → trả RU-03 từ nguồn khác', () => {
+  const resolved = () => run(accountChangeAt(4), 'resolveAccountChange')
+  const paidOther = () => run(resolved(), { type: 'repay', unit: 'RU-03' })
+  it('vai nhà bán: trạng thái từng bước và trạng thái cuối', () => {
+    const broken = accountChangeAt(4)
+    expect(unitStatus(broken, 'RU-03')).toBe('broken')
+    expect(breakResolved(broken)).toBe(false)
+    // đã giải trình nhưng chưa trả: vẫn là đứt gãy chưa xử lý
+    expect(unitStatus(resolved(), 'RU-03')).toBe('broken')
+    expect(breakResolved(resolved())).toBe(false)
+    const s = paidOther()
+    expect(unitStatus(s, 'RU-03')).toBe('repaid-other')
+    expect(breakResolved(s)).toBe(true)
+    expect(ru03Broke(s)).toBe(true) // điểm Shopee giữ 58 (lịch sử đứt gãy)
+    expect(fundingFrozen(s)).toBe(false)
+    expect(loan(s).debt).toBe(38.25) // khóa RU-03 giải phóng, còn RU-04
+    expect(ru03Broke(fullyRepaid())).toBe(false)
+  })
+  it('vai cán bộ: cảnh báo mở → đã xử lý; khóa RU-03 giải phóng', () => {
+    expect(bankView(resolved()).alerts).toEqual([{ unit: 'RU-03', date: '2027-09-24' }])
+    expect(bankView(resolved()).resolvedAlerts).toEqual([])
+    const v = bankView(paidOther())
+    expect(v.alerts).toEqual([]) // chấm đếm = số cảnh báo mở → biến mất
+    expect(v.resolvedAlerts).toEqual([{ unit: 'RU-03', date: '2027-09-24' }])
+    expect(v.units[0]).toMatchObject({ code: 'RU-03', status: 'repaid-other', lockedAmount: 0, lockerCount: 0 })
+    expect(bankView(accountChangeAt(3)).resolvedAlerts).toEqual([])
+  })
+})
+
+// ─── Vòng 29: trạng thái kết thúc (n35) ──────────────────────────────────────
+describe('Vòng 29 — xong 5 nhiệm vụ: thẻ Bước tiếp theo gợi ý 2 tình huống', () => {
+  const done = () => run(fullyRepaid(), { type: 'visit', key: 'officer:tra-cuu' })
+  it('mọi trang nhà bán: chữ kết + 2 tình huống, cả hai cần bắt đầu lại', () => {
+    for (const page of SELLER_PAGES)
+      expect(nextStep(done(), page), page).toEqual({
+        text: 'Bạn đã hoàn thành hành trình chính. Thử thêm:',
+        action: null,
+        tryScenarios: [
+          { label: 'Nhà bán đổi tài khoản nhận tiền', scenario: 'accountChange', restart: true },
+          { label: 'Giai đoạn 3 — nhiều bên chào giá', scenario: 'phase3', restart: true },
+        ],
+      })
+  })
+  it('tryScenario: cần bắt đầu lại → về 01/08 với tình huống đã bật, giữ chế độ hướng dẫn', () => {
+    const s = run(done(), { type: 'welcome', mode: 'explore' }, { type: 'tryScenario', scenario: 'accountChange' })
+    expect(s.scenario).toEqual({ peakSeason: false, accountChange: true, phase3: false })
+    expect(s.eventIndex).toBe(0)
+    expect(s.registry).toEqual([])
+    expect(s.consents.A1).toBe('none')
+    expect(s.guide).toMatchObject({ welcomeDone: true, mode: 'explore' })
+    expect(tasks(s).requiredDone).toBe(0)
+  })
+  it('tryScenario: bật được ngay → chỉ bật, giữ tiến trình', () => {
+    const s = run(at1509(), { type: 'tryScenario', scenario: 'phase3' })
+    expect(s.scenario.phase3).toBe(true)
+    expect(s.eventIndex).toBe(1)
+    expect(s.consents.A1).toBe('active')
+    expect(availability(at1509(), { type: 'tryScenario', scenario: 'x' }).ok).toBe(false)
+  })
+  it('tình huống đã làm xong không gợi ý lại', () => {
+    const s = run(
+      accountChangeAt(4),
+      'resolveAccountChange',
+      { type: 'repay', unit: 'RU-03' },
+      { type: 'repay', unit: 'RU-04' },
+      { type: 'visit', key: 'officer:tra-cuu' }
+    )
+    expect(tasks(s).allRequiredDone).toBe(true)
+    expect(nextStep(s, 'tong-quan').tryScenarios).toEqual([
+      { label: 'Giai đoạn 3 — nhiều bên chào giá', scenario: 'phase3', restart: true },
+    ])
   })
 })

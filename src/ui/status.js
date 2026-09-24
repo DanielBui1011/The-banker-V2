@@ -26,6 +26,8 @@ export const STATUS_TABLE = {
   settled: { tone: 'tier1Solid', icon: 'CheckCircle2', label: 'Đã tất toán' },
   'settled-short': { tone: 'insufficient', icon: 'AlertTriangle', label: 'Tất toán thiếu' },
   broken: { tone: 'broken', icon: 'XCircle', label: 'Đứt gãy' },
+  'repaid-other': { tone: 'neutral', icon: 'Wallet', label: 'Đã trả từ nguồn khác' }, // RU-03 sau đứt gãy (Vòng 29)
+  resolved: { tone: 'neutral', icon: 'CheckCircle2', label: 'Đã xử lý' }, // đứt gãy đã giải trình + trả (Vòng 29)
   reversed: { tone: 'neutral', icon: 'RotateCcw', label: 'Đã hoàn' },
   expired: { tone: 'neutral', icon: 'CircleSlash', label: 'Hết hiệu lực' },
 
